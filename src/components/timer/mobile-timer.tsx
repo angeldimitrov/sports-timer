@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createModuleLogger } from '@/lib/logger';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -63,6 +64,8 @@ export interface MobileTimerProps {
  * A comprehensive mobile-optimized timer interface that integrates all PWA features,
  * mobile optimizations, and accessibility enhancements for boxing workouts.
  */
+const log = createModuleLogger('MobileTimer');
+
 export function MobileTimer({
   preset = 'intermediate',
   enableGestures = true,
@@ -74,7 +77,7 @@ export function MobileTimer({
   const timer = useTimer({
     preset,
     onEvent: (event) => {
-      console.log('[Timer]', event.type, event.state);
+      log.debug('Timer event:', event.type, event.state);
       
       // Handle audio for timer events
       handleTimerAudio(event);
@@ -87,7 +90,7 @@ export function MobileTimer({
   // PWA state management
   const pwa = usePWA({
     onInstallSuccess: () => {
-      console.log('[PWA] Boxing Timer installed successfully!');
+      log.info('Boxing Timer installed successfully!');
       setShowInstallPrompt(false);
     },
     onUpdateAvailable: () => {
@@ -100,7 +103,7 @@ export function MobileTimer({
     autoLock: enableWakeLock,
     lockCondition: timer.isRunning,
     onLockAcquired: () => {
-      console.log('[WakeLock] Screen will stay on during workout');
+      log.info('Screen will stay on during workout');
     }
   });
 
@@ -185,7 +188,7 @@ export function MobileTimer({
         // Set initial volume
         audioMgr.setVolume(volume);
       } catch (error) {
-        console.error('[MobileTimer] Audio initialization failed:', error);
+        log.error('Audio initialization failed:', error);
       }
     };
 
@@ -266,7 +269,7 @@ export function MobileTimer({
     showGestureIndicator('Skip Phase →');
     
     // Skip logic would be implemented in timer engine
-    console.log('[Gesture] Skip to next phase');
+    log.debug('Skip to next phase');
   }, [timer.isRunning]);
 
   /**
@@ -276,7 +279,7 @@ export function MobileTimer({
     showGestureIndicator('← Previous Phase');
     
     // Previous phase logic would be implemented in timer engine
-    console.log('[Gesture] Go to previous phase');
+    log.debug('Go to previous phase');
   }, []);
 
   /**

@@ -19,6 +19,9 @@ import { usePWA } from '@/hooks/use-pwa';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, X, Download, CheckCircle } from 'lucide-react';
+import { createModuleLogger } from '@/lib/logger';
+
+const log = createModuleLogger('UpdateNotification');
 
 export interface UpdateNotificationProps {
   /** Show changelog in notification */
@@ -77,7 +80,7 @@ export function UpdateNotification({
         }, autoDismissDelay);
       }
     } catch (error) {
-      console.error('Update failed:', error);
+      log.error('Update failed:', error);
       setIsUpdating(false);
     }
   };

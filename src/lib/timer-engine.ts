@@ -28,7 +28,7 @@
  * });
  * 
  * timer.addEventListener((event) => {
- *   console.log(`Timer event: ${event.type}`, event.state);
+ *   // Event handling - logs are handled by centralized logger
  * });
  * 
  * timer.start(); // Begin workout
@@ -44,6 +44,11 @@
  * @see {@link TimerEvent} for event system details
  * @see {@link TimerState} for state management
  */
+
+import { createModuleLogger } from './logger';
+
+// Initialize module logger
+const log = createModuleLogger('TimerEngine');
 
 // Type definitions for browser APIs
 interface BatteryManager {
@@ -181,7 +186,7 @@ export class TimerEngine {
       };
 
       this.worker.onerror = (error) => {
-        console.error('Timer Worker Error:', error);
+        log.error('Timer Worker Error:', error);
         this.emitEvent({
           type: 'error',
           state: this.state,
@@ -190,7 +195,7 @@ export class TimerEngine {
       };
 
     } catch (error) {
-      console.error('Failed to initialize timer worker:', error);
+      log.error('Failed to initialize timer worker:', error);
       this.emitEvent({
         type: 'error',
         state: this.state,
@@ -213,7 +218,7 @@ export class TimerEngine {
 
     switch (type) {
       case 'ready':
-        console.log('Timer worker ready');
+        log.debug('Timer worker ready');
         break;
 
       case 'tick':
@@ -235,7 +240,7 @@ export class TimerEngine {
         break;
 
       case 'error':
-        console.error('Timer worker error:', data.message);
+        log.error('Timer worker error:', data.message);
         this.emitEvent({
           type: 'error',
           state: this.state,
@@ -244,7 +249,7 @@ export class TimerEngine {
         break;
 
       default:
-        console.warn('[TimerEngine] Unknown message type from worker:', type);
+        log.warn('Unknown message type from worker:', type);
     }
   }
 
@@ -378,7 +383,7 @@ export class TimerEngine {
         payload: { duration }
       });
     } else {
-      console.error('[TimerEngine] Worker not available when trying to start timer');
+      log.error('Worker not available when trying to start timer');
     }
   }
 
@@ -441,18 +446,18 @@ export class TimerEngine {
     if ('getBattery' in navigator) {
       (navigator as NavigatorWithBattery).getBattery().then((battery: BatteryManager) => {
         if (battery.level < 0.15) {
-          console.warn('[TimerEngine] Low battery detected, timer precision may be affected');
+          log.warn('Low battery detected, timer precision may be affected');
         }
       });
     }
 
     // Handle network status for offline timing
     window.addEventListener('offline', () => {
-      console.log('[TimerEngine] Device went offline, timer continues with local timing');
+      log.info('Device went offline, timer continues with local timing');
     });
 
     window.addEventListener('online', () => {
-      console.log('[TimerEngine] Device back online');
+      log.info('Device back online');
     });
   }
 
@@ -467,7 +472,7 @@ export class TimerEngine {
         timestamp: Date.now(),
         state: this.state
       });
-      console.log('[TimerEngine] Page frozen, timer continues in background');
+      log.info('Page frozen, timer continues in background');
     }
   }
 
@@ -478,7 +483,7 @@ export class TimerEngine {
     if (this.state.status === 'running') {
       // Request current state from worker to resync
       this.requestWorkerStatus();
-      console.log('[TimerEngine] Page resumed, resyncing timer state');
+      log.info('Page resumed, resyncing timer state');
     }
   }
 
@@ -652,7 +657,7 @@ export class TimerEngine {
       try {
         handler(event);
       } catch (error) {
-        console.error('Timer event handler error:', error);
+        log.error('Timer event handler error:', error);
       }
     });
   }

@@ -13,6 +13,9 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createModuleLogger } from '../lib/logger';
+
+const log = createModuleLogger('useWakeLock');
 
 // Wake Lock types are defined in src/types/wake-lock.d.ts
 
@@ -85,7 +88,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
    * Handle wake lock release event
    */
   const handleWakeLockRelease = useCallback(() => {
-    console.log('[WakeLock] Wake lock released');
+    log.debug('Wake lock released');
     setIsLocked(false);
     wakeLockRef.current = null;
     
@@ -122,7 +125,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
       wakeLockRef.current = wakeLock;
       setIsLocked(true);
       
-      console.log('[WakeLock] Wake lock acquired');
+      log.debug('Wake lock acquired');
       
       if (onLockAcquired) {
         onLockAcquired();
@@ -131,7 +134,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
       return true;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to acquire wake lock');
-      console.warn('[WakeLock] Failed to acquire wake lock:', error);
+      log.warn('Failed to acquire wake lock:', error);
       
       setError(error);
       if (onError) {
@@ -157,7 +160,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
       // handleWakeLockRelease will be called automatically via event listener
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to release wake lock');
-      console.warn('[WakeLock] Failed to release wake lock:', error);
+      log.warn('Failed to release wake lock:', error);
       
       // Force cleanup even if release failed
       setIsLocked(false);
@@ -188,10 +191,10 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
   useEffect(() => {
     const handleVisibilityChange = async () => {
       if (document.hidden && isLocked) {
-        console.log('[WakeLock] Page hidden, wake lock will be released automatically');
+        log.debug('Page hidden, wake lock will be released automatically');
       } else if (!document.hidden && autoLock && lockCondition && !isLocked) {
         // Re-acquire wake lock when page becomes visible and conditions are met
-        console.log('[WakeLock] Page visible, re-acquiring wake lock');
+        log.debug('Page visible, re-acquiring wake lock');
         await requestWakeLock();
       }
     };
@@ -213,10 +216,10 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
 
     const handleAutoLock = async () => {
       if (lockCondition && !isLocked) {
-        console.log('[WakeLock] Auto-acquiring wake lock (condition met)');
+        log.debug('Auto-acquiring wake lock (condition met)');
         await requestWakeLock();
       } else if (!lockCondition && isLocked) {
-        console.log('[WakeLock] Auto-releasing wake lock (condition not met)');
+        log.debug('Auto-releasing wake lock (condition not met)');
         await releaseWakeLock();
       }
     };
@@ -234,7 +237,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
       // Cleanup on unmount
       if (wakeLockRef.current) {
         wakeLockRef.current.release().catch(err => {
-          console.warn('[WakeLock] Cleanup release failed:', err);
+          log.warn('Cleanup release failed:', err);
         });
       }
     };
@@ -259,13 +262,13 @@ export function useTimerWakeLock(isTimerRunning: boolean): UseWakeLockReturn {
     autoLock: true,
     lockCondition: isTimerRunning,
     onLockAcquired: () => {
-      console.log('[WakeLock] Screen will stay on during workout');
+      log.info('Screen will stay on during workout');
     },
     onLockReleased: () => {
-      console.log('[WakeLock] Normal screen timeout restored');
+      log.info('Normal screen timeout restored');
     },
     onError: (error) => {
-      console.warn('[WakeLock] Wake lock not available:', error.message);
+      log.warn('Wake lock not available:', error.message);
     }
   });
 }

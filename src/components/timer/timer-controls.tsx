@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createModuleLogger } from '@/lib/logger';
 import { 
   Play, 
   Pause, 
@@ -51,6 +52,8 @@ interface TimerControlsProps {
  * - Smooth animations and transitions
  * - Haptic feedback triggers (via CSS)
  */
+const log = createModuleLogger('TimerControls');
+
 export function TimerControls({ timer, audio, onSettingsClick, className }: TimerControlsProps) {
   // Determine primary action based on timer state
   const getPrimaryAction = () => {
@@ -71,7 +74,7 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
           try {
             await audio.initialize();
           } catch (error) {
-            console.warn('Audio initialization failed, continuing without audio:', error);
+            log.warn('Audio initialization failed, continuing without audio:', error);
           }
         }
         timer.start();

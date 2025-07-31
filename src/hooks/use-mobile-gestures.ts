@@ -15,6 +15,9 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createModuleLogger } from '../lib/logger';
+
+const log = createModuleLogger('useMobileGestures');
 
 export interface TouchPoint {
   x: number;
@@ -159,7 +162,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
       navigator.vibrate(patterns[pattern]);
     } catch (error) {
       if (debug) {
-        console.warn('[Gestures] Haptic feedback failed:', error);
+        log.warn('Haptic feedback failed:', error);
       }
     }
   }, [enableHaptics, debug]);
@@ -172,7 +175,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
     gestureStatsRef.current.gestureTypes[type] = (gestureStatsRef.current.gestureTypes[type] || 0) + 1;
 
     if (debug) {
-      console.log(`[Gestures] ${type}:`, data);
+      log.debug(`${type}:`, data);
     }
   }, [debug]);
 
@@ -413,7 +416,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
 
     if (!element) {
       if (debug) {
-        console.warn('[Gestures] Target element not found');
+        log.warn('Target element not found');
       }
       return;
     }
@@ -429,7 +432,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
     element.addEventListener('touchcancel', handleTouchCancel, options);
 
     if (debug) {
-      console.log('[Gestures] Event listeners attached to:', element);
+      log.debug('Event listeners attached to:', element);
     }
 
     return () => {
