@@ -13,6 +13,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createModuleLogger } from '../lib/logger';
+
+const log = createModuleLogger('usePWA');
 
 // PWA installation event types
 interface BeforeInstallPromptEvent extends Event {
@@ -166,7 +169,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
    */
   const showInstallPrompt = useCallback(async (): Promise<boolean> => {
     if (!deferredPromptRef.current) {
-      console.warn('[PWA] No install prompt available');
+      log.warn('No install prompt available');
       return false;
     }
 
@@ -178,11 +181,11 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
       const choiceResult = await deferredPromptRef.current.userChoice;
       
       if (enableAnalytics) {
-        console.log('[PWA] Install prompt result:', choiceResult.outcome);
+        log.info('Install prompt result:', choiceResult.outcome);
       }
 
       if (choiceResult.outcome === 'accepted') {
-        console.log('[PWA] User accepted the install prompt');
+        log.info('User accepted the install prompt');
         
         setState(prev => ({
           ...prev,
@@ -200,7 +203,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         
         return true;
       } else {
-        console.log('[PWA] User dismissed the install prompt');
+        log.info('User dismissed the install prompt');
         
         // Mark as dismissed
         localStorage.setItem('pwa-dismissed', new Date().toISOString());
@@ -212,7 +215,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         return false;
       }
     } catch (error) {
-      console.error('[PWA] Install prompt failed:', error);
+      log.error('Install prompt failed:', error);
       return false;
     } finally {
       // Clear the prompt
@@ -239,7 +242,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
    */
   const installUpdate = useCallback(async (): Promise<void> => {
     if (!serviceWorkerRegistrationRef.current || !serviceWorkerRegistrationRef.current.waiting) {
-      console.warn('[PWA] No update available');
+      log.warn('No update available');
       return;
     }
 
@@ -250,7 +253,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
       // Reload the page to activate the new service worker
       window.location.reload();
     } catch (error) {
-      console.error('[PWA] Update installation failed:', error);
+      log.error('Update installation failed:', error);
     }
   }, []);
 
@@ -266,7 +269,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
    */
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
-      console.log('[PWA] beforeinstallprompt event triggered');
+      log.debug('beforeinstallprompt event triggered');
       
       // Prevent the default mini-infobar from appearing
       e.preventDefault();
@@ -308,7 +311,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
    */
   useEffect(() => {
     const handleAppInstalled = () => {
-      console.log('[PWA] App was installed');
+      log.info('App was installed');
       
       setState(prev => ({
         ...prev,
@@ -363,7 +366,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
           if (newWorker) {
             const handleStateChange = () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[PWA] New service worker installed, update available');
+                log.info('New service worker installed, update available');
                 
                 setState(prev => ({ ...prev, hasUpdate: true }));
                 
@@ -416,7 +419,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
 
     // Analytics (only log for main instance to avoid spam)
     if (enableAnalytics && options.onInstallSuccess) {
-      console.log('[PWA] PWA state initialized:', {
+      log.debug('PWA state initialized:', {
         isInstalled,
         isStandalone: isInstalled,
         isOffline,

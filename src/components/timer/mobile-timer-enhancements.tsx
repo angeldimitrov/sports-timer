@@ -16,6 +16,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createModuleLogger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,8 @@ export interface MobileEnhancementsProps {
  * Provides mobile-specific controls and indicators for the boxing timer.
  * Enhances the user experience on mobile devices with native-like features.
  */
+const log = createModuleLogger('MobileTimerEnhancements');
+
 export function MobileTimerEnhancements({
   showFeatures = true,
   onFullscreenToggle,
@@ -138,7 +141,7 @@ export function MobileTimerEnhancements({
           try {
             await (screen.orientation as any).lock('portrait');
           } catch (err) {
-            console.log('Orientation lock not supported');
+            log.debug('Orientation lock not supported');
           }
         }
       } else {
@@ -149,7 +152,7 @@ export function MobileTimerEnhancements({
         onFullscreenToggle(!isFullscreen);
       }
     } catch (err) {
-      console.error('Fullscreen toggle failed:', err);
+      log.error('Fullscreen toggle failed:', err);
     }
   };
 

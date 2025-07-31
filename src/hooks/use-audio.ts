@@ -15,6 +15,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AudioManager, AudioType, getAudioManager } from '../lib/audio-manager';
 import { getPublicPath } from '../lib/get-base-path';
+import { createModuleLogger } from '../lib/logger';
+
+// Initialize module logger
+const log = createModuleLogger('useAudio');
 
 // Hook state interface
 interface UseAudioState {
@@ -104,7 +108,7 @@ export function useAudio(): UseAudioReturn {
         };
       }
     } catch (error) {
-      console.warn('Failed to load audio settings:', error);
+      log.warn('Failed to load audio settings:', error);
     }
     
     return { volume: 100, isMuted: false };
@@ -117,7 +121,7 @@ export function useAudio(): UseAudioReturn {
       const updated = { ...current, ...settings };
       localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
     } catch (error) {
-      console.warn('Failed to save audio settings:', error);
+      log.warn('Failed to save audio settings:', error);
     }
   }, [loadSettings]);
 
@@ -173,7 +177,7 @@ export function useAudio(): UseAudioReturn {
         }));
         
         // Don't throw - allow graceful fallback
-        console.error('Audio initialization error:', error);
+        log.error('Audio initialization error:', error);
       }
     })();
 
@@ -200,7 +204,7 @@ export function useAudio(): UseAudioReturn {
         await manager.play(type, when);
       }
     } catch (error) {
-      console.warn(`Failed to play ${type} audio:`, error);
+      log.warn(`Failed to play ${type} audio:`, error);
       // Don't update state repeatedly to avoid infinite loops
     }
   }, [getManager, initialize, state.isLoading, state.error]);

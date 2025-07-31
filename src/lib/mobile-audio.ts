@@ -14,6 +14,11 @@
  * - Progressive Web App audio integration
  */
 
+import { createModuleLogger } from './logger';
+
+// Initialize module logger
+const log = createModuleLogger('MobileAudio');
+
 // Re-export base audio types
 export type { AudioType } from './audio-manager';
 
@@ -201,7 +206,7 @@ export class MobileAudioManager {
         this.state.isUnlocked = true;
         this.state.hasUserGesture = true;
         
-        console.log('[MobileAudio] iOS audio unlocked');
+        log.debug('iOS audio unlocked');
         
         // Remove unlock button
         if (this.unlockButton && this.unlockButton.parentNode) {
@@ -213,7 +218,7 @@ export class MobileAudioManager {
         document.removeEventListener('click', unlockAudio);
         
       } catch (error) {
-        console.warn('[MobileAudio] iOS unlock failed:', error);
+        log.warn('iOS unlock failed:', error);
       }
     };
 
@@ -230,10 +235,10 @@ export class MobileAudioManager {
       this.state.isBackgrounded = document.hidden;
       
       if (document.hidden) {
-        console.log('[MobileAudio] App backgrounded - preparing for restrictions');
+        log.debug('App backgrounded - preparing for restrictions');
         this.handleBackgroundTransition();
       } else {
-        console.log('[MobileAudio] App foregrounded - restoring audio');
+        log.debug('App foregrounded - restoring audio');
         this.handleForegroundTransition();
       }
     };
@@ -259,7 +264,7 @@ export class MobileAudioManager {
         source.connect(this.audioContext.destination);
         source.start();
       } catch (error) {
-        console.warn('[MobileAudio] Background audio keepalive failed:', error);
+        log.warn('Background audio keepalive failed:', error);
       }
     }
   }
@@ -271,7 +276,7 @@ export class MobileAudioManager {
     // Resume audio context if suspended
     if (this.audioContext && this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(error => {
-        console.warn('[MobileAudio] Failed to resume audio context:', error);
+        log.warn('Failed to resume audio context:', error);
       });
     }
 
@@ -290,7 +295,7 @@ export class MobileAudioManager {
         this.state.networkType = connection.effectiveType || 'unknown';
         
         if (oldType !== this.state.networkType) {
-          console.log(`[MobileAudio] Network changed: ${oldType} -> ${this.state.networkType}`);
+          log.debug(`Network changed: ${oldType} -> ${this.state.networkType}`);
           this.adaptToNetworkConditions();
         }
       };
@@ -314,17 +319,17 @@ export class MobileAudioManager {
           this.state.isLowPowerMode = battery.level < 0.2;
           
           if (!wasLowPower && this.state.isLowPowerMode) {
-            console.log('[MobileAudio] Entering low power mode');
+            log.debug('Entering low power mode');
             this.optimizeForLowPower();
           } else if (wasLowPower && !this.state.isLowPowerMode) {
-            console.log('[MobileAudio] Exiting low power mode');
+            log.debug('Exiting low power mode');
             this.restoreNormalPower();
           }
         };
 
         battery.addEventListener('levelchange', this.batteryHandler);
       }).catch((error: Error) => {
-        console.warn('[MobileAudio] Battery API not available:', error);
+        log.warn('Battery API not available:', error);
       });
     }
   }
@@ -355,10 +360,10 @@ export class MobileAudioManager {
       await this.audioContext.resume();
       
       this.state.autoplayPolicy = 'allowed';
-      console.log('[MobileAudio] Autoplay policy: allowed');
+      log.debug('Autoplay policy: allowed');
     } catch (error) {
       this.state.autoplayPolicy = 'blocked';
-      console.log('[MobileAudio] Autoplay policy: blocked');
+      log.debug('Autoplay policy: blocked');
     }
   }
 
@@ -373,7 +378,7 @@ export class MobileAudioManager {
       case '2g':
         // Ultra-conservative for slow networks
         this.config.mobilePreloadStrategy = 'on-demand';
-        console.log('[MobileAudio] Adapted for slow network');
+        log.debug('Adapted for slow network');
         break;
         
       case '3g':
@@ -435,7 +440,7 @@ export class MobileAudioManager {
 
     // Handle context state changes
     this.audioContext.addEventListener('statechange', () => {
-      console.log('[MobileAudio] Context state:', this.audioContext?.state);
+      log.debug('Context state:', this.audioContext?.state);
     });
 
     return this.audioContext;

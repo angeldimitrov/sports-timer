@@ -12,6 +12,10 @@ import { PresetSelector } from '@/components/timer/preset-selector';
 import { SettingsDialog } from '@/components/timer/settings-dialog';
 import { TimerConfig } from '@/types/timer';
 import { TimerEvent } from '@/lib/timer-engine';
+import { createModuleLogger } from '@/lib/logger';
+
+// Initialize module logger
+const log = createModuleLogger('MainPage');
 
 // PWA and mobile components
 import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
@@ -67,37 +71,37 @@ export default function Home() {
     preset: 'intermediate', // Default to intermediate preset
     onEvent: useCallback((event: TimerEvent) => {
       // Handle timer events for audio integration with correct boxing timer logic
-      console.log('[Audio] Timer event:', event.type, event.payload, event.state?.phase);
+      log.debug('Timer event:', event.type, event.payload, event.state?.phase);
       
       // Safely handle audio playback with error handling
       const safePlayAudio = async (audioType: string) => {
         try {
           await audio.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
         } catch (error) {
-          console.warn(`Failed to play ${audioType} audio:`, error);
+          log.warn(`Failed to play ${audioType} audio:`, error);
         }
       };
       
       switch (event.type) {
         case 'preparationStart':
           // Play "GET READY" when preparation phase starts
-          console.log('[Audio] Playing: GET READY');
+          log.debug('Playing: GET READY');
           safePlayAudio('getReady');
           break;
           
         case 'phaseChange':
-          console.log('[Audio] Phase change to:', event.payload?.newPhase);
+          log.debug('Phase change to:', event.payload?.newPhase);
           // Phase transitions with proper boxing timer sounds
           if (event.payload?.newPhase === 'work') {
             // Entering work phase - round is starting
-            console.log('[Audio] Playing: ROUND STARTS + BELL');
+            log.debug('Playing: ROUND STARTS + BELL');
             safePlayAudio('bell'); // Bell sound
             setTimeout(() => {
               safePlayAudio('roundStart'); // "Round starts" announcement
             }, 500);
           } else if (event.payload?.newPhase === 'rest') {
             // Entering rest phase - round just ended  
-            console.log('[Audio] Playing: END OF ROUND + BELL + REST');
+            log.debug('Playing: END OF ROUND + BELL + REST');
             safePlayAudio('bell'); // Bell sound
             setTimeout(() => {
               safePlayAudio('roundEnd'); // "End of the round" announcement
@@ -109,22 +113,22 @@ export default function Home() {
           break;
           
         case 'warning':
-          console.log('[Audio] 10-second warning in phase:', event.state?.phase);
+          log.debug('10-second warning in phase:', event.state?.phase);
           // 10-second warning - voice announcement only to avoid artifacts
           if (event.state?.phase === 'work') {
             // 10 seconds left in work phase
-            console.log('[Audio] Playing: WORK WARNING');
+            log.debug('Playing: WORK WARNING');
             safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           } else if (event.state?.phase === 'rest') {
             // 10 seconds left in rest phase - next round coming
-            console.log('[Audio] Playing: REST WARNING');
+            log.debug('Playing: REST WARNING');
             safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           }
           break;
           
         case 'workoutComplete':
           // Workout finished
-          console.log('[Audio] Playing: WORKOUT COMPLETE');
+          log.debug('Playing: WORKOUT COMPLETE');
           safePlayAudio('workoutComplete'); // "Workout complete"
           setTimeout(() => {
             safePlayAudio('greatJob'); // "Great job!"
@@ -137,10 +141,10 @@ export default function Home() {
   // PWA state management
   usePWA({
     onInstallSuccess: () => {
-      console.log('[PWA] Boxing Timer installed successfully!');
+      log.info('Boxing Timer installed successfully!');
     },
     onUpdateAvailable: () => {
-      console.log('[PWA] Update available');
+      log.info('Update available');
     }
   });
 
@@ -149,7 +153,7 @@ export default function Home() {
     autoLock: true,
     lockCondition: timer.isRunning,
     onLockAcquired: () => {
-      console.log('[WakeLock] Screen will stay on during workout');
+      log.info('Screen will stay on during workout');
     }
   });
 
