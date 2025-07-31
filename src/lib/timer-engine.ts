@@ -185,7 +185,7 @@ export class TimerEngine {
         this.emitEvent({
           type: 'error',
           state: this.state,
-          payload: { message: 'Timer worker error', error }
+          payload: { message: 'Timer worker error', error: new Error(error.message || 'Worker error') }
         });
       };
 
@@ -194,7 +194,7 @@ export class TimerEngine {
       this.emitEvent({
         type: 'error',
         state: this.state,
-        payload: { message: 'Failed to initialize timer worker', error }
+        payload: { message: 'Failed to initialize timer worker', error: error as Error }
       });
     }
   }
@@ -217,7 +217,7 @@ export class TimerEngine {
         break;
 
       case 'tick':
-        this.updateTimerState(remaining, elapsed, progress);
+        this.updateTimerState(remaining ?? 0, elapsed ?? 0, progress ?? 0);
         break;
 
       case 'completed':

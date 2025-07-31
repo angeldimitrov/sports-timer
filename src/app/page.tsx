@@ -23,6 +23,18 @@ import {
   MobilePerformanceMonitor 
 } from '@/components/timer/mobile-timer-enhancements';
 
+// Global feature detection interface
+declare global {
+  interface Window {
+    BOXING_TIMER_FEATURES?: {
+      isMobile?: boolean;
+      hasTouch?: boolean;
+      isStandalone?: boolean;
+      supportsWakeLock?: boolean;
+    };
+  }
+}
+
 /**
  * Boxing Timer MVP Main Page
  * 
@@ -40,7 +52,12 @@ import {
 export default function Home() {
   // Settings dialog state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [deviceInfo, setDeviceInfo] = useState<Record<string, unknown> | null>(null);
+  const [deviceInfo, setDeviceInfo] = useState<{
+    isMobile?: boolean;
+    hasTouch?: boolean;
+    isStandalone?: boolean;
+    supportsWakeLock?: boolean;
+  } | null>(null);
   const [showMobileFeatures, setShowMobileFeatures] = useState(false);
   const [showGestureIndicators, setShowGestureIndicators] = useState(false);
 
@@ -169,9 +186,9 @@ export default function Home() {
   // Detect device capabilities on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const features = (window as Record<string, unknown>).BOXING_TIMER_FEATURES as Record<string, unknown> || {};
+      const features = window.BOXING_TIMER_FEATURES || {};
       setDeviceInfo(features);
-      setShowMobileFeatures(features.isMobile || features.hasTouch);
+      setShowMobileFeatures(features.isMobile || features.hasTouch || false);
       
       // Show gesture indicators for first-time mobile users
       if ((features.isMobile || features.hasTouch) && !localStorage.getItem('gesture-tutorial-seen')) {
