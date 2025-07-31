@@ -7,6 +7,11 @@ const nextConfig = {
   basePath: '/sports-timer',
   assetPrefix: '/sports-timer',
   
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_BASE_PATH: '/sports-timer',
+  },
+  
   eslint: {
     dirs: ['pages', 'utils', 'src'],
     // Ignore ESLint errors during build for now

@@ -72,6 +72,7 @@ export class TimerEngine {
   private config: TimerConfig;
   private state: TimerState;
   private eventHandlers: Set<TimerEventHandler> = new Set();
+  private workerPath: string;
   
   // Phase management
   private currentPhaseDuration: number = 0;
@@ -84,6 +85,13 @@ export class TimerEngine {
   constructor(config: TimerConfig) {
     this.config = { ...config };
     this.state = this.createInitialState();
+    
+    // Set worker path based on environment
+    const basePath = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_BASE_PATH 
+      ? process.env.NEXT_PUBLIC_BASE_PATH 
+      : '';
+    this.workerPath = `${basePath}/workers/timer-worker.js`;
+    
     this.initializeWorker();
     this.setupVisibilityHandling();
     this.setupMobileBackgroundHandling();
@@ -112,7 +120,7 @@ export class TimerEngine {
   private initializeWorker(): void {
     try {
       // Create worker from the public workers directory
-      this.worker = new Worker('/workers/timer-worker.js');
+      this.worker = new Worker(this.workerPath);
       
       this.worker.onmessage = (e) => {
         this.handleWorkerMessage(e.data);

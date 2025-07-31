@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AudioManager, AudioType, getAudioManager } from '../lib/audio-manager';
+import { getPublicPath } from '../lib/get-base-path';
 
 // Hook state interface
 interface UseAudioState {
@@ -84,7 +85,9 @@ export function useAudio(): UseAudioReturn {
   // Get audio manager instance
   const getManager = useCallback((): AudioManager => {
     if (!audioManagerRef.current) {
-      audioManagerRef.current = getAudioManager();
+      audioManagerRef.current = getAudioManager({
+        baseUrl: getPublicPath('/sounds')
+      });
     }
     return audioManagerRef.current;
   }, []);
