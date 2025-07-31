@@ -42,6 +42,12 @@ export function InstallPrompt({
   const [isIos, setIsIos] = useState(false);
   const [showManualInstructions, setShowManualInstructions] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /**
    * Detect iOS for manual installation instructions
@@ -56,14 +62,14 @@ export function InstallPrompt({
    * Show prompt after delay
    */
   useEffect(() => {
-    if (!canInstall && !isIos) return;
+    if (!isMounted || (!canInstall && !isIos)) return;
 
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, showDelay);
 
     return () => clearTimeout(timer);
-  }, [canInstall, isIos, showDelay]);
+  }, [isMounted, canInstall, isIos, showDelay]);
 
   /**
    * Handle install button click
@@ -97,7 +103,7 @@ export function InstallPrompt({
     setShowManualInstructions(false);
   };
 
-  if (!isVisible) return null;
+  if (!isMounted || !isVisible) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom duration-300 md:bottom-8 md:left-auto md:right-8 md:max-w-sm">
@@ -208,9 +214,15 @@ export function InstallPrompt({
 export function InstallBadge() {
   const { canInstall, showPrompt } = useInstallPrompt();
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch by only showing after client mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (canInstall) {
+    if (canInstall && isMounted) {
       // Pulse animation to draw attention
       const interval = setInterval(() => {
         setIsAnimating(true);
@@ -219,9 +231,10 @@ export function InstallBadge() {
 
       return () => clearInterval(interval);
     }
-  }, [canInstall]);
+  }, [canInstall, isMounted]);
 
-  if (!canInstall) return null;
+  // Don't render anything during SSR to prevent hydration mismatch
+  if (!isMounted || !canInstall) return null;
 
   return (
     <button

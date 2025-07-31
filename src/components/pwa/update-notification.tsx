@@ -44,15 +44,21 @@ export function UpdateNotification({
   const [isVisible, setIsVisible] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /**
    * Show notification when update is available
    */
   useEffect(() => {
-    if (state.hasUpdate && !updateSuccess) {
+    if (isMounted && state.hasUpdate && !updateSuccess) {
       setIsVisible(true);
     }
-  }, [state.hasUpdate, updateSuccess]);
+  }, [isMounted, state.hasUpdate, updateSuccess]);
 
   /**
    * Handle update installation
@@ -83,7 +89,7 @@ export function UpdateNotification({
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
+  if (!isMounted || !isVisible) return null;
 
   const positionClasses = position === 'top' 
     ? 'top-4 animate-in slide-in-from-top'
