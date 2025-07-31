@@ -45,6 +45,18 @@
  * @see {@link TimerState} for state management
  */
 
+// Type definitions for browser APIs
+interface BatteryManager {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+}
+
+interface NavigatorWithBattery extends Navigator {
+  getBattery(): Promise<BatteryManager>;
+}
+
 // Type definitions for timer state and events
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
 export type TimerPhase = 'preparation' | 'work' | 'rest';
@@ -84,7 +96,16 @@ export interface TimerState {
 export interface TimerEvent {
   type: 'tick' | 'phaseChange' | 'roundComplete' | 'workoutComplete' | 'warning' | 'error' | 'preparationStart';
   state: TimerState;
-  payload?: any;
+  payload?: {
+    newPhase?: TimerPhase;
+    round?: number;
+    completedRound?: number;
+    totalRounds?: number;
+    secondsRemaining?: number;
+    phase?: TimerPhase;
+    message?: string;
+    error?: Error;
+  };
 }
 
 export type TimerEventHandler = (event: TimerEvent) => void;
@@ -181,7 +202,13 @@ export class TimerEngine {
   /**
    * Handle messages from Web Worker
    */
-  private handleWorkerMessage(data: any): void {
+  private handleWorkerMessage(data: {
+    type: string;
+    remaining?: number;
+    elapsed?: number;
+    progress?: number;
+    message?: string;
+  }): void {
     const { type, remaining, elapsed, progress } = data;
 
     switch (type) {
@@ -412,7 +439,7 @@ export class TimerEngine {
 
     // Handle battery optimization warnings
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as NavigatorWithBattery).getBattery().then((battery: BatteryManager) => {
         if (battery.level < 0.15) {
           console.warn('[TimerEngine] Low battery detected, timer precision may be affected');
         }

@@ -142,7 +142,6 @@ export function useAudio(): UseAudioReturn {
     const initPromise = (async () => {
       try {
         const manager = getManager();
-        const managerState = manager.getState();
         
         // Apply persisted settings before initialization
         const settings = loadSettings();
@@ -272,7 +271,7 @@ export function useAudio(): UseAudioReturn {
     // Apply settings to manager
     manager.setVolume(settings.volume);
     manager.setMuted(settings.isMuted);
-  }, []); // Remove dependencies that cause infinite loops
+  }, [getManager, loadSettings]); // Add missing dependencies
 
   // Clear error after some time
   useEffect(() => {

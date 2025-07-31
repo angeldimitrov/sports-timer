@@ -138,7 +138,7 @@ export function UpdateNotification({
               {showChangelog && !updateSuccess && (
                 <div className="mb-4 p-3 bg-slate-800/50 rounded-lg">
                   <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase">
-                    What's New
+                    What&apos;s New
                   </h4>
                   <ul className="text-xs text-slate-300 space-y-1">
                     <li>• Improved timer accuracy</li>

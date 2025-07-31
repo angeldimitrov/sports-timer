@@ -27,9 +27,7 @@ import {
   Wifi, 
   WifiOff,
   Vibrate,
-  VolumeX,
-  Volume2,
-  Smartphone
+  VolumeX
 } from 'lucide-react';
 
 export interface MobileEnhancementsProps {

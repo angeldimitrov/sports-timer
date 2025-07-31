@@ -82,6 +82,12 @@
  * @see {@link AudioState} for state management
  */
 
+// Type definitions for Web Audio API extensions
+interface WindowWithWebAudio extends Window {
+  webkitAudioContext?: typeof AudioContext;
+  mozAudioContext?: typeof AudioContext;
+}
+
 // Audio types for different timer events
 export type AudioType = 'bell' | 'beep' | 'warning' | 'roundStart' | 'roundEnd' | 'tenSecondWarning' | 'getReady' | 'rest' | 'workoutComplete' | 'greatJob';
 
@@ -165,8 +171,8 @@ export class AudioManager {
   private checkWebAudioSupport(): boolean {
     return !!(
       window.AudioContext ||
-      (window as any).webkitAudioContext ||
-      (window as any).mozAudioContext
+      (window as WindowWithWebAudio).webkitAudioContext ||
+      (window as WindowWithWebAudio).mozAudioContext
     );
   }
 
@@ -212,8 +218,8 @@ export class AudioManager {
    */
   private async initializeWebAudio(): Promise<void> {
     const AudioContext = window.AudioContext || 
-                        (window as any).webkitAudioContext || 
-                        (window as any).mozAudioContext;
+                        (window as WindowWithWebAudio).webkitAudioContext || 
+                        (window as WindowWithWebAudio).mozAudioContext;
 
     if (!AudioContext) {
       throw new Error('Web Audio API not supported');
@@ -312,7 +318,15 @@ export class AudioManager {
     }
 
     // Audio characteristics for each type
-    const toneConfig: Record<string, any> = {
+    const toneConfig: Record<string, {
+      frequency: number;
+      duration: number;
+      type: OscillatorType;
+      attack: number;
+      decay: number;
+      sustain: number;
+      release: number;
+    }> = {
       bell: {
         frequency: 1000,
         duration: 1.2,

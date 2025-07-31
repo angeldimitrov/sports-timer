@@ -21,9 +21,7 @@ import {
   RotateCcw, 
   Volume2, 
   VolumeX,
-  Settings,
-  ChevronUp,
-  ChevronDown 
+  Settings
 } from 'lucide-react';
 import { UseTimerReturn } from '@/hooks/use-timer';
 import { UseAudioReturn } from '@/hooks/use-audio';
