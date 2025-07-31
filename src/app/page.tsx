@@ -12,17 +12,6 @@ import { PresetSelector } from '@/components/timer/preset-selector';
 import { SettingsDialog } from '@/components/timer/settings-dialog';
 import { TimerConfig } from '@/types/timer';
 import { TimerEvent } from '@/lib/timer-engine';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
-  Download, 
-  Wifi, 
-  WifiOff, 
-  Smartphone, 
-  Battery,
-  Volume2,
-  Info
-} from 'lucide-react';
 
 // PWA and mobile components
 import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
@@ -33,6 +22,18 @@ import {
   TouchGestureIndicator,
   MobilePerformanceMonitor 
 } from '@/components/timer/mobile-timer-enhancements';
+
+// Global feature detection interface
+declare global {
+  interface Window {
+    BOXING_TIMER_FEATURES?: {
+      isMobile?: boolean;
+      hasTouch?: boolean;
+      isStandalone?: boolean;
+      supportsWakeLock?: boolean;
+    };
+  }
+}
 
 /**
  * Boxing Timer MVP Main Page
@@ -51,9 +52,13 @@ import {
 export default function Home() {
   // Settings dialog state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [deviceInfo, setDeviceInfo] = useState<{
+    isMobile?: boolean;
+    hasTouch?: boolean;
+    isStandalone?: boolean;
+    supportsWakeLock?: boolean;
+  } | null>(null);
   const [showMobileFeatures, setShowMobileFeatures] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGestureIndicators, setShowGestureIndicators] = useState(false);
 
   const audio = useAudio();
@@ -68,7 +73,7 @@ export default function Home() {
       // Safely handle audio playback with error handling
       const safePlayAudio = async (audioType: string) => {
         try {
-          await audio.play(audioType as any);
+          await audio.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
         } catch (error) {
           console.warn(`Failed to play ${audioType} audio:`, error);
         }
@@ -127,11 +132,11 @@ export default function Home() {
           }, 2500);
           break;
       }
-    }, [])
+    }, [audio])
   });
 
   // PWA state management
-  const pwa = usePWA({
+  usePWA({
     onInstallSuccess: () => {
       console.log('[PWA] Boxing Timer installed successfully!');
     },
@@ -141,7 +146,7 @@ export default function Home() {
   });
 
   // Wake lock for keeping screen on during workouts
-  const wakeLock = useWakeLock({
+  useWakeLock({
     autoLock: true,
     lockCondition: timer.isRunning,
     onLockAcquired: () => {
@@ -181,9 +186,9 @@ export default function Home() {
   // Detect device capabilities on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const features = (window as any).BOXING_TIMER_FEATURES || {};
+      const features = window.BOXING_TIMER_FEATURES || {};
       setDeviceInfo(features);
-      setShowMobileFeatures(features.isMobile || features.hasTouch);
+      setShowMobileFeatures(features.isMobile || features.hasTouch || false);
       
       // Show gesture indicators for first-time mobile users
       if ((features.isMobile || features.hasTouch) && !localStorage.getItem('gesture-tutorial-seen')) {
@@ -232,7 +237,6 @@ export default function Home() {
         <>
           <MobileTimerEnhancements
             showFeatures={true}
-            onFullscreenToggle={setIsFullscreen}
             hapticEnabled={gestures.isEnabled}
             onHapticToggle={gestures.setEnabled}
           />

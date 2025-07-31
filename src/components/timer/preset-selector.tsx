@@ -14,7 +14,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dumbbell, Timer, Users, Target, Check } from 'lucide-react';
+import { Dumbbell, Users, Target, Check } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

@@ -177,11 +177,11 @@ export function InstallPrompt({
                   </li>
                   <li className="flex gap-2">
                     <span className="text-red-500 font-semibold">2.</span>
-                    <span>Scroll down and tap "Add to Home Screen"</span>
+                    <span>Scroll down and tap &ldquo;Add to Home Screen&rdquo;</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-red-500 font-semibold">3.</span>
-                    <span>Tap "Add" to install Boxing Timer</span>
+                    <span>Tap &ldquo;Add&rdquo; to install Boxing Timer</span>
                   </li>
                 </ol>
                 

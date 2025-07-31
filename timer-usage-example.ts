@@ -35,11 +35,11 @@ function basicTimerEngineExample() {
         break;
 
       case 'phaseChange':
-        console.log(`Phase changed to: ${event.payload.newPhase}`);
+        console.log(`Phase changed to: ${event.payload?.newPhase}`);
         break;
 
       case 'roundComplete':
-        console.log(`Round ${event.payload.completedRound} completed!`);
+        console.log(`Round ${event.payload?.completedRound} completed!`);
         break;
 
       case 'workoutComplete':
@@ -47,7 +47,7 @@ function basicTimerEngineExample() {
         break;
 
       case 'warning':
-        console.log(`Warning: ${event.payload.secondsRemaining} seconds remaining!`);
+        console.log(`Warning: ${event.payload?.secondsRemaining} seconds remaining!`);
         break;
 
       case 'error':
