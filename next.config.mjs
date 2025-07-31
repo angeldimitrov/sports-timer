@@ -2,14 +2,17 @@ import crypto from 'crypto';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // GitHub Pages deployment configuration
+  // GitHub Pages deployment configuration  
   output: 'export',
-  basePath: '/sports-timer',
-  assetPrefix: '/sports-timer',
+  // Only use basePath in production for GitHub Pages
+  ...(process.env.NODE_ENV === 'production' && {
+    basePath: '/sports-timer',
+    assetPrefix: '/sports-timer',
+  }),
   
   // Environment variables
   env: {
-    NEXT_PUBLIC_BASE_PATH: '/sports-timer',
+    NEXT_PUBLIC_BASE_PATH: process.env.NODE_ENV === 'production' ? '/sports-timer' : '',
   },
   
   eslint: {

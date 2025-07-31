@@ -7,8 +7,8 @@
 
 import { defineConfig, devices } from '@playwright/test'
 
-// Use process.env.PORT by default and fallback to port 3000
-const PORT = process.env.PORT || 3000
+// Use process.env.PORT by default and fallback to port 3001 for testing
+const PORT = process.env.PORT || 3001
 
 // The base URL for testing - adjust based on your development server
 const baseURL = `http://localhost:${PORT}`
@@ -157,8 +157,8 @@ export default defineConfig({
   
   // Local dev server for testing
   webServer: {
-    command: 'npm run dev',
-    url: baseURL,
+    command: 'npm run dev -- --port 3001',
+    url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
     timeout: 120000, // 2 minutes to start dev server
   },
