@@ -21,7 +21,8 @@ import {
   Volume2,
   Info,
   Save,
-  RotateCcw
+  RotateCcw,
+  X
 } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import {
@@ -142,7 +143,7 @@ export function SettingsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-slate-900 border-slate-700">
+      <DialogContent className="sm:max-w-[500px] bg-slate-900 border-slate-700 [&>button]:text-slate-400 [&>button]:hover:text-white [&>button]:hover:bg-slate-800">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
@@ -371,15 +372,28 @@ export function SettingsDialog({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 pt-4 border-t border-slate-700/50">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-700/50">
+          {/* Mobile-first layout: Cancel button prominent on mobile */}
+          <Button
+            onClick={onClose}
+            variant="outline"
+            className={cn(
+              'sm:flex-1 order-3 sm:order-1',
+              'bg-slate-800/50 border-slate-600 text-slate-300',
+              'hover:bg-slate-700/50 hover:border-slate-500 hover:text-white'
+            )}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Cancel
+          </Button>
           <Button
             onClick={handleReset}
             variant="outline"
             disabled={!hasChanges}
             className={cn(
-              'flex-1',
-              'bg-slate-800/50 border-slate-600',
-              'hover:bg-slate-700/50 hover:border-slate-500',
+              'sm:flex-1 order-2',
+              'bg-slate-800/50 border-slate-600 text-slate-300',
+              'hover:bg-slate-700/50 hover:border-slate-500 hover:text-white',
               'disabled:opacity-30'
             )}
           >
@@ -390,7 +404,7 @@ export function SettingsDialog({
             onClick={handleSave}
             disabled={!hasChanges}
             className={cn(
-              'flex-1',
+              'sm:flex-1 order-1 sm:order-3',
               'bg-gradient-to-r from-blue-500 to-indigo-600',
               'hover:from-blue-600 hover:to-indigo-700',
               'text-white border-0',
