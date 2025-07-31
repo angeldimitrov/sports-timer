@@ -13,14 +13,12 @@
  */
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createModuleLogger } from '@/lib/logger';
+import { motion } from 'framer-motion';
 import { 
   Play, 
   Pause, 
   Square, 
-  RotateCcw, 
-  Settings
+  RotateCcw 
 } from 'lucide-react';
 import { UseTimerReturn } from '@/hooks/use-timer';
 import { Button } from '@/components/ui/button';
@@ -44,7 +42,6 @@ interface TimerControlsProps {
  * - Smooth animations and transitions
  * - Haptic feedback triggers (via CSS)
  */
-const log = createModuleLogger('TimerControls');
 
 export function TimerControls({ timer, className }: TimerControlsProps) {
   // Determine primary action based on timer state

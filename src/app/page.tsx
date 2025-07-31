@@ -13,7 +13,6 @@ import { TimerDisplay } from '@/components/timer/timer-display';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
 import { Button } from '@/components/ui/button';
-import { TimerConfig } from '@/types/timer';
 import { TimerEvent } from '@/lib/timer-engine';
 import { createModuleLogger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -174,7 +173,7 @@ export default function Home() {
           timer.start();
         }
       },
-      onSwipe: (gesture) => {
+      onSwipe: () => {
         // Swipe gestures reserved for future functionality
       },
       onLongPress: () => {
