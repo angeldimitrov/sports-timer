@@ -149,32 +149,29 @@ export function TimerControls({ timer, onSettingsClick, className }: TimerContro
             </Button>
           </motion.div>
 
-          {/* Secondary buttons */}
-          <AnimatePresence mode="wait">
-            {(timer.isRunning || timer.isPaused) && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Button
-                  onClick={() => timer.stop()}
-                  variant="outline"
-                  className={cn(
-                    'w-full h-12 rounded-xl',
-                    'glass border-slate-600/50',
-                    'hover:bg-red-900/30 hover:border-red-500/60 hover:shadow-red-500/20',
-                    'text-slate-200 hover:text-white font-medium',
-                    'transition-all duration-300 ease-out shadow-premium'
-                  )}
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Stop
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Stop button - always visible, disabled when not usable */}
+          <motion.div
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              onClick={() => timer.stop()}
+              variant="outline"
+              disabled={!(timer.isRunning || timer.isPaused)}
+              className={cn(
+                'w-full h-12 rounded-xl',
+                'glass border-slate-600/50',
+                'hover:bg-red-900/30 hover:border-red-500/60 hover:shadow-red-500/20',
+                'text-slate-200 hover:text-white font-medium',
+                'transition-all duration-300 ease-out shadow-premium',
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-slate-600/50'
+              )}
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Stop
+            </Button>
+          </motion.div>
 
           <motion.div
             animate={{
