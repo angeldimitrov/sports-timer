@@ -230,7 +230,7 @@ export function TimerDisplay({ timer, className }: TimerDisplayProps) {
           <div className="relative">
             <motion.div
               className={cn(
-                'text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] xl:text-[14rem] font-mono font-black',
+                'text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] xl:text-[14rem] font-timer font-black',
                 'tabular-nums tracking-tighter leading-none',
                 currentColors.text,
                 'drop-shadow-[0_8px_32px_rgba(0,0,0,0.8)]',
@@ -271,7 +271,7 @@ export function TimerDisplay({ timer, className }: TimerDisplayProps) {
             <span className="text-slate-300 text-base font-semibold tracking-wide">Round</span>
             <motion.span 
               className={cn(
-                'text-3xl sm:text-4xl font-black tabular-nums',
+                'text-3xl sm:text-4xl font-timer font-black tabular-nums',
                 'bg-gradient-to-r bg-clip-text text-transparent',
                 currentColors.primary,
                 'drop-shadow-sm'

@@ -13,30 +13,20 @@
  */
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createModuleLogger } from '@/lib/logger';
+import { motion } from 'framer-motion';
 import { 
   Play, 
   Pause, 
   Square, 
-  RotateCcw, 
-  Volume2, 
-  VolumeX,
-  Settings
+  RotateCcw 
 } from 'lucide-react';
 import { UseTimerReturn } from '@/hooks/use-timer';
-import { UseAudioReturn } from '@/hooks/use-audio';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 interface TimerControlsProps {
   /** Timer hook instance */
   timer: UseTimerReturn;
-  /** Audio hook instance */
-  audio: UseAudioReturn;
-  /** Callback for opening settings */
-  onSettingsClick?: () => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -52,9 +42,8 @@ interface TimerControlsProps {
  * - Smooth animations and transitions
  * - Haptic feedback triggers (via CSS)
  */
-const log = createModuleLogger('TimerControls');
 
-export function TimerControls({ timer, audio, onSettingsClick, className }: TimerControlsProps) {
+export function TimerControls({ timer, className }: TimerControlsProps) {
   // Determine primary action based on timer state
   const getPrimaryAction = () => {
     if (timer.isRunning) return 'pause';
@@ -69,14 +58,6 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
   const handlePrimaryClick = async () => {
     switch (primaryAction) {
       case 'start':
-        // Initialize audio on first user interaction
-        if (!audio.isInitialized) {
-          try {
-            await audio.initialize();
-          } catch (error) {
-            log.warn('Audio initialization failed, continuing without audio:', error);
-          }
-        }
         timer.start();
         break;
       case 'pause':
@@ -163,32 +144,29 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
             </Button>
           </motion.div>
 
-          {/* Secondary buttons */}
-          <AnimatePresence mode="wait">
-            {(timer.isRunning || timer.isPaused) && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Button
-                  onClick={() => timer.stop()}
-                  variant="outline"
-                  className={cn(
-                    'w-full h-12 rounded-xl',
-                    'glass border-slate-600/50',
-                    'hover:bg-red-900/30 hover:border-red-500/60 hover:shadow-red-500/20',
-                    'text-slate-200 hover:text-white font-medium',
-                    'transition-all duration-300 ease-out shadow-premium'
-                  )}
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Stop
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Stop button - always visible, disabled when not usable */}
+          <motion.div
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              onClick={() => timer.stop()}
+              variant="outline"
+              disabled={!(timer.isRunning || timer.isPaused)}
+              className={cn(
+                'w-full h-12 rounded-xl',
+                'glass border-slate-600/50',
+                'hover:bg-red-900/30 hover:border-red-500/60 hover:shadow-red-500/20',
+                'text-slate-200 hover:text-white font-medium',
+                'transition-all duration-300 ease-out shadow-premium',
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-slate-600/50'
+              )}
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Stop
+            </Button>
+          </motion.div>
 
           <motion.div
             animate={{
@@ -214,91 +192,6 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
           </motion.div>
         </div>
       </div>
-
-      {/* Audio Controls */}
-      <div className={cn(
-        'glass-dark rounded-2xl p-6 shadow-premium-lg',
-        'ring-1 ring-white/5 border border-slate-600/30'
-      )}>
-        {/* Volume slider with visual feedback */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => audio.toggleMute()}
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'shrink-0 text-slate-300 hover:text-white',
-                audio.isMuted && 'text-slate-500'
-              )}
-            >
-              <AnimatePresence mode="wait">
-                {audio.isMuted ? (
-                  <motion.div
-                    key="muted"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <VolumeX className="w-5 h-5" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="unmuted"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <Volume2 className="w-5 h-5" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
-
-            <div className="flex-1">
-              <Slider
-                value={[audio.isMuted ? 0 : (audio.volume ?? 80)]}
-                onValueChange={([value]) => {
-                  if (typeof value === 'number' && !isNaN(value) && value >= 0 && value <= 100) {
-                    audio.setVolume(value);
-                    if (value > 0 && audio.isMuted) {
-                      audio.setMuted(false);
-                    }
-                  }
-                }}
-                max={100}
-                step={5}
-                className="cursor-pointer"
-              />
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Settings Button */}
-      {onSettingsClick && (
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Button
-            onClick={onSettingsClick}
-            variant="outline"
-            className={cn(
-              'w-full h-12 rounded-xl font-medium',
-              'glass border-slate-600/50',
-              'hover:bg-slate-700/50 hover:border-slate-500/70',
-              'text-slate-200 hover:text-white',
-              'transition-all duration-300 ease-out shadow-premium',
-              'ring-1 ring-white/5'
-            )}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-        </motion.div>
-      )}
     </div>
   );
 }

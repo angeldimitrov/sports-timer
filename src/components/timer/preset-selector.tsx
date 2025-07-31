@@ -99,10 +99,6 @@ export function PresetSelector({
   return (
     <div className={cn('space-y-4', className)}>
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
-        <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-6">
-          Presets
-        </h3>
-
         <div className="space-y-3">
           {Object.entries(presets).map(([key, preset]) => {
             const Icon = preset.icon;

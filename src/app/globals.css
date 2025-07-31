@@ -199,6 +199,25 @@
   .leading-luxury {
     line-height: 1.2;
   }
+  
+  /* Unified timer font stack for iOS/Android consistency */
+  .font-timer {
+    font-family: 
+      'SF Mono', /* iOS system monospace */
+      'Monaco', /* iOS fallback */
+      'Menlo', /* macOS system monospace */
+      'Consolas', /* Windows system monospace */
+      'Liberation Mono', /* Linux system monospace */
+      'Courier New', /* Universal fallback */
+      monospace; /* Final fallback */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'kern' 1;
+    -webkit-font-feature-settings: 'tnum' 1, 'kern' 1;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 /* Slider customization with proper Radix UI targeting */
