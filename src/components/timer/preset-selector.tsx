@@ -156,11 +156,7 @@ export function PresetSelector({
 
                     {/* Preset details */}
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-white">
-                          {preset.name}
-                        </h4>
-                        
+                      <div className="flex items-center justify-end">
                         {/* Active indicator */}
                         <AnimatePresence>
                           {isActive && (

@@ -197,6 +197,7 @@ export default function Home() {
     }
   }, []);
 
+
   // Check URL params for preset
   useEffect(() => {
     if (typeof window !== 'undefined') {
