@@ -172,11 +172,7 @@ export default function Home() {
         }
       },
       onSwipe: (gesture) => {
-        if (gesture.direction === 'up' && audio.volume < 100) {
-          audio.setVolume(Math.min(100, audio.volume + 10));
-        } else if (gesture.direction === 'down' && audio.volume > 0) {
-          audio.setVolume(Math.max(0, audio.volume - 10));
-        }
+        // Swipe gestures reserved for future functionality
       },
       onLongPress: () => {
         if (window.confirm('Reset timer to beginning?')) {
@@ -281,10 +277,6 @@ export default function Home() {
           onClose={() => setIsSettingsOpen(false)}
           config={timer.config}
           onConfigUpdate={handleSettingsUpdate}
-          audioVolume={audio.volume}
-          audioMuted={audio.isMuted}
-          onVolumeChange={audio.setVolume}
-          onMutedChange={audio.setMuted}
         />
       </div>
     </main>

@@ -25,7 +25,7 @@ interface UseAudioState {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
-  volume: number;
+  volume: number; // Always 100, kept for compatibility
   isMuted: boolean;
   hasWebAudioSupport: boolean;
 }
@@ -47,8 +47,8 @@ export interface UseAudioReturn extends UseAudioState {
   playWorkoutEnd: (when?: number) => Promise<void>;
   playTenSecondWarning: (when?: number) => Promise<void>;
   
-  // Volume and mute controls
-  setVolume: (volume: number) => void;
+  // Volume and mute controls (volume deprecated - always 100%)
+  setVolume: (volume: number) => void; // Deprecated - does nothing
   setMuted: (muted: boolean) => void;
   toggleMute: () => void;
   
@@ -61,7 +61,7 @@ const AUDIO_SETTINGS_KEY = 'boxing-timer-audio-settings';
 
 // Persisted audio settings
 interface AudioSettings {
-  volume: number;
+  volume: number; // Deprecated - always 100
   isMuted: boolean;
 }
 
@@ -149,7 +149,7 @@ export function useAudio(): UseAudioReturn {
         
         // Apply persisted settings before initialization
         const settings = loadSettings();
-        manager.setVolume(settings.volume);
+        // manager.setVolume(settings.volume); // Volume is now always 100%
         manager.setMuted(settings.isMuted);
         
         // Initialize the audio system
@@ -162,7 +162,7 @@ export function useAudio(): UseAudioReturn {
           isInitialized: updatedState.isInitialized,
           isLoading: false,
           error: null,
-          volume: settings.volume,
+          volume: 100, // Always 100%
           isMuted: settings.isMuted,
           hasWebAudioSupport: updatedState.hasWebAudioSupport,
         }));
@@ -224,18 +224,11 @@ export function useAudio(): UseAudioReturn {
   }, [playBell]);
   const playTenSecondWarning = useCallback((when?: number) => playWarning(when), [playWarning]);
 
-  // Volume control
+  // Volume control (deprecated - volume is now always 100%)
   const setVolume = useCallback((volume: number) => {
-    const clampedVolume = Math.max(0, Math.min(100, volume));
-    
-    setState(prev => ({ ...prev, volume: clampedVolume }));
-    
-    const manager = getManager();
-    manager.setVolume(clampedVolume);
-    
-    // Persist setting
-    saveSettings({ volume: clampedVolume });
-  }, [getManager, saveSettings]);
+    // Volume is now always 100% - this method does nothing
+    // Kept for backward compatibility
+  }, []);
 
   // Mute control
   const setMuted = useCallback((muted: boolean) => {
@@ -267,13 +260,13 @@ export function useAudio(): UseAudioReturn {
     
     setState(prev => ({
       ...prev,
-      volume: settings.volume,
+      volume: 100, // Always 100%
       isMuted: settings.isMuted,
       hasWebAudioSupport: managerState.hasWebAudioSupport,
     }));
     
     // Apply settings to manager
-    manager.setVolume(settings.volume);
+    // manager.setVolume(settings.volume); // Volume is now always 100%
     manager.setMuted(settings.isMuted);
   }, [getManager, loadSettings]); // Add missing dependencies
 

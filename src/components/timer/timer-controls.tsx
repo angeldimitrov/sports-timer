@@ -27,7 +27,6 @@ import {
 import { UseTimerReturn } from '@/hooks/use-timer';
 import { UseAudioReturn } from '@/hooks/use-audio';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 interface TimerControlsProps {
@@ -215,64 +214,48 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
         </div>
       </div>
 
-      {/* Audio Controls */}
+      {/* Audio Controls - Mute/Unmute Only */}
       <div className={cn(
-        'glass-dark rounded-2xl p-6 shadow-premium-lg',
+        'glass-dark rounded-2xl p-4 shadow-premium-lg',
         'ring-1 ring-white/5 border border-slate-600/30'
       )}>
-        {/* Volume slider with visual feedback */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => audio.toggleMute()}
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'shrink-0 text-slate-300 hover:text-white',
-                audio.isMuted && 'text-slate-500'
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={() => audio.toggleMute()}
+            variant="ghost"
+            size="lg"
+            className={cn(
+              'w-full h-12 text-slate-300 hover:text-white rounded-xl',
+              'flex items-center justify-center gap-3 font-medium',
+              audio.isMuted && 'text-slate-500'
+            )}
+          >
+            <AnimatePresence mode="wait">
+              {audio.isMuted ? (
+                <motion.div
+                  key="muted"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="flex items-center gap-3"
+                >
+                  <VolumeX className="w-5 h-5" />
+                  <span>Unmute Audio</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="unmuted"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="flex items-center gap-3"
+                >
+                  <Volume2 className="w-5 h-5" />
+                  <span>Mute Audio</span>
+                </motion.div>
               )}
-            >
-              <AnimatePresence mode="wait">
-                {audio.isMuted ? (
-                  <motion.div
-                    key="muted"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <VolumeX className="w-5 h-5" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="unmuted"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <Volume2 className="w-5 h-5" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
-
-            <div className="flex-1">
-              <Slider
-                value={[audio.isMuted ? 0 : (audio.volume ?? 80)]}
-                onValueChange={([value]) => {
-                  if (typeof value === 'number' && !isNaN(value) && value >= 0 && value <= 100) {
-                    audio.setVolume(value);
-                    if (value > 0 && audio.isMuted) {
-                      audio.setMuted(false);
-                    }
-                  }
-                }}
-                max={100}
-                step={5}
-                className="cursor-pointer"
-              />
-            </div>
-          </div>
-
+            </AnimatePresence>
+          </Button>
         </div>
       </div>
 

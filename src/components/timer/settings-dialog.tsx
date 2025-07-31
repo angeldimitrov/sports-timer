@@ -18,7 +18,6 @@ import {
   Timer, 
   Activity, 
   Coffee, 
-  Volume2,
   Info,
   Save,
   RotateCcw,
@@ -47,14 +46,6 @@ interface SettingsDialogProps {
   config: TimerConfig;
   /** Callback when configuration is updated */
   onConfigUpdate: (config: Partial<TimerConfig>) => void;
-  /** Current audio volume */
-  audioVolume: number;
-  /** Whether audio is muted */
-  audioMuted: boolean;
-  /** Callback for volume changes */
-  onVolumeChange: (volume: number) => void;
-  /** Callback for mute toggle */
-  onMutedChange: (muted: boolean) => void;
 }
 
 // Configuration limits
@@ -93,10 +84,6 @@ export function SettingsDialog({
   onClose,
   config,
   onConfigUpdate,
-  audioVolume,
-  audioMuted,
-  onVolumeChange,
-  onMutedChange,
 }: SettingsDialogProps) {
   // Local state for editing
   const [localConfig, setLocalConfig] = useState<TimerConfig>(config);
@@ -334,41 +321,6 @@ export function SettingsDialog({
             </div>
           </motion.div>
 
-          {/* Audio settings */}
-          <div className="space-y-3 pt-4 border-t border-slate-700/50">
-            <Label className="text-base font-medium text-white flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-purple-400" />
-              Master Volume
-            </Label>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => onMutedChange(!audioMuted)}
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'shrink-0',
-                  audioMuted && 'text-slate-500'
-                )}
-              >
-                <Volume2 className="w-5 h-5" />
-              </Button>
-              <Slider
-                value={[audioMuted ? 0 : audioVolume]}
-                onValueChange={([value]) => {
-                  onVolumeChange(value);
-                  if (value > 0 && audioMuted) {
-                    onMutedChange(false);
-                  }
-                }}
-                max={100}
-                step={5}
-                className="cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-400 w-12 text-right">
-                {audioMuted ? 0 : audioVolume}%
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Action buttons */}

@@ -125,7 +125,7 @@ export class AudioManager {
   private gainNode: GainNode | null = null;
   private audioFiles: Map<AudioType, AudioFile> = new Map();
   private state: AudioState = {
-    volume: 100,
+    volume: 100, // Always 100%, no longer configurable
     isMuted: false,
     isInitialized: false,
     hasWebAudioSupport: false,
@@ -698,28 +698,23 @@ export class AudioManager {
   }
 
   /**
-   * Set volume level
+   * Set volume level (deprecated - volume is now always 100%)
    * 
-   * @param volume Volume level (0-100)
+   * @param volume Volume level (ignored - always 100%)
+   * @deprecated Volume is now fixed at 100%
    */
   setVolume(volume: number): void {
-    // Clamp volume to valid range
-    this.state.volume = Math.max(0, Math.min(100, volume));
-    
-    // Update Web Audio gain
-    this.updateGainValue();
-    
-    // Update HTML5 Audio elements
-    this.updateHtmlAudioVolume();
+    // Volume is now always 100% - this method does nothing
+    // Kept for backward compatibility
   }
 
   /**
-   * Get current volume level
+   * Get current volume level (always returns 100)
    * 
-   * @returns Current volume (0-100)
+   * @returns Current volume (always 100)
    */
   getVolume(): number {
-    return this.state.volume;
+    return 100; // Always 100%
   }
 
   /**
@@ -850,20 +845,20 @@ export class AudioManager {
   }
 
   /**
-   * Update Web Audio gain node value
+   * Update Web Audio gain node value (always 100% volume or muted)
    */
   private updateGainValue(): void {
     if (this.gainNode) {
-      const gain = this.state.isMuted ? 0 : this.getVolumeDecimal();
+      const gain = this.state.isMuted ? 0 : 1.0; // Always 100% when not muted
       this.gainNode.gain.setValueAtTime(gain, this.audioContext!.currentTime);
     }
   }
 
   /**
-   * Update HTML5 Audio elements volume
+   * Update HTML5 Audio elements volume (always 100% or muted)
    */
   private updateHtmlAudioVolume(): void {
-    const volume = this.state.isMuted ? 0 : this.getVolumeDecimal();
+    const volume = this.state.isMuted ? 0 : 1.0; // Always 100% when not muted
     
     for (const audioFile of this.audioFiles.values()) {
       if (audioFile.htmlAudio) {
@@ -873,12 +868,12 @@ export class AudioManager {
   }
 
   /**
-   * Convert volume percentage to decimal
+   * Convert volume percentage to decimal (always returns 1.0)
    * 
-   * @returns Volume as decimal (0.0-1.0)
+   * @returns Volume as decimal (always 1.0 for 100%)
    */
   private getVolumeDecimal(): number {
-    return this.state.volume / 100;
+    return 1.0; // Always 100%
   }
 
   /**
