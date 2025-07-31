@@ -281,8 +281,6 @@ export function getWakeLockSupport(): {
     return { isSupported: false, reason: 'Not in browser environment' };
   }
 
-  // Remove this line as we're using global navigator
-  
   if (!('wakeLock' in navigator)) {
     return { isSupported: false, reason: 'Wake Lock API not available' };
   }

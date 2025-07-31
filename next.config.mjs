@@ -17,8 +17,8 @@ const nextConfig = {
   
   eslint: {
     dirs: ['pages', 'utils', 'src'],
-    // Ignore ESLint errors during build for now
-    ignoreDuringBuilds: true,
+    // Only ignore ESLint errors during build in development
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
   },
   
   // Disable image optimization for static export
@@ -37,13 +37,16 @@ const nextConfig = {
   
   // Bundle optimization for mobile
   webpack: (config, { dev, isServer }) => {
+    // Derive basePath for consistent asset paths
+    const basePath = process.env.NODE_ENV === 'production' ? '/sports-timer' : '';
+    
     // Audio file handling
     config.module.rules.push({
       test: /\.(mp3|wav|ogg)$/,
       use: {
         loader: 'file-loader',
         options: {
-          publicPath: '/_next/static/sounds/',
+          publicPath: `${basePath}/_next/static/sounds/`,
           outputPath: 'static/sounds/',
           name: '[name].[ext]',
         },
