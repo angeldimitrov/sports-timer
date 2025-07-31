@@ -11,6 +11,7 @@ import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
 import { SettingsDialog } from '@/components/timer/settings-dialog';
 import { TimerConfig } from '@/types/timer';
+import { TimerEvent } from '@/lib/timer-engine';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -60,7 +61,7 @@ export default function Home() {
   // Initialize timer and audio systems
   const timer = useTimer({
     preset: 'intermediate', // Default to intermediate preset
-    onEvent: useCallback((event) => {
+    onEvent: useCallback((event: TimerEvent) => {
       // Handle timer events for audio integration with correct boxing timer logic
       console.log('[Audio] Timer event:', event.type, event.payload, event.state?.phase);
       

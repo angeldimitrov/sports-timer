@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { HeadLinks } from '@/components/layout/head-links'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  manifest: "/manifest.json",
+  manifest: process.env.NODE_ENV === 'production' ? "/sports-timer/manifest.json" : "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -81,19 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Favicon */}
-        <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/icons/icon-32x32.svg" sizes="32x32" type="image/svg+xml" />
-        
-        {/* Preload critical resources */}
-        <link rel="preload" href="/sounds/round-starts.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/end-of-the-round.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/next-round-ten.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/get-ready.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/rest.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/workout-complete.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/sounds/great-job.mp3" as="audio" type="audio/mpeg" />
-        <link rel="preload" href="/workers/timer-worker.js" as="script" />
+        <HeadLinks />
         
         {/* Service Worker Registration */}
         <script
@@ -101,7 +90,8 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
+                  const basePath = '${process.env.NODE_ENV === 'production' ? '/sports-timer' : ''}';
+                  navigator.serviceWorker.register(basePath + '/sw.js')
                     .then(function(registration) {
                       console.log('[PWA] Service Worker registered successfully:', registration.scope);
                       

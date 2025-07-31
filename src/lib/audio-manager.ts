@@ -1,16 +1,85 @@
 /**
- * Audio Manager for Boxing Timer
+ * Audio Manager for Boxing Timer MVP
  * 
- * Provides robust audio system using Web Audio API for precise timing and reliable playback.
- * Handles bell sounds for round start/end, warning beeps, and volume control with fallback support.
+ * Professional-grade audio system with multiple fallback layers designed for precise
+ * timing synchronization with boxing workout phases. Provides reliable audio cues
+ * across all browser environments with graceful degradation.
  * 
- * Features:
- * - Web Audio API with fallback to HTML5 Audio
- * - Preloading and caching of audio files
- * - Volume control (0-100%) and mute functionality
- * - Multiple sound types (bell, beep, warning)
- * - Browser compatibility handling
- * - Precise audio timing synchronization
+ * ## Architecture Overview
+ * 
+ * ### Multi-Layer Fallback System
+ * 1. **Web Audio API** (Primary): High-performance, precise timing, advanced features
+ * 2. **HTML5 Audio** (Fallback): Standard audio playback for basic browser support  
+ * 3. **Synthetic Audio** (Ultimate Fallback): Generated tones when files fail to load
+ * 
+ * ### Key Features
+ * - **Precise Timing**: Web Audio API scheduling for exact synchronization with timer
+ * - **Preloading**: All audio files preloaded for immediate playback during workouts
+ * - **Volume Control**: Granular volume control with mute functionality
+ * - **Error Recovery**: Comprehensive error handling with automatic fallbacks
+ * - **Battery Conscious**: Efficient resource usage to preserve device battery
+ * 
+ * ## Audio File System
+ * 
+ * ### Core Sounds
+ * - `bell.mp3`: Round start/end bell (classic boxing gym sound)
+ * - `warning-beep.mp3`: 10-second countdown beep (attention signal)
+ * 
+ * ### Voice Announcements  
+ * - `round-starts.mp3`: "Round starts" announcement
+ * - `end-of-the-round.mp3`: "End of round" announcement
+ * - `get-ready.mp3`: "Get ready" preparation cue
+ * - `rest.mp3`: "Rest" period announcement
+ * - `ten-seconds.mp3`: "Ten seconds" warning
+ * - `workout-complete.mp3`: "Workout complete" celebration
+ * - `great-job.mp3`: "Great job" encouragement
+ * 
+ * ## Usage Examples
+ * 
+ * ### Basic Usage
+ * ```typescript
+ * const audioManager = new AudioManager({
+ *   baseUrl: '/sounds',
+ *   enableFallback: true,
+ *   preloadAll: true
+ * });
+ * 
+ * await audioManager.initialize();
+ * await audioManager.play('bell'); // Immediate playback
+ * ```
+ * 
+ * ### Scheduled Playback (Web Audio API)
+ * ```typescript
+ * // Schedule audio to play at precise time
+ * const audioContext = audioManager.getAudioContext();
+ * const playTime = audioContext.currentTime + 0.5; // 500ms from now
+ * await audioManager.play('roundStart', playTime);
+ * ```
+ * 
+ * ### Volume and State Management
+ * ```typescript
+ * audioManager.setVolume(75); // 75% volume
+ * audioManager.setMuted(true); // Mute all audio
+ * 
+ * const state = audioManager.getState();
+ * console.log(`Volume: ${state.volume}%, Muted: ${state.isMuted}`);
+ * ```
+ * 
+ * ## Browser Compatibility
+ * 
+ * ### Web Audio API Support
+ * - Chrome 14+, Firefox 25+, Safari 6+, Edge 12+
+ * - iOS Safari 6+, Android Chrome 25+
+ * - Provides best timing precision and features
+ * 
+ * ### HTML5 Audio Fallback
+ * - Universal browser support for basic audio playback
+ * - Less precise timing but adequate for most use cases
+ * - Automatically used when Web Audio API unavailable
+ * 
+ * @see {@link AudioManagerConfig} for configuration options
+ * @see {@link AudioType} for available audio types
+ * @see {@link AudioState} for state management
  */
 
 // Audio types for different timer events
@@ -582,7 +651,7 @@ export class AudioManager {
    */
   isReady(): boolean {
     return this.state.isInitialized && (
-      (this.audioContext && this.gainNode) || 
+      (!!this.audioContext && !!this.gainNode) || 
       this.hasFallbackAudio()
     );
   }

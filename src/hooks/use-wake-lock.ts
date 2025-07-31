@@ -14,28 +14,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// Wake Lock API types (not fully supported in TypeScript yet)
-interface WakeLockSentinel {
-  readonly released: boolean;
-  readonly type: 'screen';
-  release(): Promise<void>;
-  addEventListener(type: 'release', listener: (event: Event) => void): void;
-  removeEventListener(type: 'release', listener: (event: Event) => void): void;
-}
-
-interface NavigatorWakeLock {
-  request(type: 'screen'): Promise<WakeLockSentinel>;
-}
-
-interface ExtendedNavigator extends Navigator {
-  wakeLock?: NavigatorWakeLock;
-}
-
-declare global {
-  interface Navigator {
-    wakeLock?: NavigatorWakeLock;
-  }
-}
+// Wake Lock types are defined in src/types/wake-lock.d.ts
 
 export interface UseWakeLockOptions {
   /** Automatically request wake lock when condition is met */
@@ -302,8 +281,6 @@ export function getWakeLockSupport(): {
     return { isSupported: false, reason: 'Not in browser environment' };
   }
 
-  // Remove this line as we're using global navigator
-  
   if (!('wakeLock' in navigator)) {
     return { isSupported: false, reason: 'Wake Lock API not available' };
   }

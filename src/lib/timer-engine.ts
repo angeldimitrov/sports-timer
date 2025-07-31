@@ -1,15 +1,48 @@
 /**
  * Boxing Timer Engine
  * 
- * Core timer logic for the Boxing Timer MVP using Web Workers for ±100ms precision.
- * Manages round timing, rest periods, and workout state with reliable accuracy.
+ * High-precision timer implementation using Web Workers to achieve ±100ms accuracy
+ * for professional boxing workout timing. This engine is the core of the Boxing Timer MVP
+ * and handles all timing logic, round management, and workout progression.
  * 
- * Business Context:
- * - Provides precise timing for boxing workouts with configurable rounds and rest periods
- * - Handles browser tab visibility changes and background execution
- * - Maintains accurate timing even under high CPU load using Web Worker isolation
- * - Supports round timer (1-10 minutes) with rest periods (15 seconds - 5 minutes)
- * - Round counter (1-20 rounds) with automatic progression
+ * ## Architecture
+ * - **Web Worker Isolation**: Runs timing logic in a separate thread to prevent main thread blocking
+ * - **Event-Driven**: Emits events for UI components to react to timing changes
+ * - **Precision Focused**: Maintains ±100ms accuracy even under high CPU load
+ * - **Browser Resilient**: Handles tab visibility changes and background execution
+ * 
+ * ## Business Logic
+ * - **Workout Structure**: Preparation → Work → Rest → Work → Rest... → Complete
+ * - **Round Management**: Tracks current round (1-based) out of total configured rounds
+ * - **Phase Transitions**: Automatic progression through workout phases with events
+ * - **Warning System**: Optional 10-second warning before phase transitions
+ * 
+ * ## Usage Example
+ * ```typescript
+ * const timer = new TimerEngine({
+ *   workDuration: 180,      // 3 minutes work
+ *   restDuration: 60,       // 1 minute rest
+ *   totalRounds: 5,         // 5 rounds total
+ *   enableWarning: true,    // 10-second warnings
+ *   prepDuration: 10        // 10-second preparation
+ * });
+ * 
+ * timer.addEventListener((event) => {
+ *   console.log(`Timer event: ${event.type}`, event.state);
+ * });
+ * 
+ * timer.start(); // Begin workout
+ * ```
+ * 
+ * ## Precision Requirements
+ * - Target accuracy: ±100ms for all timing operations
+ * - Uses Web Worker for isolation from main thread interference
+ * - Fallback to setInterval if Web Worker unavailable
+ * - Compensates for browser throttling in background tabs
+ * 
+ * @see {@link TimerConfig} for configuration options
+ * @see {@link TimerEvent} for event system details
+ * @see {@link TimerState} for state management
  */
 
 // Type definitions for timer state and events
@@ -72,6 +105,7 @@ export class TimerEngine {
   private config: TimerConfig;
   private state: TimerState;
   private eventHandlers: Set<TimerEventHandler> = new Set();
+  private workerPath: string;
   
   // Phase management
   private currentPhaseDuration: number = 0;
@@ -84,6 +118,13 @@ export class TimerEngine {
   constructor(config: TimerConfig) {
     this.config = { ...config };
     this.state = this.createInitialState();
+    
+    // Set worker path based on environment
+    const basePath = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_BASE_PATH 
+      ? process.env.NEXT_PUBLIC_BASE_PATH 
+      : '';
+    this.workerPath = `${basePath}/workers/timer-worker.js`;
+    
     this.initializeWorker();
     this.setupVisibilityHandling();
     this.setupMobileBackgroundHandling();
@@ -112,7 +153,7 @@ export class TimerEngine {
   private initializeWorker(): void {
     try {
       // Create worker from the public workers directory
-      this.worker = new Worker('/workers/timer-worker.js');
+      this.worker = new Worker(this.workerPath);
       
       this.worker.onmessage = (e) => {
         this.handleWorkerMessage(e.data);

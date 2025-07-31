@@ -2,97 +2,28 @@ import crypto from 'crypto';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    dirs: ['pages', 'utils', 'src'],
+  // GitHub Pages deployment configuration  
+  output: 'export',
+  // Only use basePath in production for GitHub Pages
+  ...(process.env.NODE_ENV === 'production' && {
+    basePath: '/sports-timer',
+    assetPrefix: '/sports-timer',
+  }),
+  
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_BASE_PATH: process.env.NODE_ENV === 'production' ? '/sports-timer' : '',
   },
   
-  // PWA and mobile optimizations
-  async headers() {
-    return [
-      {
-        source: '/sw.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-          {
-            key: 'Service-Worker-Allowed',
-            value: '/',
-          },
-        ],
-      },
-      {
-        source: '/manifest.json',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/sounds/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/workers/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-        ],
-      },
-      {
-        source: '/icons/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Security headers for PWA
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
-          },
-        ],
-      },
-    ];
+  eslint: {
+    dirs: ['pages', 'utils', 'src'],
+    // Only ignore ESLint errors during build in development
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
+  },
+  
+  // Disable image optimization for static export
+  images: {
+    unoptimized: true,
   },
   
   // Enable experimental features for PWA support
@@ -104,31 +35,18 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // Asset optimization
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 31536000,
-  },
-  
-  // Enable standalone mode for PWA
-  async rewrites() {
-    return [
-      {
-        source: '/offline',
-        destination: '/offline.html',
-      },
-    ];
-  },
-  
   // Bundle optimization for mobile
   webpack: (config, { dev, isServer }) => {
+    // Derive basePath for consistent asset paths
+    const basePath = process.env.NODE_ENV === 'production' ? '/sports-timer' : '';
+    
     // Audio file handling
     config.module.rules.push({
       test: /\.(mp3|wav|ogg)$/,
       use: {
         loader: 'file-loader',
         options: {
-          publicPath: '/_next/static/sounds/',
+          publicPath: `${basePath}/_next/static/sounds/`,
           outputPath: 'static/sounds/',
           name: '[name].[ext]',
         },
