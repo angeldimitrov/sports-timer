@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Boxing Timer - Offline</title>
+    <meta name="description" content="Boxing Timer is offline but core functionality is still available">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#dc2626">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: #dc2626;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #dc2626;
+        }
+        
+        p {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .feature-list {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .feature-list h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #22c55e;
+        }
+        
+        .feature-list ul {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #e2e8f0;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+        
+        .btn-secondary:hover {
+            background: #334155;
+            color: white;
+        }
+        
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            color: #f59e0b;
+            font-size: 0.9rem;
+        }
+        
+        .reconnect-indicator {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #22c55e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🥊</div>
+        
+        <h1>You're Offline</h1>
+        
+        <p>
+            Don't worry! Your Boxing Timer is still ready to help you train. 
+            Core timer functionality works offline.
+        </p>
+        
+        <div class="feature-list">
+            <h2>Available Offline:</h2>
+            <ul>
+                <li>All timer presets (Beginner, Intermediate, Advanced)</li>
+                <li>Custom timer settings</li>
+                <li>Audio alerts and warnings</li>
+                <li>Round counting and progress tracking</li>
+                <li>Wake lock to keep screen on</li>
+            </ul>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="goOnline()">
+                🔄 Try Again
+            </button>
+            <a href="/" class="btn btn-secondary">
+                🏠 Go Home
+            </a>
+        </div>
+        
+        <div class="status">
+            <strong>Status:</strong> <span id="connection-status">Offline</span><br>
+            <small>Timer will automatically reconnect when online</small>
+        </div>
+    </div>
+    
+    <div id="reconnect-indicator" class="reconnect-indicator">
+        ✅ Back online! Reloading...
+    </div>
+    
+    <script>
+        // Connection status management
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connection-status');
+            const reconnectIndicator = document.getElementById('reconnect-indicator');
+            
+            if (navigator.onLine) {
+                statusElement.textContent = 'Online';
+                statusElement.style.color = '#22c55e';
+                
+                // Show reconnection indicator
+                reconnectIndicator.style.display = 'block';
+                
+                // Redirect to main app after delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.style.color = '#f59e0b';
+                reconnectIndicator.style.display = 'none';
+            }
+        }
+        
+        // Try to go online
+        function goOnline() {
+            if (navigator.onLine) {
+                window.location.href = '/';
+            } else {
+                // Attempt to reload
+                window.location.reload();
+            }
+        }
+        
+        // Handle connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial status check
+        updateConnectionStatus();
+        
+        // Periodic connectivity check
+        setInterval(() => {
+            // Try to fetch a small resource to verify connectivity
+            fetch('/manifest.json', { 
+                method: 'HEAD',
+                cache: 'no-cache',
+                mode: 'no-cors'
+            })
+            .then(() => {
+                if (!navigator.onLine) {
+                    // Force online event if fetch succeeds but navigator says offline
+                    updateConnectionStatus();
+                }
+            })
+            .catch(() => {
+                // Connection is truly offline
+            });
+        }, 10000); // Check every 10 seconds
+        
+        // Service Worker message handling
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'CONNECTIVITY_RESTORED') {
+                    updateConnectionStatus();
+                }
+            });
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                goOnline();
+            } else if (e.key === 'Escape') {
+                window.location.href = '/';
+            }
+        });
+        
+        // Touch-friendly interactions
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+            
+            // Pull down to refresh
+            if (diff < -100) {
+                goOnline();
+            }
+        });
+        
+        console.log('[Offline] Boxing Timer offline page loaded');
+        console.log('[Offline] Connection status:', navigator.onLine ? 'online' : 'offline');
+    </script>
+</body>
+</html>

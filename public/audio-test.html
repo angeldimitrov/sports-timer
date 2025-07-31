@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boxing Timer Audio System Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .volume-control input[type="range"] {
+            flex: 1;
+            height: 5px;
+            background: #ddd;
+            outline: none;
+            border-radius: 5px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .demo-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .log {
+            background: #343a40;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥊 Boxing Timer Audio System Test</h1>
+        
+        <div class="warning">
+            <strong>Note:</strong> This test page requires the actual audio files to be present in the <code>/sounds/</code> directory. 
+            If files are missing, the system will automatically fallback to synthetic audio generation.
+        </div>
+        
+        <div class="status" id="status">
+            <strong>Status:</strong> Not initialized
+        </div>
+        
+        <div class="controls">
+            <button id="init-btn" onclick="initializeAudio()">🔊 Initialize Audio System</button>
+            <button id="test-btn" onclick="runTests()" disabled>🧪 Run All Tests</button>
+            <button id="demo-btn" onclick="runWorkoutDemo()" disabled>🥊 Workout Demo</button>
+            <button id="clear-btn" onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+        
+        <div class="volume-control">
+            <label>Volume:</label>
+            <input type="range" id="volume-slider" min="0" max="100" value="80" disabled>
+            <span id="volume-display">80%</span>
+            <button id="mute-btn" onclick="toggleMute()" disabled>🔊 Mute</button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Individual Sound Tests</h3>
+            <div class="controls">
+                <button onclick="playSound('bell')" disabled class="sound-btn">🔔 Bell</button>
+                <button onclick="playSound('beep')" disabled class="sound-btn">📢 Beep</button>
+                <button onclick="playSound('warning')" disabled class="sound-btn">⚠️ Warning</button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Boxing Timer Events</h3>
+            <div class="controls">
+                <button onclick="playTimerEvent('roundStart')" disabled class="timer-btn">🥊 Round Start</button>
+                <button onclick="playTimerEvent('roundEnd')" disabled class="timer-btn">🛑 Round End</button>
+                <button onclick="playTimerEvent('tenSecondWarning')" disabled class="timer-btn">⏰ 10s Warning</button>
+                <button onclick="playTimerEvent('workoutEnd')" disabled class="timer-btn">🎉 Workout End</button>
+            </div>
+        </div>
+        
+        <div id="log" class="log">Ready to test audio system...\n</div>
+    </div>
+
+    <script>
+        // Simple AudioManager implementation for testing
+        // This is a simplified version for demo purposes
+        class SimpleAudioManager {
+            constructor() {
+                this.audioContext = null;
+                this.gainNode = null;
+                this.volume = 80;
+                this.isMuted = false;
+                this.isInitialized = false;
+                this.hasWebAudioSupport = !!(window.AudioContext || window.webkitAudioContext);
+                this.usingSyntheticAudio = false;
+                
+                this.audioFiles = {
+                    bell: { url: '/sounds/bell.mp3' },
+                    beep: { url: '/sounds/beep.mp3' },
+                    warning: { url: '/sounds/warning.mp3' }
+                };
+            }
+            
+            async initialize() {
+                if (this.isInitialized) return;
+                
+                log('Initializing audio system...');
+                
+                try {
+                    // Initialize Web Audio API
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.audioContext = new AudioContext();
+                        
+                        if (this.audioContext.state === 'suspended') {
+                            await this.audioContext.resume();
+                        }
+                        
+                        this.gainNode = this.audioContext.createGain();
+                        this.gainNode.connect(this.audioContext.destination);
+                        this.updateGain();
+                        
+                        log('✅ Web Audio API initialized');
+                    }
+                    
+                    // Try to load audio files
+                    await this.loadAudioFiles();
+                    
+                    this.isInitialized = true;
+                    log('✅ Audio system initialized successfully');
+                    
+                } catch (error) {
+                    log(`⚠️ Audio initialization failed: ${error.message}`);
+                    this.isInitialized = true; // Still allow synthetic audio
+                }
+                
+                updateUI();
+            }
+            
+            async loadAudioFiles() {
+                for (const [type, audioFile] of Object.entries(this.audioFiles)) {
+                    try {
+                        // Try to load as Web Audio buffer
+                        if (this.audioContext) {
+                            const response = await fetch(audioFile.url);
+                            if (response.ok) {
+                                const arrayBuffer = await response.arrayBuffer();
+                                audioFile.buffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                                log(`✅ Loaded ${type} audio file`);
+                            } else {
+                                throw new Error(`Failed to fetch ${audioFile.url}`);
+                            }
+                        }
+                        
+                        // Also create HTML5 Audio as fallback
+                        const audio = new Audio();
+                        audio.src = audioFile.url;
+                        audio.preload = 'auto';
+                        audioFile.htmlAudio = audio;
+                        
+                    } catch (error) {
+                        log(`⚠️ Failed to load ${type} audio file: ${error.message}`);
+                        // Will use synthetic audio instead
+                    }
+                }
+            }
+            
+            async play(type) {
+                if (!this.isInitialized) {
+                    log('❌ Audio not initialized');
+                    return;
+                }
+                
+                if (this.isMuted) {
+                    log(`🔇 Audio muted - ${type} not played`);
+                    return;
+                }
+                
+                const audioFile = this.audioFiles[type];
+                if (!audioFile) {
+                    log(`❌ Unknown audio type: ${type}`);
+                    return;
+                }
+                
+                try {
+                    // Try Web Audio buffer first
+                    if (this.audioContext && this.gainNode && audioFile.buffer) {
+                        const source = this.audioContext.createBufferSource();
+                        source.buffer = audioFile.buffer;
+                        source.connect(this.gainNode);
+                        source.start();
+                        log(`🔊 Playing ${type} (Web Audio)`);
+                        return;
+                    }
+                    
+                    // Try HTML5 Audio
+                    if (audioFile.htmlAudio) {
+                        audioFile.htmlAudio.currentTime = 0;
+                        audioFile.htmlAudio.volume = this.getVolumeDecimal();
+                        await audioFile.htmlAudio.play();
+                        log(`🔊 Playing ${type} (HTML5 Audio)`);
+                        return;
+                    }
+                    
+                    // Generate synthetic audio
+                    if (this.audioContext && this.gainNode) {
+                        this.generateSyntheticTone(type);
+                        if (!this.usingSyntheticAudio) {
+                            this.usingSyntheticAudio = true;
+                            log('ℹ️ Using synthetic audio - files not available');
+                        }
+                        log(`🔊 Playing ${type} (Synthetic)`);
+                        return;
+                    }
+                    
+                    log(`❌ No audio source available for ${type}`);
+                    
+                } catch (error) {
+                    log(`❌ Failed to play ${type}: ${error.message}`);
+                }
+            }
+            
+            generateSyntheticTone(type) {
+                const toneConfig = {
+                    bell: { frequency: 1000, duration: 1.2, type: 'sine' },
+                    beep: { frequency: 800, duration: 0.3, type: 'square' },
+                    warning: { frequency: 1200, duration: 0.8, type: 'sawtooth' }
+                };
+                
+                const config = toneConfig[type];
+                const oscillator = this.audioContext.createOscillator();
+                const envelope = this.audioContext.createGain();
+                
+                oscillator.connect(envelope);
+                envelope.connect(this.gainNode);
+                
+                oscillator.frequency.setValueAtTime(config.frequency, this.audioContext.currentTime);
+                oscillator.type = config.type;
+                
+                envelope.gain.setValueAtTime(0, this.audioContext.currentTime);
+                envelope.gain.linearRampToValueAtTime(0.3, this.audioContext.currentTime + 0.01);
+                envelope.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + config.duration);
+                
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + config.duration);
+            }
+            
+            setVolume(volume) {
+                this.volume = Math.max(0, Math.min(100, volume));
+                this.updateGain();
+                this.updateHtmlAudioVolume();
+                log(`🔊 Volume set to ${this.volume}%`);
+            }
+            
+            setMuted(muted) {
+                this.isMuted = muted;
+                this.updateGain();
+                this.updateHtmlAudioVolume();
+                log(`${muted ? '🔇' : '🔊'} Audio ${muted ? 'muted' : 'unmuted'}`);
+            }
+            
+            updateGain() {
+                if (this.gainNode) {
+                    const gain = this.isMuted ? 0 : this.getVolumeDecimal();
+                    this.gainNode.gain.setValueAtTime(gain, this.audioContext.currentTime);
+                }
+            }
+            
+            updateHtmlAudioVolume() {
+                const volume = this.isMuted ? 0 : this.getVolumeDecimal();
+                for (const audioFile of Object.values(this.audioFiles)) {
+                    if (audioFile.htmlAudio) {
+                        audioFile.htmlAudio.volume = volume;
+                    }
+                }
+            }
+            
+            getVolumeDecimal() {
+                return this.volume / 100;
+            }
+            
+            getState() {
+                return {
+                    volume: this.volume,
+                    isMuted: this.isMuted,
+                    isInitialized: this.isInitialized,
+                    hasWebAudioSupport: this.hasWebAudioSupport,
+                    usingSyntheticAudio: this.usingSyntheticAudio
+                };
+            }
+        }
+        
+        // Global audio manager instance
+        const audioManager = new SimpleAudioManager();
+        
+        // Logging function
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // UI update function
+        function updateUI() {
+            const state = audioManager.getState();
+            
+            // Update status
+            const statusElement = document.getElementById('status');
+            statusElement.innerHTML = `
+                <strong>Status:</strong> ${state.isInitialized ? '✅ Ready' : '⏳ Not initialized'}<br>
+                <strong>Web Audio API:</strong> ${state.hasWebAudioSupport ? '✅ Supported' : '❌ Not supported'}<br>
+                <strong>Volume:</strong> ${state.volume}% ${state.isMuted ? '(Muted)' : ''}<br>
+                <strong>Using Synthetic Audio:</strong> ${state.usingSyntheticAudio ? '✅ Yes' : '❌ No'}
+            `;
+            
+            // Enable/disable controls
+            const isReady = state.isInitialized;
+            document.getElementById('test-btn').disabled = !isReady;
+            document.getElementById('demo-btn').disabled = !isReady;
+            document.getElementById('volume-slider').disabled = !isReady;
+            document.getElementById('mute-btn').disabled = !isReady;
+            
+            document.querySelectorAll('.sound-btn, .timer-btn').forEach(btn => {
+                btn.disabled = !isReady;
+            });
+            
+            // Update volume display
+            document.getElementById('volume-display').textContent = `${state.volume}%`;
+            document.getElementById('volume-slider').value = state.volume;
+            document.getElementById('mute-btn').textContent = state.isMuted ? '🔇 Unmute' : '🔊 Mute';
+        }
+        
+        // Event handlers
+        async function initializeAudio() {
+            const btn = document.getElementById('init-btn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Initializing...';
+            
+            try {
+                await audioManager.initialize();
+            } catch (error) {
+                log(`❌ Initialization failed: ${error.message}`);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔊 Initialize Audio System';
+            updateUI();
+        }
+        
+        async function playSound(type) {
+            await audioManager.play(type);
+        }
+        
+        async function playTimerEvent(event) {
+            switch (event) {
+                case 'roundStart':
+                    await audioManager.play('bell');
+                    break;
+                case 'roundEnd':
+                    await audioManager.play('bell');
+                    break;
+                case 'tenSecondWarning':
+                    await audioManager.play('warning');
+                    break;
+                case 'workoutEnd':
+                    await audioManager.play('bell');
+                    setTimeout(() => audioManager.play('bell'), 500);
+                    break;
+            }
+        }
+        
+        function toggleMute() {
+            audioManager.setMuted(!audioManager.getState().isMuted);
+            updateUI();
+        }
+        
+        async function runTests() {
+            log('🧪 Starting comprehensive audio tests...');
+            
+            const tests = [
+                { name: 'Bell Sound', test: () => audioManager.play('bell') },
+                { name: 'Beep Sound', test: () => audioManager.play('beep') },
+                { name: 'Warning Sound', test: () => audioManager.play('warning') },
+                { name: 'Volume Test', test: async () => {
+                    audioManager.setVolume(25);
+                    await audioManager.play('beep');
+                    await new Promise(r => setTimeout(r, 500));
+                    audioManager.setVolume(80);
+                }},
+                { name: 'Mute Test', test: async () => {
+                    audioManager.setMuted(true);
+                    await audioManager.play('beep');
+                    await new Promise(r => setTimeout(r, 300));
+                    audioManager.setMuted(false);
+                    await audioManager.play('beep');
+                }}
+            ];
+            
+            for (const test of tests) {
+                try {
+                    log(`Testing: ${test.name}`);
+                    await test.test();
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    log(`✅ ${test.name} - PASS`);
+                } catch (error) {
+                    log(`❌ ${test.name} - FAIL: ${error.message}`);
+                }
+            }
+            
+            updateUI();
+            log('🎉 All tests completed!');
+        }
+        
+        async function runWorkoutDemo() {
+            log('🥊 Starting boxing workout demo...');
+            
+            const rounds = 2;
+            const roundTime = 3; // 3 seconds for demo
+            const restTime = 2;  // 2 seconds for demo
+            
+            for (let round = 1; round <= rounds; round++) {
+                log(`\n🔔 Round ${round} starting...`);
+                await audioManager.play('bell');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                log('Working... 💪');
+                
+                // Warning before round end
+                await new Promise(resolve => setTimeout(resolve, (roundTime - 1) * 1000));
+                log('⚠️ Round ending soon!');
+                await audioManager.play('warning');
+                
+                // Round end
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                log(`🔔 Round ${round} complete`);
+                await audioManager.play('bell');
+                
+                // Rest period (skip for last round)
+                if (round < rounds) {
+                    log(`😴 Rest for ${restTime} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, restTime * 1000));
+                }
+            }
+            
+            log('\n🎉 Workout complete!');
+            await audioManager.play('bell');
+            setTimeout(() => audioManager.play('bell'), 500);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        // Volume slider handler
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            audioManager.setVolume(parseInt(e.target.value));
+            updateUI();
+        });
+        
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>

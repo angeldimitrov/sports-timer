@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Boxing Timer Icon Generator</title>
+</head>
+<body>
+    <h1>Boxing Timer PWA Icon Generator</h1>
+    <p>This page generates the required PWA icons for the Boxing Timer app.</p>
+    
+    <div id="canvas-container"></div>
+    
+    <script>
+        const sizes = [32, 72, 96, 128, 144, 152, 192, 384, 512];
+        
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#dc2626');
+            gradient.addColorStop(1, '#b91c1c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw boxing glove emoji
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            ctx.fillText('🥊', size / 2, size / 2);
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.textContent = `Download ${size}x${size}`;
+            link.style.display = 'block';
+            link.style.margin = '10px';
+            
+            document.getElementById('canvas-container').appendChild(canvas);
+            document.getElementById('canvas-container').appendChild(link);
+        });
+        
+        // Create a maskable icon (with padding)
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Background with safe zone padding (10% on each side)
+            const padding = size * 0.1;
+            const innerSize = size - (padding * 2);
+            
+            // Full background
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Inner gradient
+            const gradient = ctx.createLinearGradient(padding, padding, size - padding, size - padding);
+            gradient.addColorStop(0, '#dc2626');
+            gradient.addColorStop(1, '#b91c1c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(padding, padding, innerSize, innerSize);
+            
+            // Draw boxing glove emoji (smaller for maskable)
+            ctx.font = `${size * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            ctx.fillText('🥊', size / 2, size / 2);
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `icon-maskable-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.textContent = `Download Maskable ${size}x${size}`;
+            link.style.display = 'block';
+            link.style.margin = '10px';
+            
+            document.getElementById('canvas-container').appendChild(link);
+        });
+    </script>
+    
+    <p><strong>Instructions:</strong> Click each link to download the icon. Place them in the /public/icons/ directory.</p>
+</body>
+</html>
