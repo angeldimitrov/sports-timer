@@ -582,7 +582,7 @@ export class AudioManager {
    */
   isReady(): boolean {
     return this.state.isInitialized && (
-      (this.audioContext && this.gainNode) || 
+      (!!this.audioContext && !!this.gainNode) || 
       this.hasFallbackAudio()
     );
   }

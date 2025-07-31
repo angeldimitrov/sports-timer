@@ -60,8 +60,10 @@ export default defineConfig({
     // Global timeout for assertions
     timeout: 10000,
     
-    // Screenshot comparison threshold
-    threshold: 0.3,
+    // Screenshot comparison settings
+    toHaveScreenshot: {
+      threshold: 0.3,
+    },
   },
   
   // Test projects for multiple browsers and devices
