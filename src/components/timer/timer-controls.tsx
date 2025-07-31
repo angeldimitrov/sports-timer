@@ -129,9 +129,6 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
         'glass-dark rounded-2xl p-6 shadow-premium-lg',
         'ring-1 ring-white/5 border border-slate-600/30'
       )}>
-        <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-luxury mb-6">
-          <span className="text-gradient-secondary">Controls</span>
-        </h3>
 
         {/* Main control buttons */}
         <div className="grid grid-cols-2 gap-3">
