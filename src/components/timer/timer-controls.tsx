@@ -29,8 +29,6 @@ import { cn } from '@/lib/utils';
 interface TimerControlsProps {
   /** Timer hook instance */
   timer: UseTimerReturn;
-  /** Callback for opening settings */
-  onSettingsClick?: () => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -48,7 +46,7 @@ interface TimerControlsProps {
  */
 const log = createModuleLogger('TimerControls');
 
-export function TimerControls({ timer, onSettingsClick, className }: TimerControlsProps) {
+export function TimerControls({ timer, className }: TimerControlsProps) {
   // Determine primary action based on timer state
   const getPrimaryAction = () => {
     if (timer.isRunning) return 'pause';
@@ -197,31 +195,6 @@ export function TimerControls({ timer, onSettingsClick, className }: TimerContro
           </motion.div>
         </div>
       </div>
-
-
-      {/* Settings Button */}
-      {onSettingsClick && (
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Button
-            onClick={onSettingsClick}
-            variant="outline"
-            className={cn(
-              'w-full h-12 rounded-xl font-medium',
-              'glass border-slate-600/50',
-              'hover:bg-slate-700/50 hover:border-slate-500/70',
-              'text-slate-200 hover:text-white',
-              'transition-all duration-300 ease-out shadow-premium',
-              'ring-1 ring-white/5'
-            )}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-        </motion.div>
-      )}
     </div>
   );
 }

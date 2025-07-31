@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Settings } from 'lucide-react';
 import { useTimer } from '@/hooks/use-timer';
 import { useAudio } from '@/hooks/use-audio';
 import { useWakeLock } from '@/hooks/use-wake-lock';
@@ -10,9 +12,11 @@ import { TimerDisplay } from '@/components/timer/timer-display';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
 import { SettingsDialog } from '@/components/timer/settings-dialog';
+import { Button } from '@/components/ui/button';
 import { TimerConfig } from '@/types/timer';
 import { TimerEvent } from '@/lib/timer-engine';
 import { createModuleLogger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 // Initialize module logger
 const log = createModuleLogger('MainPage');
@@ -259,7 +263,6 @@ export default function Home() {
             {/* Timer Controls */}
             <TimerControls 
               timer={timer} 
-              onSettingsClick={() => setIsSettingsOpen(true)}
             />
 
             {/* Preset Selector */}
@@ -268,6 +271,28 @@ export default function Home() {
               onPresetSelect={handlePresetSelect}
               disabled={timer.isRunning}
             />
+
+            {/* Settings Button - at the very bottom */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                onClick={() => setIsSettingsOpen(true)}
+                variant="outline"
+                className={cn(
+                  'w-full h-12 rounded-xl font-medium',
+                  'glass-dark border-slate-600/50',
+                  'hover:bg-slate-700/50 hover:border-slate-500/70',
+                  'text-slate-200 hover:text-white',
+                  'transition-all duration-300 ease-out shadow-premium-lg',
+                  'ring-1 ring-white/5'
+                )}
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </motion.div>
           </div>
         </div>
 
