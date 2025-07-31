@@ -187,29 +187,64 @@ export class AudioManager {
       return;
     }
 
+    let webAudioInitialized = false;
+    let fallbackInitialized = false;
+
     try {
+      // Try Web Audio API first
       if (this.state.hasWebAudioSupport) {
-        await this.initializeWebAudio();
+        try {
+          await this.initializeWebAudio();
+          webAudioInitialized = true;
+          console.log('[AudioManager] Web Audio API initialized successfully');
+        } catch (webAudioError) {
+          console.warn('[AudioManager] Web Audio API initialization failed:', webAudioError);
+        }
       }
 
+      // Always try fallback to ensure we have working audio
       if (this.config.enableFallback) {
-        await this.initializeFallback();
+        try {
+          await this.initializeFallback();
+          fallbackInitialized = true;
+          console.log('[AudioManager] HTML5 Audio fallback initialized successfully');
+        } catch (fallbackError) {
+          console.warn('[AudioManager] HTML5 Audio fallback failed:', fallbackError);
+        }
       }
 
-      if (this.config.preloadAll) {
-        await this.preloadAllAudio();
+      // Preload audio files for better performance
+      if (this.config.preloadAll && webAudioInitialized) {
+        try {
+          await this.preloadAllAudio();
+          console.log('[AudioManager] Audio preloading completed');
+        } catch (preloadError) {
+          console.warn('[AudioManager] Audio preloading failed:', preloadError);
+          // Don't fail initialization if preloading fails
+        }
       }
 
-      this.state.isInitialized = true;
+      // Only mark as initialized if we have at least one working audio system
+      if (webAudioInitialized || fallbackInitialized) {
+        this.state.isInitialized = true;
+        console.log('[AudioManager] Audio system initialized successfully');
+      } else {
+        throw new Error('Both Web Audio API and HTML5 Audio fallback failed to initialize');
+      }
+
     } catch (error) {
-      console.warn('Audio initialization failed:', error);
+      console.error('[AudioManager] Complete audio initialization failure:', error);
       
-      // If Web Audio fails, ensure fallback is available
-      if (this.config.enableFallback && !this.hasFallbackAudio()) {
-        await this.initializeFallback();
+      // Last resort: try basic fallback one more time with more permissive settings
+      try {
+        await this.initializeBasicFallback();
+        this.state.isInitialized = true;
+        console.log('[AudioManager] Basic fallback audio initialized');
+      } catch (lastResortError) {
+        console.error('[AudioManager] All audio initialization attempts failed:', lastResortError);
+        // Don't mark as initialized if everything fails
+        throw error;
       }
-      
-      this.state.isInitialized = true;
     }
   }
 
@@ -241,36 +276,135 @@ export class AudioManager {
   }
 
   /**
+   * Initialize basic fallback with more permissive settings
+   * Used as last resort when all other audio initialization fails
+   */
+  private async initializeBasicFallback(): Promise<void> {
+    console.log('[AudioManager] Attempting basic fallback initialization');
+    
+    // Only initialize essential audio files with shorter timeout
+    const essentialAudioTypes: AudioType[] = ['bell', 'roundStart', 'roundEnd'];
+    
+    for (const type of essentialAudioTypes) {
+      const audioFile = this.audioFiles.get(type);
+      if (!audioFile) continue;
+      
+      try {
+        const audio = new Audio();
+        audio.src = audioFile.url;
+        audio.preload = 'auto';
+        audio.volume = this.getVolumeDecimal();
+        
+        // Shorter timeout and more permissive loading
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            console.warn(`[AudioManager] Basic fallback timeout for ${type}, but continuing`);
+            resolve(); // Resolve instead of reject for more permissive loading
+          }, 2000); // Shorter timeout
+          
+          const cleanup = () => {
+            clearTimeout(timeout);
+            audio.removeEventListener('canplaythrough', onSuccess);
+            audio.removeEventListener('loadeddata', onSuccess);
+            audio.removeEventListener('error', onError);
+          };
+
+          const onSuccess = () => {
+            cleanup();
+            resolve();
+          };
+          
+          const onError = () => {
+            cleanup();
+            console.warn(`[AudioManager] Basic fallback error for ${type}, but continuing`);
+            resolve(); // Continue even on error
+          };
+
+          // Listen for multiple success events
+          audio.addEventListener('canplaythrough', onSuccess, { once: true });
+          audio.addEventListener('loadeddata', onSuccess, { once: true });
+          audio.addEventListener('error', onError, { once: true });
+
+          // Start loading
+          audio.load();
+        });
+
+        audioFile.htmlAudio = audio;
+        console.log(`[AudioManager] Basic fallback loaded: ${type}`);
+        
+      } catch (error) {
+        console.warn(`[AudioManager] Basic fallback failed for ${type}:`, error);
+        // Continue with other files even if one fails
+      }
+    }
+  }
+
+  /**
    * Initialize HTML5 Audio fallback
    */
   private async initializeFallback(): Promise<void> {
-    for (const [type, audioFile] of this.audioFiles) {
-      const audio = new Audio();
-      audio.src = audioFile.url;
-      audio.preload = 'auto';
-      audio.volume = this.getVolumeDecimal();
-      
-      // Handle audio loading
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error(`Timeout loading ${type} audio`));
-        }, 5000);
+    const loadPromises = Array.from(this.audioFiles.entries()).map(async ([type, audioFile]) => {
+      try {
+        const audio = new Audio();
+        audio.src = audioFile.url;
+        audio.preload = 'auto';
+        audio.volume = this.getVolumeDecimal();
+        
+        // Handle audio loading with improved error handling
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error(`Timeout loading ${type} audio after 5 seconds`));
+          }, 5000);
 
-        audio.addEventListener('canplaythrough', () => {
-          clearTimeout(timeout);
-          resolve();
-        }, { once: true });
+          const cleanup = () => {
+            clearTimeout(timeout);
+            audio.removeEventListener('canplaythrough', onCanPlay);
+            audio.removeEventListener('loadeddata', onCanPlay);
+            audio.removeEventListener('error', onError);
+          };
 
-        audio.addEventListener('error', () => {
-          clearTimeout(timeout);
-          reject(new Error(`Failed to load ${type} audio`));
-        }, { once: true });
+          const onCanPlay = () => {
+            cleanup();
+            console.log(`[AudioManager] Successfully loaded ${type} audio`);
+            resolve();
+          };
 
-        // Start loading
-        audio.load();
-      });
+          const onError = (event: Event) => {
+            cleanup();
+            const error = new Error(`Failed to load ${type} audio: ${audio.error?.message || 'Unknown error'}`);
+            reject(error);
+          };
 
-      audioFile.htmlAudio = audio;
+          // Listen for multiple success events for better compatibility
+          audio.addEventListener('canplaythrough', onCanPlay, { once: true });
+          audio.addEventListener('loadeddata', onCanPlay, { once: true });
+          audio.addEventListener('error', onError, { once: true });
+
+          // Start loading
+          audio.load();
+        });
+
+        audioFile.htmlAudio = audio;
+        
+      } catch (error) {
+        console.warn(`[AudioManager] Failed to load ${type}:`, error);
+        throw error; // Re-throw to handle at higher level
+      }
+    });
+
+    // Wait for at least 50% of audio files to load successfully
+    const results = await Promise.allSettled(loadPromises);
+    const successful = results.filter(result => result.status === 'fulfilled').length;
+    const total = results.length;
+    
+    console.log(`[AudioManager] Fallback loading: ${successful}/${total} files loaded`);
+    
+    if (successful === 0) {
+      throw new Error('All audio files failed to load in fallback mode');
+    }
+    
+    if (successful < total * 0.5) {
+      console.warn(`[AudioManager] Only ${successful}/${total} audio files loaded successfully`);
     }
   }
 
@@ -419,55 +553,95 @@ export class AudioManager {
    */
   async play(type: AudioType, when: number = 0): Promise<void> {
     if (!this.state.isInitialized) {
-      console.warn('Audio manager not initialized');
+      console.warn(`[AudioManager] Cannot play ${type}: audio manager not initialized`);
       return;
     }
 
     if (this.state.isMuted) {
+      console.log(`[AudioManager] Skipping ${type}: audio is muted`);
       return;
     }
 
     const audioFile = this.audioFiles.get(type);
     if (!audioFile) {
-      console.warn(`Audio type ${type} not found`);
+      console.warn(`[AudioManager] Audio type ${type} not found`);
       return;
     }
 
     try {
-      // Try Web Audio API with loaded buffer first
+      // Strategy 1: Try Web Audio API with loaded buffer first (best quality and timing)
       if (this.audioContext && this.gainNode && audioFile.buffer) {
+        console.log(`[AudioManager] Playing ${type} with Web Audio API`);
         await this.playWebAudio(audioFile.buffer, when);
         return;
       }
 
-      // Fallback to HTML5 Audio
-      if (audioFile.htmlAudio) {
+      // Strategy 2: Fallback to HTML5 Audio (good compatibility)
+      if (audioFile.htmlAudio && audioFile.htmlAudio.readyState >= 2) {
+        console.log(`[AudioManager] Playing ${type} with HTML5 Audio`);
         await this.playHtmlAudio(audioFile.htmlAudio);
         return;
       }
 
-      // Final fallback: Generate synthetic audio if enabled
+      // Strategy 3: Try loading HTML5 audio on-demand if not ready
+      if (audioFile.htmlAudio && audioFile.htmlAudio.readyState < 2) {
+        console.log(`[AudioManager] Loading ${type} on-demand`);
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error(`Timeout loading ${type} on-demand`));
+            }, 1000);
+
+            const onCanPlay = () => {
+              clearTimeout(timeout);
+              audioFile.htmlAudio!.removeEventListener('canplaythrough', onCanPlay);
+              audioFile.htmlAudio!.removeEventListener('error', onError);
+              resolve();
+            };
+
+            const onError = () => {
+              clearTimeout(timeout);
+              audioFile.htmlAudio!.removeEventListener('canplaythrough', onCanPlay);
+              audioFile.htmlAudio!.removeEventListener('error', onError);
+              reject(new Error(`Error loading ${type} on-demand`));
+            };
+
+            audioFile.htmlAudio!.addEventListener('canplaythrough', onCanPlay, { once: true });
+            audioFile.htmlAudio!.addEventListener('error', onError, { once: true });
+            audioFile.htmlAudio!.load();
+          });
+
+          await this.playHtmlAudio(audioFile.htmlAudio);
+          return;
+        } catch (loadError) {
+          console.warn(`[AudioManager] On-demand loading failed for ${type}:`, loadError);
+        }
+      }
+
+      // Strategy 4: Final fallback - synthetic audio if enabled
       if (this.config.enableSyntheticAudio && this.audioContext && this.gainNode) {
+        console.log(`[AudioManager] Using synthetic audio for ${type}`);
         this.generateSyntheticTone(type, when);
         
         if (!this.state.usingSyntheticAudio) {
           this.state.usingSyntheticAudio = true;
-          console.info('Using synthetic audio generation - audio files not available');
+          console.info('[AudioManager] Switched to synthetic audio generation - audio files not available');
         }
         return;
       }
 
-      console.warn(`No audio source available for ${type}`);
+      console.warn(`[AudioManager] No audio source available for ${type}`);
     } catch (error) {
-      console.error(`Failed to play ${type} audio:`, error);
+      console.error(`[AudioManager] Failed to play ${type} audio:`, error);
       
       // Last resort: try synthetic audio even if main playback failed
       if (this.config.enableSyntheticAudio && this.audioContext && this.gainNode) {
         try {
+          console.log(`[AudioManager] Emergency fallback to synthetic audio for ${type}`);
           this.generateSyntheticTone(type, when);
           this.state.usingSyntheticAudio = true;
         } catch (synthError) {
-          console.error('Synthetic audio generation also failed:', synthError);
+          console.error(`[AudioManager] All audio playback methods failed for ${type}:`, synthError);
         }
       }
     }
