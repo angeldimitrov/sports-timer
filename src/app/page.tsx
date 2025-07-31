@@ -16,7 +16,6 @@ import { TimerEvent } from '@/lib/timer-engine';
 // PWA and mobile components
 import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
 import { UpdateNotification } from '@/components/pwa/update-notification';
-import { OfflineIndicator } from '@/components/pwa/offline-indicator';
 import { 
   MobileTimerEnhancements, 
   TouchGestureIndicator,
@@ -230,7 +229,6 @@ export default function Home() {
       <InstallPrompt showDelay={20000} />
       <InstallBadge />
       <UpdateNotification showChangelog={true} />
-      <OfflineIndicator showCapabilities={true} />
       
       {/* Mobile enhancements - Premium and focused (dev only) */}
       {showMobileFeatures && process.env.NODE_ENV === 'development' && (
