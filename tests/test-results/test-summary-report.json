@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-07-31T08:02:36.851Z",
+  "summary": {
+    "totalTests": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "successRate": "0%",
+    "totalDuration": "0.00s"
+  },
+  "issues": {
+    "performance": [],
+    "accessibility": [],
+    "crossBrowser": []
+  },
+  "recommendations": []
+}

@@ -234,20 +234,33 @@ export class TimerEngine {
       this.startWorkerTimer(this.currentPhaseDuration);
       
     } else if (this.state.phase === 'work') {
-      // Work period completed - switch to rest
-      this.state.phase = 'rest';
-      this.state.timeRemaining = this.config.restDuration * 1000;
-      this.state.warningTriggered = false;
-      this.currentPhaseDuration = this.config.restDuration * 1000;
-      
-      this.emitEvent({
-        type: 'phaseChange',
-        state: this.state,
-        payload: { newPhase: 'rest', round: this.state.currentRound }
-      });
+      // Work period completed - check if this was the final round
+      if (this.state.currentRound >= this.config.totalRounds) {
+        // Final work period completed - workout is done
+        this.state.status = 'completed';
+        this.state.workoutProgress = 1;
+        
+        this.emitEvent({
+          type: 'workoutComplete',
+          state: this.state,
+          payload: { totalRounds: this.config.totalRounds }
+        });
+      } else {
+        // Not final round - switch to rest period
+        this.state.phase = 'rest';
+        this.state.timeRemaining = this.config.restDuration * 1000;
+        this.state.warningTriggered = false;
+        this.currentPhaseDuration = this.config.restDuration * 1000;
+        
+        this.emitEvent({
+          type: 'phaseChange',
+          state: this.state,
+          payload: { newPhase: 'rest', round: this.state.currentRound }
+        });
 
-      // Start rest period
-      this.startWorkerTimer(this.currentPhaseDuration);
+        // Start rest period
+        this.startWorkerTimer(this.currentPhaseDuration);
+      }
 
     } else {
       // Rest period completed - check if workout is done

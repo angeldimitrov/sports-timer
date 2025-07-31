@@ -76,7 +76,7 @@ export function useAudio(): UseAudioReturn {
     isInitialized: false,
     isLoading: false,
     error: null,
-    volume: 80,
+    volume: 100,
     isMuted: false,
     hasWebAudioSupport: false,
   });
@@ -96,7 +96,7 @@ export function useAudio(): UseAudioReturn {
       if (stored) {
         const settings = JSON.parse(stored) as AudioSettings;
         return {
-          volume: Math.max(0, Math.min(100, settings.volume || 80)),
+          volume: Math.max(0, Math.min(100, settings.volume || 100)),
           isMuted: Boolean(settings.isMuted),
         };
       }
@@ -104,7 +104,7 @@ export function useAudio(): UseAudioReturn {
       console.warn('Failed to load audio settings:', error);
     }
     
-    return { volume: 80, isMuted: false };
+    return { volume: 100, isMuted: false };
   }, []);
 
   // Save audio settings to localStorage

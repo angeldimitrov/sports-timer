@@ -45,7 +45,7 @@ export class AudioManager {
   private gainNode: GainNode | null = null;
   private audioFiles: Map<AudioType, AudioFile> = new Map();
   private state: AudioState = {
-    volume: 80,
+    volume: 100,
     isMuted: false,
     isInitialized: false,
     hasWebAudioSupport: false,
@@ -521,16 +521,13 @@ export class AudioManager {
   }
 
   /**
-   * Play 10-second warning (warning sound + voice announcement)
+   * Play 10-second warning (voice announcement only)
    * 
    * @param when When to play the audio
    */
   async playTenSecondWarning(when: number = 0): Promise<void> {
-    // Play both warning sound and voice announcement
-    await Promise.all([
-      this.play('warning', when),
-      this.play('tenSecondWarning', when)
-    ]);
+    // Play only the voice announcement - no beep sound to avoid artifacts
+    await this.play('tenSecondWarning', when);
   }
 
   /**

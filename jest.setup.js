@@ -8,149 +8,8 @@
 import '@testing-library/jest-dom'
 
 // Mock Web Worker for timer engine testing
-class WorkerMock {
-  constructor(stringUrl) {
-    this.url = stringUrl
-    this.onmessage = null
-    this.onerror = null
-    this.terminated = false
-    
-    // Store messages for testing verification
-    this.sentMessages = []
-    this.receivedMessages = []
-    
-    // Simulate ready state
-    setTimeout(() => {
-      if (this.onmessage) {
-        const readyEvent = {
-          data: {
-            type: 'ready',
-            message: 'Timer worker initialized and ready',
-            timestamp: performance.now()
-          }
-        }
-        this.onmessage(readyEvent)
-      }
-    }, 0)
-  }
-  
-  postMessage(message) {
-    this.sentMessages.push(message)
-    
-    // Simulate timer responses based on message type
-    setTimeout(() => {
-      if (this.terminated) return
-      
-      const { type, payload } = message
-      let response
-      
-      switch (type) {
-        case 'start':
-          response = this.simulateTimerStart(payload)
-          break
-        case 'pause':
-          response = { type: 'paused', remaining: 5000, elapsed: 5000 }
-          break
-        case 'resume':
-          response = this.simulateTimerStart({ duration: 5000 })
-          break
-        case 'stop':
-          response = { type: 'stopped', remaining: 0, elapsed: 10000 }
-          break
-        case 'status':
-          response = {
-            type: 'status',
-            isRunning: false,
-            isPaused: false,
-            remaining: 0,
-            elapsed: 0,
-            duration: 0,
-            progress: 0
-          }
-          break
-        default:
-          response = { type: 'error', message: `Unknown command: ${type}` }
-      }
-      
-      if (this.onmessage && response) {
-        this.onmessage({
-          data: {
-            ...response,
-            timestamp: performance.now()
-          }
-        })
-      }
-    }, 10) // Small delay to simulate async behavior
-  }
-  
-  simulateTimerStart(payload) {
-    const duration = payload?.duration || 10000
-    let remaining = duration
-    let tickCount = 0
-    
-    // Simulate timer ticks
-    const tickInterval = setInterval(() => {
-      if (this.terminated) {
-        clearInterval(tickInterval)
-        return
-      }
-      
-      tickCount++
-      remaining = Math.max(0, duration - (tickCount * 100))
-      const elapsed = duration - remaining
-      const progress = elapsed / duration
-      
-      if (this.onmessage) {
-        this.onmessage({
-          data: {
-            type: 'tick',
-            remaining,
-            elapsed,
-            progress,
-            timestamp: performance.now()
-          }
-        })
-      }
-      
-      // Complete after duration
-      if (remaining <= 0) {
-        clearInterval(tickInterval)
-        if (this.onmessage) {
-          this.onmessage({
-            data: {
-              type: 'completed',
-              remaining: 0,
-              elapsed: duration,
-              timestamp: performance.now()
-            }
-          })
-        }
-      }
-    }, 50) // Faster than real timer for testing
-    
-    return { type: 'started', duration, remaining }
-  }
-  
-  terminate() {
-    this.terminated = true
-    this.onmessage = null
-    this.onerror = null
-  }
-  
-  // Testing utilities
-  getLastSentMessage() {
-    return this.sentMessages[this.sentMessages.length - 1]
-  }
-  
-  getAllSentMessages() {
-    return [...this.sentMessages]
-  }
-  
-  clearMessages() {
-    this.sentMessages = []
-    this.receivedMessages = []
-  }
-}
+// Note: The actual MockWorker implementation is in jest.worker-mock.js
+// This section just sets up additional mocks that work with the MockWorker
 
 // Mock Web Audio API
 class AudioContextMock {
@@ -309,8 +168,7 @@ global.cancelAnimationFrame = global.cancelAnimationFrame || ((id) => {
 
 // Set up global mocks
 beforeAll(() => {
-  // Mock Worker constructor
-  global.Worker = WorkerMock
+  // Worker mock is set up in jest.worker-mock.js via setupFiles
   
   // Mock Web Audio API
   global.AudioContext = AudioContextMock
@@ -337,7 +195,10 @@ beforeAll(() => {
     length: 0,
     key: jest.fn()
   }
-  global.localStorage = localStorageMock
+  Object.defineProperty(global, 'localStorage', {
+    value: localStorageMock,
+    writable: true
+  })
   
   // Mock document visibility API
   Object.defineProperty(document, 'hidden', {
@@ -357,10 +218,18 @@ afterEach(() => {
   jest.clearAllMocks()
   
   // Reset localStorage mock
-  localStorage.getItem.mockClear()
-  localStorage.setItem.mockClear()
-  localStorage.removeItem.mockClear()
-  localStorage.clear.mockClear()
+  if (localStorage.getItem && localStorage.getItem.mockClear) {
+    localStorage.getItem.mockClear()
+  }
+  if (localStorage.setItem && localStorage.setItem.mockClear) {
+    localStorage.setItem.mockClear()
+  }
+  if (localStorage.removeItem && localStorage.removeItem.mockClear) {
+    localStorage.removeItem.mockClear()
+  }
+  if (localStorage.clear && localStorage.clear.mockClear) {
+    localStorage.clear.mockClear()
+  }
   
   // Reset fetch mock
   if (fetch.mockClear) {

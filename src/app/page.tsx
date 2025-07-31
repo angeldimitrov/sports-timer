@@ -105,21 +105,15 @@ export default function Home() {
           
         case 'warning':
           console.log('[Audio] 10-second warning in phase:', event.state?.phase);
-          // 10-second warning - different sounds for different phases
+          // 10-second warning - voice announcement only to avoid artifacts
           if (event.state?.phase === 'work') {
             // 10 seconds left in work phase
             console.log('[Audio] Playing: WORK WARNING');
-            safePlayAudio('warning'); // Warning beep
-            setTimeout(() => {
-              safePlayAudio('tenSecondWarning'); // "Ten seconds"
-            }, 500);
+            safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           } else if (event.state?.phase === 'rest') {
             // 10 seconds left in rest phase - next round coming
             console.log('[Audio] Playing: REST WARNING');
-            safePlayAudio('warning'); // Warning beep
-            setTimeout(() => {
-              safePlayAudio('tenSecondWarning'); // "Ten seconds" 
-            }, 500);
+            safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           }
           break;
           

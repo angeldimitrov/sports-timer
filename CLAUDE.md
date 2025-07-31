@@ -240,3 +240,7 @@ src/
 ## Testing Recommendations
 
 - **Always use playwright MCP for testing changes**
+
+## Memories
+
+- User github CLI

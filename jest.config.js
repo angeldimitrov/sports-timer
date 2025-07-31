@@ -33,7 +33,15 @@ const customJestConfig = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.(js|jsx|ts|tsx)',
     '<rootDir>/src/**/*.(test|spec).(js|jsx|ts|tsx)',
-    '<rootDir>/tests/**/*.(test|spec).(js|jsx|ts|tsx)',
+    '<rootDir>/tests/integration/**/*.(test|spec).(js|jsx|ts|tsx)',
+  ],
+  
+  // Exclude Playwright E2E tests from Jest
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/tests/e2e/',
+    '<rootDir>/.next/',
+    '<rootDir>/coverage/',
   ],
   
   // File extensions to consider
