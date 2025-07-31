@@ -20,20 +20,15 @@ import {
   Pause, 
   Square, 
   RotateCcw, 
-  Volume2, 
-  VolumeX,
   Settings
 } from 'lucide-react';
 import { UseTimerReturn } from '@/hooks/use-timer';
-import { UseAudioReturn } from '@/hooks/use-audio';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface TimerControlsProps {
   /** Timer hook instance */
   timer: UseTimerReturn;
-  /** Audio hook instance */
-  audio: UseAudioReturn;
   /** Callback for opening settings */
   onSettingsClick?: () => void;
   /** Additional CSS classes */
@@ -53,7 +48,7 @@ interface TimerControlsProps {
  */
 const log = createModuleLogger('TimerControls');
 
-export function TimerControls({ timer, audio, onSettingsClick, className }: TimerControlsProps) {
+export function TimerControls({ timer, onSettingsClick, className }: TimerControlsProps) {
   // Determine primary action based on timer state
   const getPrimaryAction = () => {
     if (timer.isRunning) return 'pause';
@@ -68,14 +63,6 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
   const handlePrimaryClick = async () => {
     switch (primaryAction) {
       case 'start':
-        // Initialize audio on first user interaction
-        if (!audio.isInitialized) {
-          try {
-            await audio.initialize();
-          } catch (error) {
-            log.warn('Audio initialization failed, continuing without audio:', error);
-          }
-        }
         timer.start();
         break;
       case 'pause':
@@ -214,50 +201,6 @@ export function TimerControls({ timer, audio, onSettingsClick, className }: Time
         </div>
       </div>
 
-      {/* Audio Controls - Mute/Unmute Only */}
-      <div className={cn(
-        'glass-dark rounded-2xl p-4 shadow-premium-lg',
-        'ring-1 ring-white/5 border border-slate-600/30'
-      )}>
-        <div className="flex items-center justify-center">
-          <Button
-            onClick={() => audio.toggleMute()}
-            variant="ghost"
-            size="lg"
-            className={cn(
-              'w-full h-12 text-slate-300 hover:text-white rounded-xl',
-              'flex items-center justify-center gap-3 font-medium',
-              audio.isMuted && 'text-slate-500'
-            )}
-          >
-            <AnimatePresence mode="wait">
-              {audio.isMuted ? (
-                <motion.div
-                  key="muted"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="flex items-center gap-3"
-                >
-                  <VolumeX className="w-5 h-5" />
-                  <span>Unmute Audio</span>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="unmuted"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="flex items-center gap-3"
-                >
-                  <Volume2 className="w-5 h-5" />
-                  <span>Mute Audio</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Button>
-        </div>
-      </div>
 
       {/* Settings Button */}
       {onSettingsClick && (

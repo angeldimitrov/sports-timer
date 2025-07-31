@@ -258,7 +258,6 @@ export default function Home() {
             {/* Timer Controls */}
             <TimerControls 
               timer={timer} 
-              audio={audio} 
               onSettingsClick={() => setIsSettingsOpen(true)}
             />
 

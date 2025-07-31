@@ -26,7 +26,7 @@ interface UseAudioState {
   isLoading: boolean;
   error: string | null;
   volume: number; // Always 100, kept for compatibility
-  isMuted: boolean;
+  isMuted: boolean; // Always false, kept for compatibility
   hasWebAudioSupport: boolean;
 }
 
@@ -47,10 +47,10 @@ export interface UseAudioReturn extends UseAudioState {
   playWorkoutEnd: (when?: number) => Promise<void>;
   playTenSecondWarning: (when?: number) => Promise<void>;
   
-  // Volume and mute controls (volume deprecated - always 100%)
+  // Volume and mute controls (deprecated - always 100% and never muted)
   setVolume: (volume: number) => void; // Deprecated - does nothing
-  setMuted: (muted: boolean) => void;
-  toggleMute: () => void;
+  setMuted: (muted: boolean) => void; // Deprecated - does nothing
+  toggleMute: () => void; // Deprecated - does nothing
   
   // Utility
   isReady: () => boolean;
@@ -59,10 +59,10 @@ export interface UseAudioReturn extends UseAudioState {
 // Storage key for persisting audio settings
 const AUDIO_SETTINGS_KEY = 'boxing-timer-audio-settings';
 
-// Persisted audio settings
+// Persisted audio settings (deprecated - kept for compatibility)
 interface AudioSettings {
   volume: number; // Deprecated - always 100
-  isMuted: boolean;
+  isMuted: boolean; // Deprecated - always false
 }
 
 /**
@@ -147,10 +147,7 @@ export function useAudio(): UseAudioReturn {
       try {
         const manager = getManager();
         
-        // Apply persisted settings before initialization
-        const settings = loadSettings();
-        // manager.setVolume(settings.volume); // Volume is now always 100%
-        manager.setMuted(settings.isMuted);
+        // No need to apply settings - audio is always 100% and never muted
         
         // Initialize the audio system
         await manager.initialize();
@@ -163,7 +160,7 @@ export function useAudio(): UseAudioReturn {
           isLoading: false,
           error: null,
           volume: 100, // Always 100%
-          isMuted: settings.isMuted,
+          isMuted: false, // Always false
           hasWebAudioSupport: updatedState.hasWebAudioSupport,
         }));
         
@@ -230,22 +227,17 @@ export function useAudio(): UseAudioReturn {
     // Kept for backward compatibility
   }, []);
 
-  // Mute control
+  // Mute control (deprecated - audio is never muted)
   const setMuted = useCallback((muted: boolean) => {
-    setState(prev => ({ ...prev, isMuted: muted }));
-    
-    const manager = getManager();
-    manager.setMuted(muted);
-    
-    // Persist setting
-    saveSettings({ isMuted: muted });
-  }, [getManager, saveSettings]);
+    // Audio is never muted - this method does nothing
+    // Kept for backward compatibility
+  }, []);
 
-  // Toggle mute
+  // Toggle mute (deprecated - audio is never muted)
   const toggleMute = useCallback(() => {
-    const newMuted = !state.isMuted;
-    setMuted(newMuted);
-  }, [state.isMuted, setMuted]);
+    // Audio is never muted - this method does nothing
+    // Kept for backward compatibility
+  }, []);
 
   // Check if audio is ready
   const isReady = useCallback((): boolean => {
@@ -261,13 +253,11 @@ export function useAudio(): UseAudioReturn {
     setState(prev => ({
       ...prev,
       volume: 100, // Always 100%
-      isMuted: settings.isMuted,
+      isMuted: false, // Always false
       hasWebAudioSupport: managerState.hasWebAudioSupport,
     }));
     
-    // Apply settings to manager
-    // manager.setVolume(settings.volume); // Volume is now always 100%
-    manager.setMuted(settings.isMuted);
+    // No settings to apply - audio is always 100% and never muted
   }, [getManager, loadSettings]); // Add missing dependencies
 
   // Clear error after some time
