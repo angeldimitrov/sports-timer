@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { useTimer } from '@/hooks/use-timer';
@@ -11,7 +12,6 @@ import { usePWA } from '@/hooks/use-pwa';
 import { TimerDisplay } from '@/components/timer/timer-display';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
-import { SettingsDialog } from '@/components/timer/settings-dialog';
 import { Button } from '@/components/ui/button';
 import { TimerConfig } from '@/types/timer';
 import { TimerEvent } from '@/lib/timer-engine';
@@ -57,8 +57,7 @@ declare global {
  * - Premium visual design with smooth animations
  */
 export default function Home() {
-  // Settings dialog state
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const router = useRouter();
   const [deviceInfo, setDeviceInfo] = useState<{
     isMobile?: boolean;
     hasTouch?: boolean;
@@ -219,10 +218,32 @@ export default function Home() {
     timer.loadPreset(preset);
   };
 
-  // Handle custom settings update
-  const handleSettingsUpdate = (config: Partial<TimerConfig>) => {
-    timer.updateConfig(config);
+  // Handle settings page navigation
+  const handleSettingsClick = () => {
+    router.push('/settings');
   };
+
+  // Check if returning from settings with updates
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('updated') === 'true') {
+        // Reload configuration from localStorage
+        try {
+          const saved = localStorage.getItem('boxing-timer-config');
+          if (saved) {
+            const config = JSON.parse(saved);
+            timer.updateConfig(config);
+          }
+        } catch (error) {
+          console.warn('Failed to load updated config:', error);
+        }
+        
+        // Clear the URL parameter
+        router.replace('/');
+      }
+    }
+  }, [timer, router]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 relative overflow-hidden">
@@ -278,7 +299,7 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
             >
               <Button
-                onClick={() => setIsSettingsOpen(true)}
+                onClick={handleSettingsClick}
                 variant="outline"
                 className={cn(
                   'w-full h-12 rounded-xl font-medium',
@@ -295,14 +316,6 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
-
-        {/* Settings Dialog */}
-        <SettingsDialog
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          config={timer.config}
-          onConfigUpdate={handleSettingsUpdate}
-        />
       </div>
     </main>
   );
