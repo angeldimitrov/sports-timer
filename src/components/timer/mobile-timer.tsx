@@ -91,10 +91,9 @@ export function MobileTimer({
   const pwa = usePWA({
     onInstallSuccess: () => {
       log.info('Boxing Timer installed successfully!');
-      setShowInstallPrompt(false);
     },
     onUpdateAvailable: () => {
-      setHasUpdate(true);
+      log.info('App update available');
     }
   });
 

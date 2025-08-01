@@ -242,7 +242,31 @@ export function InstallBadge() {
   }, [canInstall, isMounted]);
 
   // Don't render anything during SSR to prevent hydration mismatch
-  if (!isMounted || !canInstall) return null;
+  // In production, show install badge if PWA is not already installed
+  if (!isMounted) return null;
+  
+  const isStandalone = typeof window !== 'undefined' && 
+    (window.matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in window.navigator && (window.navigator as any).standalone));
+  
+  // Show install badge if not installed and can install, or if in production for broader compatibility
+  if (!canInstall && !isStandalone && process.env.NODE_ENV === 'production') {
+    // In production, show a fallback install instruction for browsers that might support PWA
+    return (
+      <button
+        onClick={() => {
+          // For browsers without beforeinstallprompt, show manual instructions
+          alert('To install this app:\n\n1. On Chrome/Edge: Look for the install icon in the address bar\n2. On Safari: Tap Share → Add to Home Screen\n3. Or use your browser\'s "Install App" option in the menu');
+        }}
+        className="fixed top-4 right-4 z-40 p-3 bg-red-600 rounded-full shadow-lg transition-all hover:bg-red-700 hover:scale-110"
+        aria-label="Install Boxing Timer app"
+      >
+        <Download className="w-5 h-5 text-white" />
+      </button>
+    );
+  }
+  
+  if (!canInstall) return null;
 
   return (
     <button

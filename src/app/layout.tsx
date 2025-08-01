@@ -17,8 +17,9 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  manifest: "/manifest.json",
+  manifest: `${process.env.NODE_ENV === 'production' ? '/sports-timer' : ''}/manifest.json`,
   appleWebApp: {
+    capable: true,
     statusBarStyle: "default",
     title: "Boxing Timer",
     startupImage: [
@@ -90,7 +91,7 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  const basePath = '${process.env.NODE_ENV === 'production' ? '/sports-timer' : ''}';
+                  const basePath = '${process.env.NEXT_PUBLIC_BASE_PATH || ''}';
                   
                   navigator.serviceWorker.register(basePath + '/sw.js')
                     .then(function(registration) {
