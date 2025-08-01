@@ -21,8 +21,10 @@ import { cn } from '@/lib/utils';
 const log = createModuleLogger('MainPage');
 
 // PWA and mobile components
+import { PWAManager } from '@/components/pwa/pwa-manager';
+import { PWAStatus, PWAStatusBadge } from '@/components/pwa/pwa-status';
 import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
-import { UpdateNotification } from '@/components/pwa/update-notification';
+import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification';
 import { 
   MobileTimerEnhancements, 
   TouchGestureIndicator,
@@ -250,10 +252,6 @@ export default function Home() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-transparent to-transparent" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
-      {/* PWA Features */}
-      <InstallPrompt showDelay={20000} />
-      <InstallBadge />
-      <UpdateNotification showChangelog={true} />
       
       {/* Mobile enhancements - Premium and focused (dev only) */}
       {showMobileFeatures && process.env.NODE_ENV === 'development' && (
@@ -271,6 +269,33 @@ export default function Home() {
       {process.env.NODE_ENV === 'development' && <MobilePerformanceMonitor />}
       
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
+        {/* PWA Manager - positioned at top of content */}
+        <PWAManager />
+        
+        {/* Premium PWA Components */}
+        <PWAStatus 
+          position="top-right"
+          showConnectionStatus={true}
+          enableHaptics={gestures.isEnabled}
+        />
+        <InstallPrompt 
+          enableAnimations={true}
+          enableHaptics={gestures.isEnabled}
+        />
+        <UpdateNotification 
+          showChangelog={true}
+          enableAnimations={true}
+          enableHaptics={gestures.isEnabled}
+          showPremiumEffects={true}
+        />
+        
+        {/* Compact PWA badges for mobile */}
+        <div className="fixed top-4 left-4 z-50 flex gap-2">
+          <PWAStatusBadge />
+          <UpdateBadge />
+        </div>
+        <InstallBadge />
+        
         {/* Main Timer Interface - Optimized layout */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {/* Timer Display - Maximum prominence and space */}

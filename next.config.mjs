@@ -15,6 +15,9 @@ const nextConfig = {
     NEXT_PUBLIC_BASE_PATH: process.env.NODE_ENV === 'production' ? '/sports-timer' : '',
   },
   
+  // Handle dynamic routes for PWA files
+  trailingSlash: true,
+  
   eslint: {
     dirs: ['pages', 'utils', 'src'],
     // Ignore ESLint errors during builds to allow production deployment

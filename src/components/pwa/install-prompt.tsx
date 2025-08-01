@@ -1,15 +1,17 @@
 /**
- * PWA Install Prompt Component
+ * Premium PWA Install Prompt Component
  * 
- * Mobile-optimized install prompt for Progressive Web App installation.
- * Provides a native-like experience for adding the Boxing Timer to home screen.
+ * Sophisticated, premium-quality install prompt for Progressive Web App installation.
+ * Provides a native-like experience with advanced animations and error handling.
  * 
- * Features:
- * - Smart timing for showing install prompts
- * - Mobile-friendly UI with touch-optimized buttons
- * - Platform-specific messaging (iOS vs Android)
- * - Dismissal tracking to avoid annoying users
- * - Install success animations
+ * Premium Features:
+ * - Elegant entrance/exit animations with smooth transitions
+ * - Advanced error handling with retry mechanisms
+ * - Platform-specific messaging with premium visual design
+ * - Smart dismissal tracking with respectful UX patterns
+ * - Success animations with haptic feedback
+ * - Accessibility-first design with ARIA support
+ * - Professional loading states and micro-interactions
  */
 
 'use client';
@@ -25,6 +27,12 @@ export interface InstallPromptProps {
   showDelay?: number;
   /** Show iOS manual install instructions */
   showIosInstructions?: boolean;
+  /** Enable premium animations */
+  enableAnimations?: boolean;
+  /** Enable haptic feedback */
+  enableHaptics?: boolean;
+  /** Maximum retry attempts for failed installations */
+  maxRetryAttempts?: number;
 }
 
 /**
