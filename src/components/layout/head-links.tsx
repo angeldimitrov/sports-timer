@@ -13,10 +13,10 @@ export function HeadLinks() {
       <link rel="icon" href={getPublicPath('/icons/icon-32x32.svg')} sizes="32x32" type="image/svg+xml" />
       
       {/* Preload critical resources with proper 'as' attributes */}
-      <link rel="preload" href={getPublicPath('/sounds/round-starts.mp3')} as="audio" type="audio/mpeg" />
-      <link rel="preload" href={getPublicPath('/sounds/end-of-the-round.mp3')} as="audio" type="audio/mpeg" />
-      <link rel="preload" href={getPublicPath('/sounds/get-ready.mp3')} as="audio" type="audio/mpeg" />
-      <link rel="preload" href={getPublicPath('/workers/timer-worker.js')} as="script" type="application/javascript" />
+      <link rel="preload" href={getPublicPath('/sounds/round-starts.mp3')} as="fetch" type="audio/mpeg" crossOrigin="anonymous" />
+      <link rel="preload" href={getPublicPath('/sounds/end-of-the-round.mp3')} as="fetch" type="audio/mpeg" crossOrigin="anonymous" />
+      <link rel="preload" href={getPublicPath('/sounds/get-ready.mp3')} as="fetch" type="audio/mpeg" crossOrigin="anonymous" />
+      <link rel="preload" href={getPublicPath('/workers/timer-worker.js')} as="script" />
     </>
   );
 }

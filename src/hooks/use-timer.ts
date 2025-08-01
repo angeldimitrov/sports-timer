@@ -175,9 +175,13 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
 
         // Handle specific events
         switch (event.type) {
+          case 'ready':
+            setIsReady(true);
+            break;
           case 'error':
             console.error('Timer error:', event.payload);
             setError(new Error(event.payload?.message || 'Timer error'));
+            setIsReady(false);
             break;
         }
       };
@@ -189,7 +193,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       setConfig(timer.getConfig());
       setState(timer.getState());
       setError(null);
-      setIsReady(true);
+      // Don't set isReady yet - wait for the worker's ready event
 
       return timer;
     } catch (err) {

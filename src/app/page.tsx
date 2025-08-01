@@ -246,6 +246,21 @@ export default function Home() {
     }
   }, [timer, router]);
 
+  // Display error if timer fails to initialize
+  if (timer.error) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 relative overflow-hidden flex items-center justify-center p-4">
+        <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-bold text-red-400 mb-2">Timer Initialization Error</h2>
+          <p className="text-red-300 mb-4">{timer.error.message}</p>
+          <pre className="text-xs text-red-200 bg-red-900/30 p-2 rounded overflow-auto">
+            {timer.error.stack}
+          </pre>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 relative overflow-hidden">
       {/* Premium background elements */}

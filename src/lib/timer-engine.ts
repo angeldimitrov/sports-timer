@@ -218,6 +218,11 @@ export class TimerEngine {
     switch (type) {
       case 'ready':
         log.debug('Timer worker ready');
+        this.emitEvent({
+          type: 'ready',
+          state: this.state,
+          payload: { message: 'Timer worker ready' }
+        });
         break;
 
       case 'tick':
