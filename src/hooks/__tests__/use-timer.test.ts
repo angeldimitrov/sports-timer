@@ -13,11 +13,20 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useTimer, useBoxingTimer, useCustomTimer } from '../use-timer'
-import { TimerConfig, TimerEvent } from '../../lib/timer-engine'
+import { TimerConfig, TimerEvent, TimerEngine } from '../../lib/timer-engine'
 
 // Mock performance timing
 const mockPerformanceNow = jest.fn()
 global.performance.now = mockPerformanceNow
+
+// Mock TimerEngine for testing
+jest.mock('../../lib/timer-engine', () => {
+  const originalModule = jest.requireActual('../../lib/timer-engine')
+  return {
+    ...originalModule,
+    TimerEngine: jest.fn()
+  }
+})
 
 describe('useTimer Hook', () => {
   let currentTime = 0
@@ -321,7 +330,7 @@ describe('useTimer Hook', () => {
       const { result } = renderHook(() => useTimer())
       
       act(() => {
-        result.current.loadPreset('invalid' as any)
+        result.current.loadPreset('invalid' as 'beginner')
       })
       
       await waitFor(() => {
@@ -399,8 +408,8 @@ describe('useTimer Hook', () => {
      */
     test('should handle timer initialization errors', async () => {
       // Mock timer engine to throw error
-      const originalTimerEngine = require('../../lib/timer-engine').TimerEngine
-      require('../../lib/timer-engine').TimerEngine = jest.fn().mockImplementation(() => {
+      const MockedTimerEngine = TimerEngine as jest.MockedClass<typeof TimerEngine>
+      MockedTimerEngine.mockImplementation(() => {
         throw new Error('Timer initialization failed')
       })
       
@@ -411,8 +420,8 @@ describe('useTimer Hook', () => {
         expect(result.current.isReady).toBe(false)
       })
       
-      // Restore original
-      require('../../lib/timer-engine').TimerEngine = originalTimerEngine
+      // Reset mock
+      MockedTimerEngine.mockRestore()
     })
 
     /**
