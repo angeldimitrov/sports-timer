@@ -46,6 +46,7 @@
  */
 
 import { createModuleLogger } from './logger';
+import { getBasePath } from './get-base-path';
 
 // Initialize module logger
 const log = createModuleLogger('TimerEngine');
@@ -145,10 +146,8 @@ export class TimerEngine {
     this.config = { ...config };
     this.state = this.createInitialState();
     
-    // Set worker path based on environment
-    const basePath = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_BASE_PATH 
-      ? process.env.NEXT_PUBLIC_BASE_PATH 
-      : '';
+    // Set worker path using the base path helper
+    const basePath = getBasePath();
     this.workerPath = `${basePath}/workers/timer-worker.js`;
     
     this.initializeWorker();
