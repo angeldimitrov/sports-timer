@@ -13,7 +13,7 @@
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { usePWA, PWAOptions, PWAInstallPrompt } from '../use-pwa'
+import { usePWA, PWAOptions } from '../use-pwa'
 
 // Mock Service Worker
 const mockServiceWorker = {

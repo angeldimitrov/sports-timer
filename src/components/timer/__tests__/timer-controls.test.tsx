@@ -744,7 +744,6 @@ describe('TimerControls Component', () => {
      * Business Rule: Component should handle missing props gracefully
      */
     test('should handle missing callback functions gracefully', async () => {
-      const user = userEvent.setup()
       const idleState = createTimerState({ status: 'idle' })
 
       // Render without some callbacks

@@ -14,7 +14,6 @@
 
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MobileTimer } from '../mobile-timer'
 import { TimerState, TimerConfig } from '../../../lib/timer-engine'
 

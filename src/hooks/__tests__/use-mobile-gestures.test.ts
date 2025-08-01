@@ -11,7 +11,7 @@
  * - Accessibility considerations for touch interfaces
  */
 
-import { renderHook, act } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { useMobileGestures, GestureConfig, GestureCallbacks } from '../use-mobile-gestures'
 
 // Mock touch events

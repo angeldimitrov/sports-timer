@@ -17,28 +17,6 @@ import userEvent from '@testing-library/user-event'
 import { PresetSelector } from '../preset-selector'
 import { TimerConfig } from '../../../lib/timer-engine'
 
-// Mock the preset configurations
-const mockPresets = {
-  beginner: {
-    workDuration: 120, // 2 minutes
-    restDuration: 60,  // 1 minute
-    totalRounds: 3,
-    enableWarning: true
-  },
-  intermediate: {
-    workDuration: 180, // 3 minutes
-    restDuration: 60,  // 1 minute
-    totalRounds: 5,
-    enableWarning: true
-  },
-  advanced: {
-    workDuration: 180, // 3 minutes
-    restDuration: 60,  // 1 minute
-    totalRounds: 12,
-    enableWarning: true
-  }
-}
-
 describe('PresetSelector Component', () => {
   const mockOnPresetSelect = jest.fn()
   const mockOnCustomConfig = jest.fn()
