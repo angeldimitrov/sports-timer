@@ -58,7 +58,7 @@ const createTouchEvent = (type: string, touches: Array<{ clientX: number; client
       radiusY: 0,
       rotationAngle: 0,
       force: 1
-    })) as any
+    })) as TouchEvent[]
   })
 }
 
@@ -524,7 +524,7 @@ describe('MobileTimer Component', () => {
       const timerDisplay = screen.getByTestId('mobile-timer-display')
       
       // Touch events should use passive listeners for better scroll performance
-      const touchListeners = (timerDisplay as any)._touchListeners
+      const touchListeners = (timerDisplay as unknown as { _touchListeners?: { passive: boolean } })._touchListeners
       expect(touchListeners?.passive).toBe(true)
     })
 
@@ -563,7 +563,7 @@ describe('MobileTimer Component', () => {
       }
 
       // Mock speech recognition API
-      global.webkitSpeechRecognition = jest.fn(() => mockSpeechRecognition) as any
+      global.webkitSpeechRecognition = jest.fn(() => mockSpeechRecognition) as unknown as typeof SpeechRecognition
 
       render(<MobileTimer {...defaultProps} enableVoiceControl={true} />)
 
@@ -573,7 +573,7 @@ describe('MobileTimer Component', () => {
       }
 
       if (mockSpeechRecognition.onresult) {
-        mockSpeechRecognition.onresult(speechEvent as any)
+        mockSpeechRecognition.onresult(speechEvent as SpeechRecognitionEvent)
       }
 
       await waitFor(() => {

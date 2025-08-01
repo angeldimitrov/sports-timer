@@ -460,14 +460,14 @@ describe('Browser Feature Detection', () => {
    */
   describe('hasWebAudioSupport', () => {
     test('should detect Web Audio API support', () => {
-      global.AudioContext = jest.fn() as any
+      global.AudioContext = jest.fn() as typeof AudioContext
       expect(hasWebAudioSupport()).toBe(true)
 
-      global.webkitAudioContext = jest.fn() as any
-      delete (global as any).AudioContext
+      (global as typeof global & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext = jest.fn() as typeof AudioContext
+      delete (global as typeof global & { AudioContext?: typeof AudioContext }).AudioContext
       expect(hasWebAudioSupport()).toBe(true)
 
-      delete (global as any).webkitAudioContext
+      delete (global as typeof global & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       expect(hasWebAudioSupport()).toBe(false)
     })
   })
@@ -480,7 +480,7 @@ describe('Browser Feature Detection', () => {
     test('should detect PWA support', () => {
       expect(hasPWASupport()).toBe(true) // Navigator has serviceWorker mock
 
-      delete (mockNavigator as any).serviceWorker
+      delete (mockNavigator as Navigator & { serviceWorker?: ServiceWorkerContainer }).serviceWorker
       expect(hasPWASupport()).toBe(false)
     })
   })

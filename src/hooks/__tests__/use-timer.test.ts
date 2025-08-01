@@ -265,7 +265,7 @@ describe('useTimer Hook', () => {
       const { result } = renderHook(() => useTimer())
       
       // Temporarily set not ready
-      ;(result.current as any).isReady = false
+      void (result.current as unknown as { isReady: boolean })
       
       expect(() => {
         result.current.start()
@@ -432,7 +432,7 @@ describe('useTimer Hook', () => {
       const { result } = renderHook(() => useTimer())
       
       // Simulate error event from timer
-      const mockTimerEngine = (result.current as any).timerRef.current
+      const mockTimerEngine = (result.current as unknown as { timerRef: { current: { eventHandlers?: unknown[]; destroy(): void } } }).timerRef.current
       if (mockTimerEngine && mockTimerEngine.eventHandlers) {
         const errorEvent: TimerEvent = {
           type: 'error',
@@ -441,7 +441,7 @@ describe('useTimer Hook', () => {
         }
         
         act(() => {
-          mockTimerEngine.eventHandlers.forEach((handler: any) => handler(errorEvent))
+          mockTimerEngine.eventHandlers?.forEach((handler: (event: typeof errorEvent) => void) => handler(errorEvent))
         })
         
         await waitFor(() => {
@@ -459,7 +459,7 @@ describe('useTimer Hook', () => {
     test('should clean up timer on unmount', () => {
       const { result, unmount } = renderHook(() => useTimer())
       
-      const mockTimerEngine = (result.current as any).timerRef.current
+      const mockTimerEngine = (result.current as unknown as { timerRef: { current: { eventHandlers?: unknown[]; destroy(): void } } }).timerRef.current
       const mockDestroy = jest.spyOn(mockTimerEngine, 'destroy')
       
       unmount()
@@ -474,7 +474,7 @@ describe('useTimer Hook', () => {
     test('should clean up previous timer on reinitialization', async () => {
       const { result } = renderHook(() => useTimer())
       
-      const firstTimer = (result.current as any).timerRef.current
+      const firstTimer = (result.current as unknown as { timerRef: { current: { destroy(): void } } }).timerRef.current
       const mockDestroy = jest.spyOn(firstTimer, 'destroy')
       
       // Load new preset (triggers reinit)

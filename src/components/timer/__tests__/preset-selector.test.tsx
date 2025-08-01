@@ -512,7 +512,7 @@ describe('PresetSelector Component', () => {
       render(
         <PresetSelector 
           {...defaultProps}
-          currentPreset={'invalid' as any}
+          currentPreset={'invalid' as 'beginner'}
         />
       )
 

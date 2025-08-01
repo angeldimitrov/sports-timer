@@ -247,3 +247,8 @@ src/
 - always check the build problems and linting before pushing to github!!!
 - @typescript-eslint/no-unused-vars do not use that please! always fix all the unused variables 
 - @typescript-eslint/no-explicit-any do not use that and any, fix the errors
+- when merging into master always check if the deployment process to github pages is successfull
+- when starting working on a new feature or bugfix create a GH issue and a branch, when done a PR
+- after creating a pr on github, monitor if the checks are passing and in case of failure fix it 
+- never use eslint-disable-next-line @typescript-eslint/no-unused-vars
+- never use eslint-disable!!! in the code 

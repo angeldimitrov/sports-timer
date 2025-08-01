@@ -89,8 +89,8 @@ describe('useWakeLock Hook', () => {
 
   afterEach(() => {
     // Clean up API mocks
-    delete (navigator as any).wakeLock
-    delete (navigator as any).getBattery
+    delete (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock
+    delete (navigator as Navigator & { getBattery?: () => Promise<{ level: number; charging: boolean }> }).getBattery
   })
 
   describe('Hook Initialization and Basic Functionality', () => {
@@ -203,7 +203,7 @@ describe('useWakeLock Hook', () => {
      */
     test('should handle unsupported browsers gracefully', () => {
       // Remove wake lock API
-      delete (navigator as any).wakeLock
+      delete (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock
 
       const { result } = renderHook(() => useWakeLock(defaultOptions))
 
@@ -397,7 +397,7 @@ describe('useWakeLock Hook', () => {
      */
     test('should work without battery API', async () => {
       // Remove battery API
-      delete (navigator as any).getBattery
+      delete (navigator as Navigator & { getBattery?: () => Promise<{ level: number; charging: boolean }> }).getBattery
 
       const { result } = renderHook(() => useWakeLock(defaultOptions))
 

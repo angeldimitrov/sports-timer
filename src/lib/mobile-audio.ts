@@ -76,8 +76,8 @@ export class MobileAudioManager {
   private config: MobileAudioConfig;
   private browserInfo: BrowserInfo;
   private visibilityHandler: (() => void) | null = null;
-  private networkHandler: ((event: Event) => void) | null = null;
-  private batteryHandler: ((event: Event) => void) | null = null;
+  private networkHandler: ((event?: Event) => void) | null = null;
+  private batteryHandler: (() => void) | null = null;
 
   constructor(config: Partial<MobileAudioConfig> = {}) {
     this.config = {
@@ -150,7 +150,10 @@ export class MobileAudioManager {
   private detectNetworkType(): MobileAudioState['networkType'] {
     if ('connection' in navigator) {
       const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
-      return connection?.effectiveType || 'unknown';
+      const effectiveType = connection?.effectiveType;
+      if (effectiveType && ['slow-2g', '2g', '3g', '4g', 'wifi'].includes(effectiveType)) {
+        return effectiveType as MobileAudioState['networkType'];
+      }
     }
     return 'unknown';
   }
@@ -289,10 +292,13 @@ export class MobileAudioManager {
    */
   private setupNetworkHandling(): void {
     if ('connection' in navigator) {
-      this.networkHandler = () => {
+      this.networkHandler = (_event?: Event) => {
         const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
         const oldType = this.state.networkType;
-        this.state.networkType = connection?.effectiveType || 'unknown';
+        const effectiveType = connection?.effectiveType;
+        this.state.networkType = (effectiveType && ['slow-2g', '2g', '3g', '4g', 'wifi'].includes(effectiveType)) 
+          ? effectiveType as MobileAudioState['networkType'] 
+          : 'unknown';
         
         if (oldType !== this.state.networkType) {
           log.debug(`Network changed: ${oldType} -> ${this.state.networkType}`);
@@ -300,7 +306,7 @@ export class MobileAudioManager {
         }
       };
 
-      const connection = (navigator as Navigator & { connection?: { addEventListener?: (event: string, handler: () => void) => void } }).connection;
+      const connection = (navigator as Navigator & { connection?: { addEventListener?: (event: string, handler: (event?: Event) => void) => void } }).connection;
       connection?.addEventListener?.('change', this.networkHandler);
     }
   }
@@ -553,7 +559,7 @@ export class MobileAudioManager {
 
     if (this.batteryHandler && 'getBattery' in navigator) {
       (navigator as Navigator & { getBattery?: () => Promise<{ removeEventListener: (event: string, handler: () => void) => void }> }).getBattery?.().then((battery) => {
-        battery.removeEventListener('levelchange', this.batteryHandler);
+        battery.removeEventListener('levelchange', this.batteryHandler!);
       });
     }
 

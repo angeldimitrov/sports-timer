@@ -78,11 +78,11 @@ describe('AudioManager', () => {
     jest.clearAllMocks()
     
     // Mock AudioContext
-    global.AudioContext = jest.fn(() => mockAudioContext) as any
-    global.webkitAudioContext = jest.fn(() => mockAudioContext) as any
+    global.AudioContext = jest.fn(() => mockAudioContext) as typeof AudioContext
+    global.webkitAudioContext = jest.fn(() => mockAudioContext) as typeof AudioContext
     
     // Mock HTML Audio
-    global.Audio = jest.fn(() => mockHtmlAudio) as any
+    global.Audio = jest.fn(() => mockHtmlAudio) as typeof Audio
     
     // Mock fetch for audio file loading
     mockFetch = jest.fn(() => Promise.resolve({
@@ -124,8 +124,8 @@ describe('AudioManager', () => {
       
       // Test without Web Audio API
       const originalAudioContext = global.AudioContext
-      delete (global as any).AudioContext
-      delete (global as any).webkitAudioContext
+      delete (global as typeof global & { AudioContext?: typeof AudioContext }).AudioContext
+      delete (global as typeof global & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       
       const noWebAudioManager = new AudioManager()
       expect(noWebAudioManager.getState().hasWebAudioSupport).toBe(false)
@@ -162,7 +162,7 @@ describe('AudioManager', () => {
       // Mock Web Audio failure
       global.AudioContext = jest.fn(() => {
         throw new Error('Web Audio not supported')
-      }) as any
+      }) as typeof AudioContext
       
       const fallbackManager = new AudioManager({ enableFallback: true })
       await fallbackManager.initialize()
@@ -244,8 +244,8 @@ describe('AudioManager', () => {
      */
     test('should fallback to HTML5 Audio playback', async () => {
       // Remove Web Audio buffer to force fallback
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('bell').buffer = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('bell')!.buffer = undefined
       
       await audioManager.play('bell')
       
@@ -259,9 +259,9 @@ describe('AudioManager', () => {
      */
     test('should generate synthetic audio as final fallback', async () => {
       // Remove both Web Audio buffer and HTML Audio
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('beep').buffer = undefined
-      audioFiles.get('beep').htmlAudio = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('beep')!.buffer = undefined
+      audioFiles.get('beep')!.htmlAudio = undefined
       
       await audioManager.play('beep')
       
@@ -281,9 +281,9 @@ describe('AudioManager', () => {
         mockAudioContext.createOscillator.mockClear()
         
         // Force synthetic audio to test type-specific generation
-        const audioFiles = (audioManager as any).audioFiles
-        audioFiles.get(type).buffer = undefined
-        audioFiles.get(type).htmlAudio = undefined
+        const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+        audioFiles.get(type)!.buffer = undefined
+        audioFiles.get(type)!.htmlAudio = undefined
         
         await audioManager.play(type)
         
@@ -450,7 +450,7 @@ describe('AudioManager', () => {
         load: jest.fn()
       }
       
-      global.Audio = jest.fn(() => slowAudio) as any
+      global.Audio = jest.fn(() => slowAudio) as typeof Audio
       
       const timeoutManager = new AudioManager({ enableFallback: true })
       
@@ -488,9 +488,9 @@ describe('AudioManager', () => {
      */
     test('should generate bell tone correctly', async () => {
       // Force synthetic audio
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('bell').buffer = undefined
-      audioFiles.get('bell').htmlAudio = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('bell')!.buffer = undefined
+      audioFiles.get('bell')!.htmlAudio = undefined
       
       await audioManager.play('bell')
       
@@ -503,9 +503,9 @@ describe('AudioManager', () => {
      * Business Rule: Beep should generate short, attention-getting tone
      */
     test('should generate beep tone correctly', async () => {
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('beep').buffer = undefined
-      audioFiles.get('beep').htmlAudio = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('beep')!.buffer = undefined
+      audioFiles.get('beep')!.htmlAudio = undefined
       
       await audioManager.play('beep')
       
@@ -518,9 +518,9 @@ describe('AudioManager', () => {
      * Business Rule: Warning should generate urgent, pulsing tone
      */
     test('should generate warning tone with pulsing effect', async () => {
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('warning').buffer = undefined
-      audioFiles.get('warning').htmlAudio = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('warning')!.buffer = undefined
+      audioFiles.get('warning')!.htmlAudio = undefined
       
       await audioManager.play('warning')
       
@@ -536,9 +536,9 @@ describe('AudioManager', () => {
      * Business Rule: Synthetic audio should support scheduled playback
      */
     test('should schedule synthetic audio correctly', async () => {
-      const audioFiles = (audioManager as any).audioFiles
-      audioFiles.get('bell').buffer = undefined
-      audioFiles.get('bell').htmlAudio = undefined
+      const audioFiles = (audioManager as unknown as { audioFiles: Map<string, { buffer?: AudioBuffer; htmlAudio?: HTMLAudioElement }> }).audioFiles
+      audioFiles.get('bell')!.buffer = undefined
+      audioFiles.get('bell')!.htmlAudio = undefined
       
       const scheduledTime = 1.5
       await audioManager.play('bell', scheduledTime)

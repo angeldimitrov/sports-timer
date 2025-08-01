@@ -62,7 +62,7 @@ describe('TimerEngine', () => {
     jest.runOnlyPendingTimers()
     
     // Ensure worker is available for tests
-    const worker = (timer as any).worker
+    const worker = (timer as unknown as { worker?: { clearMessageHistory?(): void } }).worker
     if (worker && worker.clearMessageHistory) {
       worker.clearMessageHistory()
     }
@@ -101,7 +101,7 @@ describe('TimerEngine', () => {
      */
     test('should initialize Web Worker and receive ready signal', () => {
       // Check that worker initialization was triggered
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       expect(worker).toBeDefined()
       expect(worker.scriptURL).toBe('/workers/timer-worker.js')
       
@@ -160,7 +160,7 @@ describe('TimerEngine', () => {
         currentTime = 1000 + testPoint // Add to start time
         
         // Force a worker tick to get current state
-        const worker = (timer as any).worker
+        const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
         worker.forceTick()
@@ -206,7 +206,7 @@ describe('TimerEngine', () => {
       driftScenarios.forEach(({ advance, expected }) => {
         currentTime += advance
         
-        const worker = (timer as any).worker
+        const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
         worker.forceTick()
@@ -244,7 +244,7 @@ describe('TimerEngine', () => {
         const elapsedMs = minutes * 60 * 1000
         currentTime = 2000 + elapsedMs
         
-        const worker = (extendedTimer as any).worker
+        const worker = (extendedTimer as unknown as { worker?: { postMessage(data: unknown): void } }).worker
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
         worker.forceTick()
@@ -289,7 +289,7 @@ describe('TimerEngine', () => {
       currentTime = 3000 // 3 seconds elapsed
       
       // Get state before pause
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -334,7 +334,7 @@ describe('TimerEngine', () => {
       
       // Continue timing from resume point
       currentTime = 7000 // 2 more seconds after resume
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -356,7 +356,7 @@ describe('TimerEngine', () => {
       timer.start()
       currentTime = 3000
       
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -408,7 +408,7 @@ describe('TimerEngine', () => {
       
       // Complete work phase
       currentTime = 1000 + (config.workDuration * 1000) + 100 // Slightly over
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -441,7 +441,7 @@ describe('TimerEngine', () => {
       
       // Complete work phase
       currentTime += config.workDuration * 1000 + 100
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -485,7 +485,7 @@ describe('TimerEngine', () => {
       for (let round = 1; round <= config.totalRounds; round++) {
         // Work phase
         currentTime += config.workDuration * 1000 + 50
-        const worker = (timer as any).worker
+        const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
         worker.forceTick()
@@ -534,7 +534,7 @@ describe('TimerEngine', () => {
       const warningPoint = 1000 + (config.workDuration * 1000) - 10000
       currentTime = warningPoint
       
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -562,7 +562,7 @@ describe('TimerEngine', () => {
       
       // Multiple ticks at warning threshold
       const warningPoint = 1000 + (config.workDuration * 1000) - 10000
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       
       for (let i = 0; i < 5; i++) {
         currentTime = warningPoint + (i * 1000) // 10, 9, 8, 7, 6 seconds remaining
@@ -589,7 +589,7 @@ describe('TimerEngine', () => {
       // Trigger warning in work phase
       const workWarningPoint = 1000 + (config.workDuration * 1000) - 10000
       currentTime = workWarningPoint
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       if (worker && worker.forceTick) {
         worker.forceTick()
       }
@@ -750,7 +750,7 @@ describe('TimerEngine', () => {
       
       progressTests.forEach(({ elapsed, expectedProgress }) => {
         currentTime = 1000 + elapsed
-        const worker = (timer as any).worker
+        const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
         worker.forceTick()
@@ -769,15 +769,15 @@ describe('TimerEngine', () => {
      * Business Rule: All resources should be cleaned up on destroy
      */
     test('should clean up resources on destroy', () => {
-      const worker = (timer as any).worker
+      const worker = (timer as unknown as { worker?: { scriptURL?: string } }).worker
       const mockTerminate = jest.spyOn(worker, 'terminate')
       
       timer.start()
       timer.destroy()
       
       expect(mockTerminate).toHaveBeenCalled()
-      expect((timer as any).worker).toBeNull()
-      expect((timer as any).eventHandlers.size).toBe(0)
+      expect((timer as unknown as { worker?: unknown }).worker).toBeNull()
+      expect((timer as unknown as { eventHandlers?: Set<unknown> }).eventHandlers?.size).toBe(0)
     })
 
     /**
@@ -847,7 +847,7 @@ describe('Boxing Timer Presets', () => {
    */
   test('should throw error for invalid preset', () => {
     expect(() => {
-      createBoxingTimer('invalid' as any)
+      createBoxingTimer('invalid' as 'beginner')
     }).toThrow('Unknown preset: invalid')
   })
 })
