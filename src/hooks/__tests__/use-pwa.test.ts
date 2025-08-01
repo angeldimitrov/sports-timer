@@ -136,8 +136,8 @@ describe('usePWA Hook', () => {
 
   afterEach(() => {
     // Clean up globals
-    delete (navigator as any).serviceWorker
-    delete (global as any).caches
+    delete (navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }).serviceWorker
+    delete (global as typeof global & { caches?: CacheStorage }).caches
   })
 
   describe('Hook Initialization and Service Worker Registration', () => {
@@ -207,7 +207,7 @@ describe('usePWA Hook', () => {
      * Business Rule: Hook should work gracefully without service worker support
      */
     test('should handle unsupported browsers gracefully', () => {
-      delete (navigator as any).serviceWorker
+      delete (navigator as Navigator & { serviceWorker?: ServiceWorkerContainer }).serviceWorker
 
       const { result } = renderHook(() => usePWA(defaultOptions))
 
@@ -231,7 +231,7 @@ describe('usePWA Hook', () => {
           detail: mockBeforeInstallPromptEvent
         })
         Object.assign(installEvent, mockBeforeInstallPromptEvent)
-        window.dispatchEvent(installEvent as any)
+        window.dispatchEvent(installEvent as Event)
       })
 
       await waitFor(() => {
@@ -253,7 +253,7 @@ describe('usePWA Hook', () => {
           detail: mockBeforeInstallPromptEvent
         })
         Object.assign(installEvent, mockBeforeInstallPromptEvent)
-        window.dispatchEvent(installEvent as any)
+        window.dispatchEvent(installEvent as Event)
       })
 
       await waitFor(() => {
@@ -284,7 +284,7 @@ describe('usePWA Hook', () => {
       act(() => {
         const installEvent = new CustomEvent('beforeinstallprompt')
         Object.assign(installEvent, acceptedEvent)
-        window.dispatchEvent(installEvent as any)
+        window.dispatchEvent(installEvent as Event)
       })
 
       await act(async () => {
@@ -313,7 +313,7 @@ describe('usePWA Hook', () => {
       act(() => {
         const installEvent = new CustomEvent('beforeinstallprompt')
         Object.assign(installEvent, dismissedEvent)
-        window.dispatchEvent(installEvent as any)
+        window.dispatchEvent(installEvent as Event)
       })
 
       await act(async () => {
