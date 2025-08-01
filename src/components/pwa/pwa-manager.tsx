@@ -76,7 +76,7 @@ export function PWAManager() {
       navigator.serviceWorker.register(getPublicPath('/sw.js'))
         .then(registration => {
           console.log('[PWA] Service Worker registered:', registration.scope);
-          setSwRegistration(registration);
+          // Service worker registered successfully
 
           // Listen for service worker updates
           registration.addEventListener('updatefound', () => {
