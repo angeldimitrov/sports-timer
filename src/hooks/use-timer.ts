@@ -229,7 +229,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       }
       setIsReady(false);
     };
-  }, []); // Only run on mount
+  }, [autoStart, initialConfig, initializeTimer, preset]); // Add missing dependencies
 
   // Control methods
   const start = useCallback(() => {

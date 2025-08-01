@@ -128,8 +128,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
     swipeMinVelocity,
     longPressTime,
     longPressMovement,
-    enableHaptics,
-    enableVisualFeedback
+    enableHaptics
   } = fullConfig;
 
   // State management
@@ -170,7 +169,7 @@ export function useMobileGestures(options: UseMobileGesturesOptions = {}): UseMo
   /**
    * Log gesture for debugging and statistics
    */
-  const logGesture = useCallback((type: string, data?: any) => {
+  const logGesture = useCallback((type: string, data?: unknown) => {
     gestureStatsRef.current.totalGestures++;
     gestureStatsRef.current.gestureTypes[type] = (gestureStatsRef.current.gestureTypes[type] || 0) + 1;
 

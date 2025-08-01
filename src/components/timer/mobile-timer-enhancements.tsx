@@ -78,7 +78,11 @@ export function MobileTimerEnhancements({
 
     // Battery status
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as { getBattery?: () => Promise<{
+        level: number;
+        charging: boolean;
+        addEventListener: (event: string, handler: () => void) => void;
+      }> }).getBattery?.().then((battery) => {
         setBatteryLevel(Math.round(battery.level * 100));
         setIsCharging(battery.charging);
 
@@ -89,6 +93,8 @@ export function MobileTimerEnhancements({
         battery.addEventListener('chargingchange', () => {
           setIsCharging(battery.charging);
         });
+      }).catch((err) => {
+        log.warn('Battery API not available:', err);
       });
     }
 
@@ -137,9 +143,9 @@ export function MobileTimerEnhancements({
         await document.documentElement.requestFullscreen();
         
         // Try to lock orientation to portrait on mobile
-        if ('orientation' in screen && 'lock' in (screen.orientation as any)) {
+        if ('orientation' in screen && 'lock' in (screen.orientation as { lock?: (orientation: string) => Promise<void> })) {
           try {
-            await (screen.orientation as any).lock('portrait');
+            await (screen.orientation as { lock: (orientation: string) => Promise<void> }).lock('portrait');
           } catch (err) {
             log.debug('Orientation lock not supported');
           }

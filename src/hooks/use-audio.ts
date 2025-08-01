@@ -114,7 +114,7 @@ export function useAudio(): UseAudioReturn {
     return { volume: 100, isMuted: false };
   }, []);
 
-  // Save audio settings to localStorage
+  // Save audio settings to localStorage (deprecated - kept for compatibility)
   const saveSettings = useCallback((settings: Partial<AudioSettings>) => {
     try {
       const current = loadSettings();
@@ -185,7 +185,7 @@ export function useAudio(): UseAudioReturn {
     } finally {
       initializePromiseRef.current = null;
     }
-  }, [state.isInitialized, getManager, loadSettings]);
+  }, [state.isInitialized, getManager]);
 
   // Play audio of specified type
   const play = useCallback(async (type: AudioType, when: number = 0): Promise<void> => {
@@ -222,13 +222,13 @@ export function useAudio(): UseAudioReturn {
   const playTenSecondWarning = useCallback((when?: number) => playWarning(when), [playWarning]);
 
   // Volume control (deprecated - volume is now always 100%)
-  const setVolume = useCallback((volume: number) => {
+  const setVolume = useCallback((_volume: number) => {
     // Volume is now always 100% - this method does nothing
     // Kept for backward compatibility
   }, []);
 
   // Mute control (deprecated - audio is never muted)
-  const setMuted = useCallback((muted: boolean) => {
+  const setMuted = useCallback((_muted: boolean) => {
     // Audio is never muted - this method does nothing
     // Kept for backward compatibility
   }, []);
@@ -246,7 +246,7 @@ export function useAudio(): UseAudioReturn {
 
   // Initialize on mount and load settings
   useEffect(() => {
-    const settings = loadSettings();
+    loadSettings(); // Load settings but don't apply them
     const manager = getManager();
     const managerState = manager.getState();
     
@@ -258,7 +258,7 @@ export function useAudio(): UseAudioReturn {
     }));
     
     // No settings to apply - audio is always 100% and never muted
-  }, [getManager, loadSettings]); // Add missing dependencies
+  }, [getManager, loadSettings]);
 
   // Clear error after some time
   useEffect(() => {

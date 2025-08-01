@@ -110,7 +110,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
   const checkStandaloneMode = useCallback(() => {
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true ||
+      ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true) ||
       document.referrer.includes('android-app://');
     
     return isStandalone;
@@ -418,7 +418,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
     }
 
     // Analytics (only log for main instance to avoid spam)
-    if (enableAnalytics && options.onInstallSuccess) {
+    if (enableAnalytics && onInstallSuccess) {
       log.debug('PWA state initialized:', {
         isInstalled,
         isStandalone: isInstalled,
@@ -426,7 +426,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         sessionCount: getSessionCount()
       });
     }
-  }, []); // Run only once on mount
+  }, [checkOfflineStatus, checkStandaloneMode, enableAnalytics, getSessionCount, incrementSessionCount, onInstallSuccess]); // Add missing dependencies
 
   return {
     state,

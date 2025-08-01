@@ -145,8 +145,8 @@ export function MobileTimer({
   });
 
   // Local state
-  const [audioManager, setAudioManager] = useState<any>(null);
-  const [mobileAudioManager, setMobileAudioManager] = useState<any>(null);
+  const [audioManager, setAudioManager] = useState<ReturnType<typeof getAudioManager> | null>(null);
+  const [mobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -198,7 +198,7 @@ export function MobileTimer({
   /**
    * Handle timer audio events
    */
-  const handleTimerAudio = useCallback((event: any) => {
+  const handleTimerAudio = useCallback((event: { type: string; state?: unknown }) => {
     if (!audioManager || isMuted) return;
 
     switch (event.type) {
@@ -243,7 +243,7 @@ export function MobileTimer({
   /**
    * Handle visual feedback for events
    */
-  const handleVisualFeedback = useCallback((event: any) => {
+  const handleVisualFeedback = useCallback((event: { type: string; state?: unknown }) => {
     const display = timerDisplayRef.current;
     if (!display) return;
 
@@ -270,7 +270,7 @@ export function MobileTimer({
     
     // Skip logic would be implemented in timer engine
     log.debug('Skip to next phase');
-  }, [timer.isRunning]);
+  }, [timer.isRunning, showGestureIndicator]);
 
   /**
    * Handle previous phase gesture
@@ -280,7 +280,7 @@ export function MobileTimer({
     
     // Previous phase logic would be implemented in timer engine
     log.debug('Go to previous phase');
-  }, []);
+  }, [showGestureIndicator]);
 
   /**
    * Adjust volume with gesture

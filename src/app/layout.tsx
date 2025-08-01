@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   appleWebApp: {
-    capable: true,
     statusBarStyle: "default",
     title: "Boxing Timer",
     startupImage: [

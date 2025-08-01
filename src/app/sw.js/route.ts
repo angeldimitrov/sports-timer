@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getBasePath } from '@/lib/get-base-path';
 
 /**
  * Dynamic Service Worker Generation Route
@@ -16,8 +17,8 @@ import { NextResponse } from 'next/server';
  */
 
 export async function GET() {
-  // Get the base path from environment variable
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  // Get the base path using the utility function for consistency
+  const basePath = getBasePath();
   
   // Generate the service worker JavaScript code
   const serviceWorkerCode = `
