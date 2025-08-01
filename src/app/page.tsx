@@ -24,7 +24,7 @@ const log = createModuleLogger('MainPage');
 import { PWAManager } from '@/components/pwa/pwa-manager';
 import { PWAStatus, PWAStatusBadge } from '@/components/pwa/pwa-status';
 import { InstallBadge } from '@/components/pwa/install-prompt';
-import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification';
+// import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification'; // Disabled for cleaner UX
 import { 
   MobileTimerEnhancements, 
   TouchGestureIndicator,
@@ -279,17 +279,12 @@ export default function Home() {
           enableHaptics={gestures.isEnabled}
         />
         {/* InstallPrompt disabled - using only the red download icon for cleaner UX */}
-        <UpdateNotification 
-          showChangelog={true}
-          enableAnimations={true}
-          enableHaptics={gestures.isEnabled}
-          showPremiumEffects={true}
-        />
+        {/* UpdateNotification disabled - to prevent any install/update popups for cleaner UX */}
         
         {/* Compact PWA badges for mobile */}
         <div className="fixed top-4 left-4 z-50 flex gap-2">
           <PWAStatusBadge />
-          <UpdateBadge />
+          {/* UpdateBadge disabled - to prevent any update popups for cleaner UX */}
         </div>
         <InstallBadge />
         
