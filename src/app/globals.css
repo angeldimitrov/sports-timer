@@ -259,3 +259,106 @@
     direction: ltr !important;
   }
 }
+
+/* Premium PWA animations and effects */
+@layer utilities {
+  /* Shimmer animation for premium loading effects */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  
+  /* Shadow pulse for attention-drawing effects */
+  @keyframes shadow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+    }
+  }
+  
+  .animate-shadow-pulse {
+    animation: shadow-pulse 2s ease-in-out infinite;
+  }
+  
+  /* Premium bounce animation */
+  @keyframes premium-bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    40% {
+      transform: translateY(-8px) scale(1.05);
+    }
+    60% {
+      transform: translateY(-4px) scale(1.02);
+    }
+  }
+  
+  .animate-premium-bounce {
+    animation: premium-bounce 2s ease-in-out infinite;
+  }
+  
+  /* Slide animations for PWA prompts */
+  @keyframes slide-in-from-bottom-smooth {
+    0% {
+      transform: translateY(100%) translateX(-50%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0) translateX(-50%);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-out-to-bottom-smooth {
+    0% {
+      transform: translateY(0) translateX(-50%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100%) translateX(-50%);
+      opacity: 0;
+    }
+  }
+  
+  .animate-slide-in-smooth {
+    animation: slide-in-from-bottom-smooth 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .animate-slide-out-smooth {
+    animation: slide-out-to-bottom-smooth 0.3s cubic-bezier(0.4, 0, 1, 1);
+  }
+  
+  /* Enhanced shadow variations */
+  .shadow-3xl {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
+  }
+  
+  .shadow-4xl {
+    box-shadow: 0 45px 80px -12px rgba(0, 0, 0, 0.45);
+  }
+  
+  /* Premium glass effects */
+  .glass-premium {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-premium-light {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
