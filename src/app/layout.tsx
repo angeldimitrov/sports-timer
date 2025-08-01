@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { HeadLinks } from '@/components/layout/head-links'
-import { getPublicPath } from '@/lib/get-base-path'
+import { getPublicPath, getBasePath } from '@/lib/get-base-path'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  manifest: `${process.env.NODE_ENV === 'production' ? '/sports-timer' : ''}/manifest.json`,
+  manifest: `${getBasePath()}/manifest.json`,
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
