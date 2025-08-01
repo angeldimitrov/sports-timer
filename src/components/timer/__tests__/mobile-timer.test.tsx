@@ -653,10 +653,10 @@ describe('MobileTimer Component', () => {
      */
     test('should handle unsupported mobile features gracefully', () => {
       // Remove wake lock support
-      delete (navigator as any).wakeLock
+      delete (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock
 
       // Remove orientation support
-      delete (screen as any).orientation
+      delete (screen as Screen & { orientation?: ScreenOrientation }).orientation
 
       expect(() => {
         render(<MobileTimer {...defaultProps} />)
@@ -708,7 +708,7 @@ describe('MobileTimer Component', () => {
       }
 
       // Mock battery API
-      ;(navigator as any).getBattery = jest.fn(() => Promise.resolve(mockBattery))
+      ;(navigator as Navigator & { getBattery?: () => Promise<{ level: number }> }).getBattery = jest.fn(() => Promise.resolve(mockBattery))
 
       render(<MobileTimer {...defaultProps} batteryOptimized={true} />)
 
