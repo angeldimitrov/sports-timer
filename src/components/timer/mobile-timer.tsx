@@ -146,7 +146,7 @@ export function MobileTimer({
 
   // Local state
   const [audioManager, setAudioManager] = useState<ReturnType<typeof getAudioManager> | null>(null);
-  const [mobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
+  const [mobileAudioManager, setMobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -198,7 +198,7 @@ export function MobileTimer({
   /**
    * Handle timer audio events
    */
-  const handleTimerAudio = useCallback((event: { type: string; state?: unknown }) => {
+  const handleTimerAudio = useCallback((event: { type: string; state?: { phase?: string }; payload?: { newPhase?: string } }) => {
     if (!audioManager || isMuted) return;
 
     switch (event.type) {
@@ -207,10 +207,10 @@ export function MobileTimer({
         break;
       case 'phaseChange':
         // Play sound based on what phase we're transitioning TO
-        if (event.payload.newPhase === 'work') {
+        if (event.payload?.newPhase === 'work') {
           // Starting work period - play round start
           audioManager.playRoundStart();
-        } else if (event.payload.newPhase === 'rest') {
+        } else if (event.payload?.newPhase === 'rest') {
           // Starting rest period (work just ended) - play end of round and rest announcement
           audioManager.playRoundEnd();
           setTimeout(() => audioManager.playRest(), 1000);
@@ -218,13 +218,13 @@ export function MobileTimer({
         break;
       case 'warning':
         // Play warning sound based on current phase
-        if (event.state.phase === 'preparation') {
+        if (event.state?.phase === 'preparation') {
           // During preparation: play "next round in 10 seconds"
           audioManager.playTenSecondWarning();
-        } else if (event.state.phase === 'rest') {
+        } else if (event.state?.phase === 'rest') {
           // During rest: play "next round in 10 seconds" 
           audioManager.playTenSecondWarning();
-        } else if (event.state.phase === 'work') {
+        } else if (event.state?.phase === 'work') {
           // During work: play generic warning sound (not "next round")
           audioManager.play('warning');
         }
@@ -243,7 +243,7 @@ export function MobileTimer({
   /**
    * Handle visual feedback for events
    */
-  const handleVisualFeedback = useCallback((event: { type: string; state?: unknown }) => {
+  const handleVisualFeedback = useCallback((event: { type: string; state?: { phase?: string }; payload?: { newPhase?: string } }) => {
     const display = timerDisplayRef.current;
     if (!display) return;
 
@@ -270,7 +270,7 @@ export function MobileTimer({
     
     // Skip logic would be implemented in timer engine
     log.debug('Skip to next phase');
-  }, [timer.isRunning, showGestureIndicator]);
+  }, [timer.isRunning]);
 
   /**
    * Handle previous phase gesture
@@ -280,7 +280,7 @@ export function MobileTimer({
     
     // Previous phase logic would be implemented in timer engine
     log.debug('Go to previous phase');
-  }, [showGestureIndicator]);
+  }, []);
 
   /**
    * Adjust volume with gesture

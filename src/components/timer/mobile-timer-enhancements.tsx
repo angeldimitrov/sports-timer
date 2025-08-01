@@ -143,9 +143,9 @@ export function MobileTimerEnhancements({
         await document.documentElement.requestFullscreen();
         
         // Try to lock orientation to portrait on mobile
-        if ('orientation' in screen && 'lock' in (screen.orientation as { lock?: (orientation: string) => Promise<void> })) {
+        if ('orientation' in screen && screen.orientation && 'lock' in screen.orientation) {
           try {
-            await (screen.orientation as { lock: (orientation: string) => Promise<void> }).lock('portrait');
+            await (screen.orientation as unknown as { lock: (orientation: string) => Promise<void> }).lock('portrait');
           } catch (err) {
             log.debug('Orientation lock not supported');
           }
