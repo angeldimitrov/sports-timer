@@ -241,40 +241,43 @@ export function InstallBadge() {
     }
   }, [canInstall, isMounted]);
 
-  // Don't render anything during SSR to prevent hydration mismatch
-  // In production, show install badge if PWA is not already installed
+  // Always render the badge after mount - React 19 compatibility
   if (!isMounted) return null;
   
+  // Check if running in standalone mode (already installed)
   const isStandalone = typeof window !== 'undefined' && 
     (window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in window.navigator && (window.navigator as any).standalone));
+    ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone));
   
-  // Show install badge if not installed and can install, or if in production for broader compatibility
-  if (!canInstall && !isStandalone && process.env.NODE_ENV === 'production') {
-    // In production, show a fallback install instruction for browsers that might support PWA
-    return (
-      <button
-        onClick={() => {
-          // For browsers without beforeinstallprompt, show manual instructions
-          alert('To install this app:\n\n1. On Chrome/Edge: Look for the install icon in the address bar\n2. On Safari: Tap Share → Add to Home Screen\n3. Or use your browser\'s "Install App" option in the menu');
-        }}
-        className="fixed top-4 right-4 z-40 p-3 bg-red-600 rounded-full shadow-lg transition-all hover:bg-red-700 hover:scale-110"
-        aria-label="Install Boxing Timer app"
-      >
-        <Download className="w-5 h-5 text-white" />
-      </button>
-    );
-  }
-  
-  if (!canInstall) return null;
+  // Don't show if already installed
+  if (isStandalone) return null;
 
+  // Handle click - either show prompt or show manual instructions
+  const handleClick = async () => {
+    if (canInstall && showPrompt) {
+      // Try to show the native install prompt
+      try {
+        await showPrompt();
+      } catch (error) {
+        console.warn('Install prompt failed:', error);
+        // Fallback to manual instructions
+        alert('To install this app:\n\n1. On Chrome/Edge: Look for the install icon in the address bar\n2. On Safari: Tap Share → Add to Home Screen\n3. Or use your browser\'s "Install App" option in the menu');
+      }
+    } else {
+      // Show manual instructions for browsers without beforeinstallprompt
+      alert('To install this app:\n\n1. On Chrome/Edge: Look for the install icon in the address bar\n2. On Safari: Tap Share → Add to Home Screen\n3. Or use your browser\'s "Install App" option in the menu');
+    }
+  };
+
+  // Always show the install badge (React 19 simplified approach)
   return (
     <button
-      onClick={showPrompt}
+      onClick={handleClick}
       className={`fixed top-4 right-4 z-40 p-3 bg-red-600 rounded-full shadow-lg transition-all hover:bg-red-700 hover:scale-110 ${
         isAnimating ? 'animate-pulse' : ''
       }`}
       aria-label="Install Boxing Timer app"
+      title="Install Boxing Timer as an app"
     >
       <Download className="w-5 h-5 text-white" />
     </button>

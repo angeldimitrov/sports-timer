@@ -14,6 +14,8 @@
 import { NextResponse } from 'next/server';
 import { getBasePath } from '@/lib/get-base-path';
 
+export const dynamic = 'force-static';
+
 /**
  * Generate PWA manifest with environment-aware paths
  * 

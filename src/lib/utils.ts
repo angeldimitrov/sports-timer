@@ -189,7 +189,7 @@ export function supportsWebWorkers(): boolean {
  * @returns True if Web Audio API is supported
  */
 export function supportsWebAudio(): boolean {
-  return typeof AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined';
+  return typeof AudioContext !== 'undefined' || typeof (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext !== 'undefined';
 }
 
 /**

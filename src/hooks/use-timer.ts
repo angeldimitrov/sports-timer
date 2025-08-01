@@ -229,6 +229,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       }
       setIsReady(false);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount - dependencies cause infinite loops
 
   // Control methods

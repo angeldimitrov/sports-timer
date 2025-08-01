@@ -148,7 +148,7 @@ export function MobileTimer({
   // const [mobileAudioManager, setMobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
-  const [hasUpdate, setHasUpdate] = useState(false);
+  const [hasUpdate] = useState(false);
   const [gestureIndicator, setGestureIndicator] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
