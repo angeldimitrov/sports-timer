@@ -47,7 +47,7 @@ jest.mock('../../lib/audio-manager', () => ({
 describe('useAudio Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    global.localStorage = mockLocalStorage as any
+    global.localStorage = mockLocalStorage as Storage
     
     // Reset mock implementations
     mockAudioManager.initialize.mockResolvedValue(undefined)
