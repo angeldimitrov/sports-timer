@@ -247,7 +247,7 @@ export function InstallBadge() {
   
   const isStandalone = typeof window !== 'undefined' && 
     (window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in window.navigator && (window.navigator as any).standalone));
+    ('standalone' in window.navigator && (window.navigator as Navigator & { standalone?: boolean }).standalone));
   
   // Show install badge if not installed and can install, or if in production for broader compatibility
   if (!canInstall && !isStandalone && process.env.NODE_ENV === 'production') {

@@ -115,6 +115,7 @@ export function useAudio(): UseAudioReturn {
   }, []);
 
   // Save audio settings to localStorage (deprecated - kept for compatibility)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const saveSettings = useCallback((settings: Partial<AudioSettings>) => {
     try {
       const current = loadSettings();
