@@ -192,7 +192,7 @@ describe('TimerEngine', () => {
      */
     test('should compensate for timing drift', () => {
       timer.start()
-      let baseTime = 1000
+      const baseTime = 1000
       currentTime = baseTime
       
       // Simulate timing drift by advancing time irregularly
@@ -436,12 +436,12 @@ describe('TimerEngine', () => {
      */
     test('should transition from rest to next round', () => {
       timer.start()
-      let baseTime = 1000
+      const baseTime = 1000
       currentTime = baseTime
       
       // Complete work phase
       currentTime += config.workDuration * 1000 + 100
-      let worker = (timer as any).worker
+      const worker = (timer as any).worker
       if (worker && worker.forceTick) {
         if (worker && worker.forceTick) {
           if (worker && worker.forceTick) {
@@ -478,7 +478,7 @@ describe('TimerEngine', () => {
      */
     test('should complete workout after final round', () => {
       timer.start()
-      let baseTime = 1000
+      const baseTime = 1000
       currentTime = baseTime
       
       // Complete all rounds
@@ -589,7 +589,7 @@ describe('TimerEngine', () => {
       // Trigger warning in work phase
       const workWarningPoint = 1000 + (config.workDuration * 1000) - 10000
       currentTime = workWarningPoint
-      let worker = (timer as any).worker
+      const worker = (timer as any).worker
       if (worker && worker.forceTick) {
         worker.forceTick()
       }

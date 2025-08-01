@@ -20,18 +20,26 @@ import { UseTimerReturn } from '../../../hooks/use-timer'
 // Mock framer-motion to avoid animation-related test complexity
 jest.mock('framer-motion', () => ({
   motion: {
-    div: React.forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) => (
-      <div ref={ref} {...props}>{children}</div>
-    )),
-    span: React.forwardRef<HTMLSpanElement, any>(({ children, ...props }, ref) => (
-      <span ref={ref} {...props}>{children}</span>
-    )),
-    h2: React.forwardRef<HTMLHeadingElement, any>(({ children, ...props }, ref) => (
-      <h2 ref={ref} {...props}>{children}</h2>
-    )),
-    circle: React.forwardRef<SVGCircleElement, any>(({ children, ...props }, ref) => (
-      <circle ref={ref} {...props}>{children}</circle>
-    ))
+    div: React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<'div'>>(({ children, ...props }, ref) => {
+      const MotionDiv = () => <div ref={ref} {...props}>{children}</div>;
+      MotionDiv.displayName = 'motion.div';
+      return MotionDiv();
+    }),
+    span: React.forwardRef<HTMLSpanElement, React.ComponentPropsWithoutRef<'span'>>(({ children, ...props }, ref) => {
+      const MotionSpan = () => <span ref={ref} {...props}>{children}</span>;
+      MotionSpan.displayName = 'motion.span';
+      return MotionSpan();
+    }),
+    h2: React.forwardRef<HTMLHeadingElement, React.ComponentPropsWithoutRef<'h2'>>(({ children, ...props }, ref) => {
+      const MotionH2 = () => <h2 ref={ref} {...props}>{children}</h2>;
+      MotionH2.displayName = 'motion.h2';
+      return MotionH2();
+    }),
+    circle: React.forwardRef<SVGCircleElement, React.ComponentPropsWithoutRef<'circle'>>(({ children, ...props }, ref) => {
+      const MotionCircle = () => <circle ref={ref} {...props}>{children}</circle>;
+      MotionCircle.displayName = 'motion.circle';
+      return MotionCircle();
+    })
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useAnimation: () => ({
