@@ -426,7 +426,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         sessionCount: getSessionCount()
       });
     }
-  }, []); // Only run on mount - dependencies cause infinite loops
+  }, [checkOfflineStatus, checkStandaloneMode, enableAnalytics, getSessionCount, incrementSessionCount, onInstallSuccess, options.onInstallSuccess]);
 
   return {
     state,
