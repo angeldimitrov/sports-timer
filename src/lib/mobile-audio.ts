@@ -123,7 +123,7 @@ export class MobileAudioManager {
       isChrome,
       isFirefox,
       version,
-      supportsWebAudio: !!(window.AudioContext || (window as any).webkitAudioContext),
+      supportsWebAudio: !!(window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext),
       supportsAudioWorklet: !!(window.AudioContext && AudioContext.prototype.audioWorklet)
     };
   }
@@ -149,8 +149,8 @@ export class MobileAudioManager {
    */
   private detectNetworkType(): MobileAudioState['networkType'] {
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      return connection.effectiveType || 'unknown';
+      const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+      return connection?.effectiveType || 'unknown';
     }
     return 'unknown';
   }
@@ -191,7 +191,7 @@ export class MobileAudioManager {
       try {
         // Create minimal audio context
         if (!this.audioContext) {
-          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          this.audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext!)();
         }
 
         // Create and play silent buffer to unlock
@@ -289,10 +289,10 @@ export class MobileAudioManager {
    */
   private setupNetworkHandling(): void {
     if ('connection' in navigator) {
-      this.networkHandler = (event) => {
-        const connection = (navigator as any).connection;
+      this.networkHandler = () => {
+        const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
         const oldType = this.state.networkType;
-        this.state.networkType = connection.effectiveType || 'unknown';
+        this.state.networkType = connection?.effectiveType || 'unknown';
         
         if (oldType !== this.state.networkType) {
           log.debug(`Network changed: ${oldType} -> ${this.state.networkType}`);
@@ -300,7 +300,8 @@ export class MobileAudioManager {
         }
       };
 
-      (navigator as any).connection.addEventListener('change', this.networkHandler);
+      const connection = (navigator as Navigator & { connection?: { addEventListener?: (event: string, handler: () => void) => void } }).connection;
+      connection?.addEventListener?.('change', this.networkHandler);
     }
   }
 
@@ -309,7 +310,7 @@ export class MobileAudioManager {
    */
   private setupBatteryHandling(): void {
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as Navigator & { getBattery?: () => Promise<{ level: number; addEventListener: (event: string, handler: () => void) => void }> }).getBattery?.().then((battery) => {
         this.state.batteryLevel = battery.level;
         this.state.isLowPowerMode = battery.level < 0.2;
 
@@ -361,7 +362,7 @@ export class MobileAudioManager {
       
       this.state.autoplayPolicy = 'allowed';
       log.debug('Autoplay policy: allowed');
-    } catch (error) {
+    } catch {
       this.state.autoplayPolicy = 'blocked';
       log.debug('Autoplay policy: blocked');
     }
@@ -429,7 +430,7 @@ export class MobileAudioManager {
       await this.waitForUserGesture();
     }
 
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     
     const contextOptions: AudioContextOptions = {
       latencyHint: this.config.useLowLatency ? 'interactive' : 'balanced',
@@ -546,11 +547,12 @@ export class MobileAudioManager {
     }
 
     if (this.networkHandler && 'connection' in navigator) {
-      (navigator as any).connection.removeEventListener('change', this.networkHandler);
+      const connection = (navigator as Navigator & { connection?: { removeEventListener?: (event: string, handler: () => void) => void } }).connection;
+      connection?.removeEventListener?.('change', this.networkHandler);
     }
 
     if (this.batteryHandler && 'getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      (navigator as Navigator & { getBattery?: () => Promise<{ removeEventListener: (event: string, handler: () => void) => void }> }).getBattery?.().then((battery) => {
         battery.removeEventListener('levelchange', this.batteryHandler);
       });
     }

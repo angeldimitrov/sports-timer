@@ -301,7 +301,7 @@ export class AudioManager {
         audio.volume = this.getVolumeDecimal();
         
         // Shorter timeout and more permissive loading
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
           const timeout = setTimeout(() => {
             log.warn(`Basic fallback timeout for ${type}, but continuing`);
             resolve(); // Resolve instead of reject for more permissive loading
@@ -374,7 +374,7 @@ export class AudioManager {
             resolve();
           };
 
-          const onError = (event: Event) => {
+          const onError = () => {
             cleanup();
             const error = new Error(`Failed to load ${type} audio: ${audio.error?.message || 'Unknown error'}`);
             reject(error);
@@ -703,6 +703,7 @@ export class AudioManager {
   setVolume(volume: number): void {
     // Volume is now always 100% - this method does nothing
     // Kept for backward compatibility
+    void volume; // Acknowledge parameter to avoid unused warning
   }
 
   /**
@@ -723,6 +724,7 @@ export class AudioManager {
   setMuted(muted: boolean): void {
     // Audio is never muted - this method does nothing
     // Kept for backward compatibility
+    void muted; // Acknowledge parameter to avoid unused warning
   }
 
   /**
