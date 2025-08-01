@@ -593,7 +593,7 @@ describe('PresetSelector Component', () => {
         return (
           <PresetSelector 
             {...defaultProps}
-            currentPreset={currentPreset as any}
+            currentPreset={currentPreset}
           />
         )
       }

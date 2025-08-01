@@ -751,7 +751,7 @@ describe('TimerControls Component', () => {
         <TimerControls
           state={idleState}
           config={defaultConfig}
-          onStart={undefined as any}
+          onStart={undefined}
           onPause={mockOnPause}
           onResume={mockOnResume}
           onStop={mockOnStop}
