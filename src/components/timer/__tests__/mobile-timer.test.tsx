@@ -184,7 +184,7 @@ describe('MobileTimer Component', () => {
         { width: 360, height: 640, name: 'Android Medium' }
       ]
 
-      screenSizes.forEach(({ width, height, name }) => {
+      screenSizes.forEach(({ width, height }) => {
         // Update viewport
         Object.defineProperty(window, 'innerWidth', { value: width, writable: true })
         Object.defineProperty(window, 'innerHeight', { value: height, writable: true })
@@ -244,7 +244,7 @@ describe('MobileTimer Component', () => {
 
       // Test swipe left to pause (with running state)
       const runningState = createTimerState({ status: 'running' })
-      const { rerender } = render(<MobileTimer {...defaultProps} state={runningState} />)
+      render(<MobileTimer {...defaultProps} state={runningState} />)
       
       fireEvent(timerDisplay, createTouchEvent('touchstart', [{ clientX: 200, clientY: 300 }]))
       fireEvent(timerDisplay, createTouchEvent('touchmove', [{ clientX: 100, clientY: 300 }]))
@@ -364,7 +364,7 @@ describe('MobileTimer Component', () => {
      * Business Rule: Layout should adapt smoothly to orientation changes
      */
     test('should handle orientation changes gracefully', () => {
-      const { rerender } = render(<MobileTimer {...defaultProps} />)
+      render(<MobileTimer {...defaultProps} />)
 
       // Simulate orientation change to landscape
       const orientationChangeEvent = new Event('orientationchange')
@@ -408,7 +408,7 @@ describe('MobileTimer Component', () => {
       const idleState = createTimerState({ status: 'idle' })
       const runningState = createTimerState({ status: 'running' })
 
-      const { rerender } = render(<MobileTimer {...defaultProps} state={idleState} />)
+      render(<MobileTimer {...defaultProps} state={idleState} />)
 
       // Start timer
       rerender(<MobileTimer {...defaultProps} state={runningState} />)
@@ -431,7 +431,7 @@ describe('MobileTimer Component', () => {
       const runningState = createTimerState({ status: 'running' })
       const idleState = createTimerState({ status: 'idle' })
 
-      const { rerender } = render(<MobileTimer {...defaultProps} state={runningState} />)
+      render(<MobileTimer {...defaultProps} state={runningState} />)
 
       // Stop timer
       rerender(<MobileTimer {...defaultProps} state={idleState} />)
@@ -502,7 +502,7 @@ describe('MobileTimer Component', () => {
       }
 
       const initialState = createTimerState({ timeRemaining: 10000 })
-      const { rerender } = render(<OptimizedTimer state={initialState} />)
+      render(<OptimizedTimer state={initialState} />)
 
       // Simulate rapid timer updates
       for (let i = 9900; i >= 0; i -= 100) {
@@ -593,7 +593,7 @@ describe('MobileTimer Component', () => {
       })
 
       const runningState = createTimerState({ status: 'running' })
-      const { rerender } = render(<MobileTimer {...defaultProps} />)
+      render(<MobileTimer {...defaultProps} />)
 
       // Transition to running should trigger haptic feedback
       rerender(<MobileTimer {...defaultProps} state={runningState} />)
@@ -620,7 +620,7 @@ describe('MobileTimer Component', () => {
         timeRemaining: 10000 // 10 seconds
       })
 
-      const { rerender } = render(<MobileTimer {...defaultProps} state={runningState} />)
+      render(<MobileTimer {...defaultProps} state={runningState} />)
       
       // Should announce in mobile-friendly format
       expect(liveRegion).toHaveTextContent(/10 seconds remaining/i)

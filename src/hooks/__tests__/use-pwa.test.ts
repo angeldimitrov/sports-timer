@@ -819,7 +819,7 @@ describe('usePWA Hook', () => {
       await act(async () => {
         try {
           result.current.sendMessageToSW({ type: 'TEST' })
-        } catch (error) {
+        } catch {
           expect(result.current.error).toBeDefined()
         }
       })
@@ -857,7 +857,7 @@ describe('usePWA Hook', () => {
       await act(async () => {
         try {
           await result.current.preloadResources(['/large-file'])
-        } catch (error) {
+        } catch {
           expect(result.current.isStorageLimitReached).toBe(true)
         }
       })
@@ -891,7 +891,7 @@ describe('usePWA Hook', () => {
       await act(async () => {
         try {
           await result.current.checkForUpdates()
-        } catch (error) {
+        } catch {
           expect(result.current.updateCheckFailed).toBe(true)
         }
       })

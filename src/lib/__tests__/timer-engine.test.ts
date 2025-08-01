@@ -11,7 +11,7 @@
  * - Memory leak prevention and cleanup
  */
 
-import { TimerEngine, TimerConfig, TimerState, TimerEvent, createBoxingTimer } from '../timer-engine'
+import { TimerEngine, TimerConfig, TimerEvent, createBoxingTimer } from '../timer-engine'
 
 // Mock performance timing for consistent testing
 const mockPerformanceNow = jest.fn()
