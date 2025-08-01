@@ -23,7 +23,7 @@ const log = createModuleLogger('MainPage');
 // PWA and mobile components
 import { PWAManager } from '@/components/pwa/pwa-manager';
 import { PWAStatus, PWAStatusBadge } from '@/components/pwa/pwa-status';
-import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
+import { InstallBadge } from '@/components/pwa/install-prompt';
 import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification';
 import { 
   MobileTimerEnhancements, 
@@ -278,10 +278,7 @@ export default function Home() {
           showConnectionStatus={true}
           enableHaptics={gestures.isEnabled}
         />
-        <InstallPrompt 
-          enableAnimations={true}
-          enableHaptics={gestures.isEnabled}
-        />
+        {/* InstallPrompt disabled - using only the red download icon for cleaner UX */}
         <UpdateNotification 
           showChangelog={true}
           enableAnimations={true}

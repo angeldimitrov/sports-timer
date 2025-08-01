@@ -17,18 +17,12 @@ import { getPublicPath } from '@/lib/get-base-path';
  * with the dynamic base path system.
  */
 
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
+// BeforeInstallPromptEvent interface removed - install prompts disabled for cleaner UX
 
 export function PWAManager() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
+  // Disabled install prompts for cleaner UX - only red download icon is used now
+  // const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  // const [isInstallable, setIsInstallable] = useState(false); // Disabled for cleaner UX
   const [isInstalled, setIsInstalled] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
@@ -42,20 +36,14 @@ export function PWAManager() {
 
     checkInstallStatus();
 
-    // Listen for beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('[PWA] Before install prompt triggered');
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
-    };
+    // beforeinstallprompt event handling disabled for cleaner UX - install via red download icon only
 
     // Listen for app installation
     const handleAppInstalled = () => {
       console.log('[PWA] App was installed');
       setIsInstalled(true);
-      setIsInstallable(false);
-      setDeferredPrompt(null);
+      // setIsInstallable(false); // Disabled for cleaner UX
+      // setDeferredPrompt(null); // Disabled for cleaner UX
     };
 
     // Listen for online/offline status
@@ -65,8 +53,8 @@ export function PWAManager() {
     // Set initial online status
     setIsOnline(navigator.onLine);
 
-    // Add event listeners
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    // Add event listeners (beforeinstallprompt disabled for cleaner UX)
+    // window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt); // Disabled
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -109,35 +97,14 @@ export function PWAManager() {
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      // window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt); // Disabled
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    try {
-      // Show the install prompt
-      await deferredPrompt.prompt();
-      
-      // Wait for user response
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      console.log(`[PWA] User ${outcome} the install prompt`);
-      
-      if (outcome === 'accepted') {
-        setIsInstalled(true);
-      }
-      
-      setDeferredPrompt(null);
-      setIsInstallable(false);
-    } catch (error) {
-      console.error('[PWA] Install prompt failed:', error);
-    }
-  };
+  // handleInstallClick function removed - install now handled only by red download icon
 
   const showUpdateAvailable = () => {
     // Show a subtle notification that an update is available
@@ -191,31 +158,7 @@ export function PWAManager() {
     }, 10000);
   };
 
-  // iOS Safari install instructions
-  const showIOSInstallInstructions = () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    
-    if (isIOS && isSafari && !isInstalled) {
-      return (
-        <div className="ios-install-prompt bg-slate-800 p-4 rounded-lg border-l-4 border-red-600 mb-4">
-          <div className="text-sm">
-            <div className="font-semibold text-white mb-2">Add to Home Screen</div>
-            <div className="text-slate-300 mb-3">
-              Install Boxing Timer for the best experience:
-            </div>
-            <ol className="text-slate-300 text-sm space-y-1 ml-4">
-              <li>1. Tap the Share button</li>
-              <li>2. Select &quot;Add to Home Screen&quot;</li>
-              <li>3. Tap &quot;Add&quot; to install</li>
-            </ol>
-          </div>
-        </div>
-      );
-    }
-    
-    return null;
-  };
+  // iOS Safari install instructions removed - install now handled only by red download icon
 
   // Don't render anything if already installed
   if (isInstalled) {
@@ -232,28 +175,9 @@ export function PWAManager() {
         </div>
       )}
 
-      {/* iOS install instructions */}
-      {showIOSInstallInstructions()}
-
-      {/* Install prompt for other browsers */}
-      {isInstallable && (
-        <div className="install-prompt bg-slate-800 p-4 rounded-lg border-l-4 border-red-600 mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-white mb-1">Install Boxing Timer</div>
-              <div className="text-slate-300 text-sm">
-                Add to your home screen for quick access and offline use
-              </div>
-            </div>
-            <button
-              onClick={handleInstallClick}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex-shrink-0 ml-4"
-            >
-              Install
-            </button>
-          </div>
-        </div>
-      )}
+      {/* All install prompts disabled - using only the red download icon for cleaner UX */}
+      {/* showIOSInstallInstructions() - disabled */}
+      {/* Install prompt for other browsers - disabled */}
     </div>
   );
 }
