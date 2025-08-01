@@ -115,16 +115,7 @@ export function useAudio(): UseAudioReturn {
   }, []);
 
   // Save audio settings to localStorage (deprecated - kept for compatibility)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const saveSettings = useCallback((settings: Partial<AudioSettings>) => {
-    try {
-      const current = loadSettings();
-      const updated = { ...current, ...settings };
-      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
-    } catch (error) {
-      log.warn('Failed to save audio settings:', error);
-    }
-  }, [loadSettings]);
+  // Note: This function is kept for potential future use but currently unused
 
   // Initialize audio system
   const initialize = useCallback(async (): Promise<void> => {
@@ -223,15 +214,17 @@ export function useAudio(): UseAudioReturn {
   const playTenSecondWarning = useCallback((when?: number) => playWarning(when), [playWarning]);
 
   // Volume control (deprecated - volume is now always 100%)
-  const setVolume = useCallback((_volume: number) => {
+  const setVolume = useCallback((volume: number) => {
     // Volume is now always 100% - this method does nothing
     // Kept for backward compatibility
+    void volume; // Acknowledge parameter to avoid unused warning
   }, []);
 
   // Mute control (deprecated - audio is never muted)
-  const setMuted = useCallback((_muted: boolean) => {
+  const setMuted = useCallback((muted: boolean) => {
     // Audio is never muted - this method does nothing
     // Kept for backward compatibility
+    void muted; // Acknowledge parameter to avoid unused warning
   }, []);
 
   // Toggle mute (deprecated - audio is never muted)

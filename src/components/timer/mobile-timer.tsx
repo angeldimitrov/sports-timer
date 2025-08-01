@@ -94,6 +94,7 @@ export function MobileTimer({
     },
     onUpdateAvailable: () => {
       log.info('App update available');
+      setHasUpdate(true);
     }
   });
 
