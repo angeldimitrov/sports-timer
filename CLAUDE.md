@@ -245,3 +245,4 @@ src/
 
 - User github CLI
 - always check the build problems and linting before pushing to github!!!
+- @typescript-eslint/no-unused-vars do not use that please! always fix all the unused variables 

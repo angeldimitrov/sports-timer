@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Dynamic Service Worker Generation Route
@@ -15,12 +15,9 @@ import { NextRequest, NextResponse } from 'next/server';
  * - Mobile-specific optimizations
  */
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Get the base path from environment variable
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-  
-  // Helper function to create full URLs with base path
-  const createUrl = (path: string) => `${basePath}${path}`;
   
   // Generate the service worker JavaScript code
   const serviceWorkerCode = `

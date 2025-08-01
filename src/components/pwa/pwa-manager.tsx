@@ -31,13 +31,12 @@ export function PWAManager() {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
     // Check if app is already installed
     const checkInstallStatus = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSStandalone = (window.navigator as any).standalone === true;
+      const isIOSStandalone = 'standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true;
       setIsInstalled(isStandalone || isIOSStandalone);
     };
 
@@ -207,8 +206,8 @@ export function PWAManager() {
             </div>
             <ol className="text-slate-300 text-sm space-y-1 ml-4">
               <li>1. Tap the Share button</li>
-              <li>2. Select "Add to Home Screen"</li>
-              <li>3. Tap "Add" to install</li>
+              <li>2. Select &quot;Add to Home Screen&quot;</li>
+              <li>3. Tap &quot;Add&quot; to install</li>
             </ol>
           </div>
         </div>
@@ -229,7 +228,7 @@ export function PWAManager() {
       {!isOnline && (
         <div className="offline-banner bg-slate-800 text-white p-2 text-center text-sm border-b border-slate-700">
           <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
-          You're offline - Timer will continue to work
+          You&apos;re offline - Timer will continue to work
         </div>
       )}
 
