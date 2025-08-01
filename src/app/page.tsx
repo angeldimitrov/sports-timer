@@ -22,6 +22,9 @@ const log = createModuleLogger('MainPage');
 
 // PWA and mobile components
 import { PWAManager } from '@/components/pwa/pwa-manager';
+import { PWAStatus, PWAStatusBadge } from '@/components/pwa/pwa-status';
+import { InstallPrompt, InstallBadge } from '@/components/pwa/install-prompt';
+import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification';
 import { 
   MobileTimerEnhancements, 
   TouchGestureIndicator,
@@ -268,6 +271,30 @@ export default function Home() {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
         {/* PWA Manager - positioned at top of content */}
         <PWAManager />
+        
+        {/* Premium PWA Components */}
+        <PWAStatus 
+          position="top-right"
+          showConnectionStatus={true}
+          enableHaptics={gestures.isEnabled}
+        />
+        <InstallPrompt 
+          enableAnimations={true}
+          enableHaptics={gestures.isEnabled}
+        />
+        <UpdateNotification 
+          showChangelog={true}
+          enableAnimations={true}
+          enableHaptics={gestures.isEnabled}
+          showPremiumEffects={true}
+        />
+        
+        {/* Compact PWA badges for mobile */}
+        <div className="fixed top-4 left-4 z-50 flex gap-2">
+          <PWAStatusBadge />
+          <UpdateBadge />
+        </div>
+        <InstallBadge />
         
         {/* Main Timer Interface - Optimized layout */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">

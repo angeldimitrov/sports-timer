@@ -11,7 +11,7 @@
  * - Service worker scope must match the deployment path structure
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getBasePath } from '@/lib/get-base-path';
 
 /**
@@ -24,10 +24,9 @@ import { getBasePath } from '@/lib/get-base-path';
  * - Shortcuts with working URLs for quick actions
  * - Screenshots for app store presentation
  * 
- * @param request - Next.js request object (unused but required for API route)
  * @returns Response containing the dynamic manifest JSON
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Get the base path for the current environment
   const basePath = getBasePath();
   

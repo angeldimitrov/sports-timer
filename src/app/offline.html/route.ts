@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Dynamic Offline Page Generation Route
@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * - Option to retry loading
  */
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Get the base path from environment variable
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   

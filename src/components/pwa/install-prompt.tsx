@@ -27,6 +27,12 @@ export interface InstallPromptProps {
   showDelay?: number;
   /** Show iOS manual install instructions */
   showIosInstructions?: boolean;
+  /** Enable premium animations */
+  enableAnimations?: boolean;
+  /** Enable haptic feedback */
+  enableHaptics?: boolean;
+  /** Maximum retry attempts for failed installations */
+  maxRetryAttempts?: number;
 }
 
 /**

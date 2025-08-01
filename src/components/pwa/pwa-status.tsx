@@ -91,6 +91,17 @@ export function PWAStatus({
   }, [enableHaptics]);
 
   /**
+   * Hide status with animation
+   */
+  const hideStatus = useCallback(() => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      setIsAnimating(false);
+    }, 200);
+  }, []);
+
+  /**
    * Show status with premium animation
    */
   const showStatus = useCallback((newState: PWAStatusState) => {
@@ -121,18 +132,7 @@ export function PWAStatus({
         hideStatus();
       }, autoHideDelay);
     }
-  }, [autoHideDelay, triggerHaptic]);
-
-  /**
-   * Hide status with animation
-   */
-  const hideStatus = useCallback(() => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsAnimating(false);
-    }, 200);
-  }, []);
+  }, [autoHideDelay, triggerHaptic, hideStatus]);
 
   /**
    * Handle PWA installation events
