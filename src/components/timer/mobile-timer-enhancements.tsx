@@ -366,9 +366,11 @@ export function MobilePerformanceMonitor() {
     // Memory monitoring (if available)
     if ('memory' in performance) {
       const checkMemory = () => {
-        const memInfo = (performance as any).memory;
-        const usedMB = Math.round(memInfo.usedJSHeapSize / 1048576);
-        setMemory(usedMB);
+        const memInfo = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+        if (memInfo) {
+          const usedMB = Math.round(memInfo.usedJSHeapSize / 1048576);
+          setMemory(usedMB);
+        }
       };
 
       checkMemory();

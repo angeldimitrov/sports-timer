@@ -247,7 +247,7 @@ export function InstallBadge() {
   // Check if running in standalone mode (already installed)
   const isStandalone = typeof window !== 'undefined' && 
     (window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in window.navigator && (window.navigator as any).standalone));
+    ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone));
   
   // Don't show if already installed
   if (isStandalone) return null;

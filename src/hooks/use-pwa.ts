@@ -426,6 +426,7 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         sessionCount: getSessionCount()
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount - dependencies cause infinite loops
 
   return {

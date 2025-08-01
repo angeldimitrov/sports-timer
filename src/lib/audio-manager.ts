@@ -111,10 +111,10 @@ interface AudioManagerConfig {
   enableSyntheticAudio?: boolean;
 }
 
-// Audio state (simplified - no volume or mute controls)
+// Audio state interface
 interface AudioState {
-  volume: number; // Always 100, kept for compatibility
-  isMuted: boolean; // Always false, kept for compatibility
+  volume: number;
+  isMuted: boolean;
   isInitialized: boolean;
   hasWebAudioSupport: boolean;
   usingSyntheticAudio: boolean;
@@ -125,8 +125,8 @@ export class AudioManager {
   private gainNode: GainNode | null = null;
   private audioFiles: Map<AudioType, AudioFile> = new Map();
   private state: AudioState = {
-    volume: 100, // Always 100%, no longer configurable
-    isMuted: false, // Always false, no longer configurable
+    volume: 100,
+    isMuted: false,
     isInitialized: false,
     hasWebAudioSupport: false,
     usingSyntheticAudio: false,
@@ -301,7 +301,7 @@ export class AudioManager {
         audio.volume = this.getVolumeDecimal();
         
         // Shorter timeout and more permissive loading
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
           const timeout = setTimeout(() => {
             log.warn(`Basic fallback timeout for ${type}, but continuing`);
             resolve(); // Resolve instead of reject for more permissive loading
@@ -374,7 +374,7 @@ export class AudioManager {
             resolve();
           };
 
-          const onError = (event: Event) => {
+          const onError = () => {
             cleanup();
             const error = new Error(`Failed to load ${type} audio: ${audio.error?.message || 'Unknown error'}`);
             reject(error);
@@ -695,43 +695,41 @@ export class AudioManager {
   }
 
   /**
-   * Set volume level (deprecated - volume is now always 100%)
+   * Set volume level
    * 
-   * @param volume Volume level (ignored - always 100%)
-   * @deprecated Volume is now fixed at 100%
+   * @param volume Volume level (0-100)
    */
   setVolume(volume: number): void {
-    // Volume is now always 100% - this method does nothing
-    // Kept for backward compatibility
+    this.state.volume = Math.max(0, Math.min(100, volume));
+    // Note: Web Audio API volume control not implemented yet
   }
 
   /**
-   * Get current volume level (always returns 100)
+   * Get current volume level
    * 
-   * @returns Current volume (always 100)
+   * @returns Current volume (0-100)
    */
   getVolume(): number {
-    return 100; // Always 100%
+    return this.state.volume;
   }
 
   /**
-   * Mute or unmute audio (deprecated - audio is never muted)
+   * Mute or unmute audio
    * 
-   * @param muted Whether to mute audio (ignored)
-   * @deprecated Audio is never muted - always plays at 100%
+   * @param muted Whether to mute audio
    */
   setMuted(muted: boolean): void {
-    // Audio is never muted - this method does nothing
-    // Kept for backward compatibility
+    this.state.isMuted = muted;
+    // Note: Web Audio API mute control not implemented yet
   }
 
   /**
-   * Get mute state (always returns false)
+   * Get mute state
    * 
-   * @returns always false - audio is never muted
+   * @returns Whether audio is muted
    */
   isMuted(): boolean {
-    return false; // Audio is never muted
+    return this.state.isMuted;
   }
 
   /**

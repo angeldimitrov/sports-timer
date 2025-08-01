@@ -9,7 +9,7 @@ export interface TimerWorkerMessage {
   type: 'start' | 'pause' | 'resume' | 'stop' | 'reset' | 'status';
   payload?: {
     duration?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -23,7 +23,7 @@ export interface TimerWorkerResponse {
   isPaused?: boolean;
   duration?: number;
   message?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Extend global Worker type if needed
