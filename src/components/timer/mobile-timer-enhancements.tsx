@@ -146,7 +146,7 @@ export function MobileTimerEnhancements({
         if ('orientation' in screen && screen.orientation && 'lock' in screen.orientation) {
           try {
             await (screen.orientation as unknown as { lock: (orientation: string) => Promise<void> }).lock('portrait');
-          } catch (err) {
+          } catch {
             log.debug('Orientation lock not supported');
           }
         }

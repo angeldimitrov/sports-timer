@@ -146,10 +146,9 @@ export function MobileTimer({
 
   // Local state
   const [audioManager, setAudioManager] = useState<ReturnType<typeof getAudioManager> | null>(null);
-  const [mobileAudioManager, setMobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
+  // const [mobileAudioManager, setMobileAudioManager] = useState<ReturnType<typeof getMobileAudioManager> | null>(null);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [hasUpdate, setHasUpdate] = useState(false);
   const [gestureIndicator, setGestureIndicator] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -183,7 +182,7 @@ export function MobileTimer({
         await mobileAudioMgr.createMobileAudioContext();
 
         setAudioManager(audioMgr);
-        setMobileAudioManager(mobileAudioMgr);
+        // setMobileAudioManager(mobileAudioMgr);
 
         // Set initial volume
         audioMgr.setVolume(volume);
@@ -261,42 +260,6 @@ export function MobileTimer({
   }, []);
 
   /**
-   * Handle skip phase gesture
-   */
-  const handleSkipPhase = useCallback(() => {
-    if (!timer.isRunning) return;
-    
-    showGestureIndicator('Skip Phase →');
-    
-    // Skip logic would be implemented in timer engine
-    log.debug('Skip to next phase');
-  }, [timer.isRunning]);
-
-  /**
-   * Handle previous phase gesture
-   */
-  const handlePreviousPhase = useCallback(() => {
-    showGestureIndicator('← Previous Phase');
-    
-    // Previous phase logic would be implemented in timer engine
-    log.debug('Go to previous phase');
-  }, []);
-
-  /**
-   * Adjust volume with gesture
-   */
-  const adjustVolume = useCallback((delta: number) => {
-    const newVolume = Math.max(0, Math.min(100, volume + delta));
-    setVolume(newVolume);
-    
-    if (audioManager) {
-      audioManager.setVolume(newVolume);
-    }
-    
-    showGestureIndicator(`Volume: ${newVolume}%`);
-  }, [volume, audioManager]);
-
-  /**
    * Show gesture indicator with timeout
    */
   const showGestureIndicator = useCallback((message: string) => {
@@ -310,6 +273,42 @@ export function MobileTimer({
       setGestureIndicator(null);
     }, 2000);
   }, []);
+
+  /**
+   * Handle skip phase gesture
+   */
+  const handleSkipPhase = useCallback(() => {
+    if (!timer.isRunning) return;
+    
+    showGestureIndicator('Skip Phase →');
+    
+    // Skip logic would be implemented in timer engine
+    log.debug('Skip to next phase');
+  }, [timer.isRunning, showGestureIndicator]);
+
+  /**
+   * Handle previous phase gesture
+   */
+  const handlePreviousPhase = useCallback(() => {
+    showGestureIndicator('← Previous Phase');
+    
+    // Previous phase logic would be implemented in timer engine
+    log.debug('Go to previous phase');
+  }, [showGestureIndicator]);
+
+  /**
+   * Adjust volume with gesture
+   */
+  const adjustVolume = useCallback((delta: number) => {
+    const newVolume = Math.max(0, Math.min(100, volume + delta));
+    setVolume(newVolume);
+    
+    if (audioManager) {
+      audioManager.setVolume(newVolume);
+    }
+    
+    showGestureIndicator(`Volume: ${newVolume}%`);
+  }, [volume, audioManager, showGestureIndicator]);
 
   /**
    * Toggle mute
