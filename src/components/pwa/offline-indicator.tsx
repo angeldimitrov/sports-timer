@@ -47,11 +47,21 @@ export function OfflineIndicator({
   const [isOnline, setIsOnline] = useState(true);
   const [showDetail, setShowDetail] = useState(false);
   const [justCameOnline, setJustCameOnline] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  /**
+   * Handle hydration and mounting
+   */
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /**
    * Handle connection status changes
    */
   useEffect(() => {
+    if (!isMounted) return;
+
     const updateOnlineStatus = () => {
       const online = navigator.onLine;
       const wasOffline = !isOnline;
@@ -86,7 +96,7 @@ export function OfflineIndicator({
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
     };
-  }, [isOnline, autoHideDelay]);
+  }, [isMounted, isOnline, autoHideDelay]);
 
   /**
    * Dismiss the detail view
@@ -94,6 +104,9 @@ export function OfflineIndicator({
   const handleDismiss = () => {
     setShowDetail(false);
   };
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!isMounted) return null;
 
   return (
     <>
@@ -204,8 +217,15 @@ export function OfflineIndicator({
  */
 export function ConnectionStatus() {
   const [isOnline, setIsOnline] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const updateStatus = () => setIsOnline(navigator.onLine);
     
     updateStatus();
@@ -216,7 +236,9 @@ export function ConnectionStatus() {
       window.removeEventListener('online', updateStatus);
       window.removeEventListener('offline', updateStatus);
     };
-  }, []);
+  }, [isMounted]);
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex items-center gap-1 text-xs">
