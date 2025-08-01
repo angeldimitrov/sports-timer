@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getBasePath } from '@/lib/get-base-path';
 
+export const dynamic = 'force-static';
+
 /**
  * Dynamic Service Worker Generation Route
  * 
