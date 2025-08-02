@@ -71,24 +71,10 @@ export default function Home() {
   const audio = useAudio();
 
   // Initialize timer and audio systems
-  // Load saved config or default to intermediate preset (client-side only)
-  const getInitialConfig = useCallback(() => {
-    if (typeof window === 'undefined') return null; // Server-side rendering
-    try {
-      const saved = localStorage.getItem('boxing-timer-config');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.warn('Failed to load saved config, using intermediate preset:', error);
-    }
-    return null;
-  }, []);
-
-  const initialConfig = getInitialConfig();
+  // Always start with intermediate preset to match server-side rendering
+  // We'll load the saved config after hydration in a useEffect
   const timer = useTimer({
-    config: initialConfig,
-    preset: initialConfig ? undefined : 'intermediate', // Only use preset if no saved config
+    preset: 'intermediate', // Always start with this for consistent SSR
     onEvent: useCallback((event: TimerEvent) => {
       try {
         // Handle timer events for audio integration with correct boxing timer logic
@@ -244,17 +230,18 @@ export default function Home() {
     router.push('/settings');
   };
 
-  // Handle returning from settings page and listen for config updates
+  // Load saved config after hydration and handle settings updates
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Check for URL parameter first
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('updated') === 'true') {
         // Clear the URL parameter immediately to prevent infinite loop
         router.replace('/', { scroll: false });
       }
       
-      // Function to reload config from localStorage
-      const reloadConfig = () => {
+      // Function to load config from localStorage
+      const loadConfig = () => {
         try {
           const saved = localStorage.getItem('boxing-timer-config');
           if (saved) {
@@ -262,18 +249,18 @@ export default function Home() {
             timer.updateConfig(config);
           }
         } catch (error) {
-          console.warn('Failed to load updated config:', error);
+          console.warn('Failed to load saved config:', error);
         }
       };
       
-      // Listen for storage changes (in case user has multiple tabs)
-      window.addEventListener('storage', reloadConfig);
+      // Load config immediately after hydration
+      loadConfig();
       
-      // Check for config updates when component mounts (e.g., coming back from settings)
-      reloadConfig();
+      // Listen for storage changes (in case user has multiple tabs)
+      window.addEventListener('storage', loadConfig);
       
       return () => {
-        window.removeEventListener('storage', reloadConfig);
+        window.removeEventListener('storage', loadConfig);
       };
     }
   }, [timer, router]);
