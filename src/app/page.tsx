@@ -71,8 +71,24 @@ export default function Home() {
   const audio = useAudio();
 
   // Initialize timer and audio systems
+  // Load saved config or default to intermediate preset (client-side only)
+  const getInitialConfig = useCallback(() => {
+    if (typeof window === 'undefined') return null; // Server-side rendering
+    try {
+      const saved = localStorage.getItem('boxing-timer-config');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved config, using intermediate preset:', error);
+    }
+    return null;
+  }, []);
+
+  const initialConfig = getInitialConfig();
   const timer = useTimer({
-    preset: 'intermediate', // Default to intermediate preset
+    config: initialConfig,
+    preset: initialConfig ? undefined : 'intermediate', // Only use preset if no saved config
     onEvent: useCallback((event: TimerEvent) => {
       try {
         // Handle timer events for audio integration with correct boxing timer logic
@@ -228,27 +244,37 @@ export default function Home() {
     router.push('/settings');
   };
 
-  // Check if returning from settings with updates
+  // Handle returning from settings page and listen for config updates
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('updated') === 'true') {
         // Clear the URL parameter immediately to prevent infinite loop
         router.replace('/', { scroll: false });
-        
-        // Reload configuration from localStorage after a short delay
-        setTimeout(() => {
-          try {
-            const saved = localStorage.getItem('boxing-timer-config');
-            if (saved) {
-              const config = JSON.parse(saved);
-              timer.updateConfig(config);
-            }
-          } catch (error) {
-            console.warn('Failed to load updated config:', error);
-          }
-        }, 100);
       }
+      
+      // Function to reload config from localStorage
+      const reloadConfig = () => {
+        try {
+          const saved = localStorage.getItem('boxing-timer-config');
+          if (saved) {
+            const config = JSON.parse(saved);
+            timer.updateConfig(config);
+          }
+        } catch (error) {
+          console.warn('Failed to load updated config:', error);
+        }
+      };
+      
+      // Listen for storage changes (in case user has multiple tabs)
+      window.addEventListener('storage', reloadConfig);
+      
+      // Check for config updates when component mounts (e.g., coming back from settings)
+      reloadConfig();
+      
+      return () => {
+        window.removeEventListener('storage', reloadConfig);
+      };
     }
   }, [timer, router]);
 

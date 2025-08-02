@@ -14,7 +14,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dumbbell, Users, Target, Check } from 'lucide-react';
+import { Dumbbell, Users, Target, Check, Settings } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -68,6 +68,34 @@ const presets = {
 } as const;
 
 /**
+ * Check if current config matches any of the predefined presets
+ */
+function getMatchingPreset(config: TimerConfig): keyof typeof presets | 'custom' | null {
+  for (const [presetKey, preset] of Object.entries(presets)) {
+    if (
+      config.totalRounds === preset.rounds &&
+      config.workDuration === preset.workDuration &&
+      config.restDuration === preset.restDuration
+    ) {
+      return presetKey as keyof typeof presets;
+    }
+  }
+  return 'custom';
+}
+
+/**
+ * Calculate total workout time for any config
+ */
+function calculateTotalTime(config: TimerConfig): string {
+  const totalSeconds = 
+    (config.prepDuration || 10) +
+    (config.workDuration * config.totalRounds) +
+    (config.restDuration * (config.totalRounds - 1));
+  const minutes = Math.floor(totalSeconds / 60);
+  return `${minutes} min`;
+}
+
+/**
  * Premium preset selector with sophisticated design
  * 
  * Features:
@@ -84,6 +112,10 @@ export function PresetSelector({
   disabled = false,
   className 
 }: PresetSelectorProps) {
+  // Determine current preset type
+  const currentPresetType = getMatchingPreset(currentConfig);
+  const isCustomConfig = currentPresetType === 'custom';
+
   // Check if a preset matches current config
   const isPresetActive = (preset: typeof presets[keyof typeof presets]) => {
     return (
@@ -92,9 +124,6 @@ export function PresetSelector({
       currentConfig.restDuration === preset.restDuration
     );
   };
-
-  // Get currently active preset
-  const activePreset = Object.values(presets).find(preset => isPresetActive(preset));
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -229,9 +258,9 @@ export function PresetSelector({
           })}
         </div>
 
-        {/* Current configuration display if custom - Only visible when needed */}
+        {/* Custom configuration display - Only visible when config doesn't match any preset */}
         <AnimatePresence mode="wait">
-          {!activePreset && (
+          {isCustomConfig && (
             <motion.div
               key="custom-config"
               initial={{ opacity: 0, height: 0 }}
@@ -245,14 +274,22 @@ export function PresetSelector({
               className="overflow-hidden"
             >
               <div className="mt-4 pt-4 border-t border-slate-700/50">
-                <div className="text-sm text-slate-400">
-                  <p className="font-medium mb-1">Custom Configuration</p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span>{currentConfig.totalRounds} rounds</span>
-                    <span>•</span>
-                    <span>{currentConfig.workDuration}s work</span>
-                    <span>•</span>
-                    <span>{currentConfig.restDuration}s rest</span>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-slate-400">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Settings className="w-4 h-4 text-orange-400" />
+                      <p className="font-medium text-orange-400">Custom Configuration</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span>{currentConfig.totalRounds} rounds</span>
+                      <span>•</span>
+                      <span>{Math.floor(currentConfig.workDuration / 60)}:{(currentConfig.workDuration % 60).toString().padStart(2, '0')} work</span>
+                      <span>•</span>
+                      <span>{Math.floor(currentConfig.restDuration / 60)}:{(currentConfig.restDuration % 60).toString().padStart(2, '0')} rest</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {calculateTotalTime(currentConfig)}
                   </div>
                 </div>
               </div>
