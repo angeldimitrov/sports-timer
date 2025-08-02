@@ -261,13 +261,8 @@ export class TimerEngine {
     this.state.timeElapsed = elapsed;
     this.state.progress = Math.min(1, progress);
 
-    // Calculate overall workout progress
-    const completedRounds = this.state.currentRound - 1;
-    const totalPeriods = this.config.totalRounds * 2; // work + rest for each round
-    const currentPeriodIndex = completedRounds * 2 + (this.state.phase === 'rest' ? 1 : 0);
-    const currentPeriodProgress = this.state.progress;
-    
-    this.state.workoutProgress = Math.min(1, (currentPeriodIndex + currentPeriodProgress) / totalPeriods);
+    // Calculate overall workout progress using the same logic as recalculateWorkoutProgress
+    this.recalculateWorkoutProgress();
 
     // Handle 10-second warning
     if (this.config.enableWarning && !this.state.warningTriggered && remaining <= 10000 && remaining > 0) {
@@ -294,8 +289,13 @@ export class TimerEngine {
       // Preparation period completed - switch to work
       this.state.phase = 'work';
       this.state.timeRemaining = this.config.workDuration * 1000;
+      this.state.timeElapsed = 0;
+      this.state.progress = 0;
       this.state.warningTriggered = false;
       this.currentPhaseDuration = this.config.workDuration * 1000;
+      
+      // Recalculate workout progress for new phase
+      this.recalculateWorkoutProgress();
       
       this.emitEvent({
         type: 'phaseChange',
@@ -322,8 +322,13 @@ export class TimerEngine {
         // Not final round - switch to rest period
         this.state.phase = 'rest';
         this.state.timeRemaining = this.config.restDuration * 1000;
+        this.state.timeElapsed = 0;
+        this.state.progress = 0;
         this.state.warningTriggered = false;
         this.currentPhaseDuration = this.config.restDuration * 1000;
+        
+        // Recalculate workout progress for new phase
+        this.recalculateWorkoutProgress();
         
         this.emitEvent({
           type: 'phaseChange',
@@ -358,8 +363,13 @@ export class TimerEngine {
         this.state.currentRound++;
         this.state.phase = 'work';
         this.state.timeRemaining = this.config.workDuration * 1000;
+        this.state.timeElapsed = 0;
+        this.state.progress = 0;
         this.state.warningTriggered = false;
         this.currentPhaseDuration = this.config.workDuration * 1000;
+        
+        // Recalculate workout progress for new phase
+        this.recalculateWorkoutProgress();
         
         this.emitEvent({
           type: 'phaseChange',
@@ -371,6 +381,35 @@ export class TimerEngine {
         this.startWorkerTimer(this.currentPhaseDuration);
       }
     }
+  }
+
+  /**
+   * Recalculate workout progress based on current state
+   * Used when transitioning between phases to maintain monotonic progress
+   */
+  private recalculateWorkoutProgress(): void {
+    // Account for preparation phase if it exists
+    const hasPreparation = (this.config.prepDuration || 0) > 0;
+    const completedRounds = this.state.currentRound - 1;
+    
+    // Calculate total periods including preparation
+    const roundPeriods = this.config.totalRounds * 2; // work + rest for each round
+    const totalPeriods = hasPreparation ? roundPeriods + 1 : roundPeriods; // +1 for preparation
+    
+    // Calculate current period index
+    let currentPeriodIndex = 0;
+    if (this.state.phase === 'preparation') {
+      currentPeriodIndex = 0;
+    } else {
+      // After preparation, calculate position in work/rest cycles
+      const prepOffset = hasPreparation ? 1 : 0;
+      const roundOffset = completedRounds * 2;
+      const phaseOffset = this.state.phase === 'rest' ? 1 : 0;
+      currentPeriodIndex = prepOffset + roundOffset + phaseOffset;
+    }
+    
+    const currentPeriodProgress = this.state.progress;
+    this.state.workoutProgress = Math.min(1, (currentPeriodIndex + currentPeriodProgress) / totalPeriods);
   }
 
   /**
@@ -669,6 +708,7 @@ export class TimerEngine {
     // Remove visibility change listener
     if (this.visibilityChangeListener && typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.visibilityChangeListener);
+      this.visibilityChangeListener = null;
     }
 
     // Clear event handlers

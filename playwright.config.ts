@@ -161,14 +161,16 @@ export default defineConfig({
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
     timeout: 120000, // 2 minutes to start dev server
+    stderr: 'pipe',
+    stdout: 'pipe',
   },
   
   // Test output directory
   outputDir: 'test-results/',
   
-  // Global setup and teardown
-  globalSetup: require.resolve('./tests/e2e/global-setup.ts'),
-  globalTeardown: require.resolve('./tests/e2e/global-teardown.ts'),
+  // Global setup and teardown - disabled for CI stability
+  // globalSetup: require.resolve('./tests/e2e/global-setup.ts'),
+  // globalTeardown: require.resolve('./tests/e2e/global-teardown.ts'),
   
   // Test timeout
   timeout: 60000, // 1 minute per test
