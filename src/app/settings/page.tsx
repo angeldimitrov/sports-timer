@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { useTimer } from '@/hooks/use-timer';
 import { useAutoSaveSettings } from '@/hooks/use-auto-save-settings';
-import { useToastHelpers } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -54,50 +53,24 @@ function formatDuration(seconds: number): string {
  */
 export default function SettingsPage() {
   const router = useRouter();
-  const { showSuccess, showUndo, showError } = useToastHelpers();
   
   // Get timer state for blocking protection
   const { state: timerState } = useTimer();
   
-  // Auto-save settings hook with callbacks
+  // Auto-save settings hook
   const {
     config,
     updateConfig,
     isSaving,
     lastSaveSuccess,
     lastSaveError,
-    isBlocked,
-    undoLastChange
+    isBlocked
   } = useAutoSaveSettings({
-    timerStatus: timerState.status,
-    onSaveSuccess: () => {
-      showSuccess('Settings saved', 'Your timer configuration has been updated');
-      
-      // Show undo toast for 3 seconds
-      showUndo(
-        'Settings updated',
-        () => {
-          if (undoLastChange()) {
-            showSuccess('Changes undone', 'Settings have been restored');
-          }
-        },
-        'Tap undo to revert changes'
-      );
-    },
-    onSaveError: (error) => {
-      showError('Failed to save settings', error.message);
-    },
-    onSaveBlocked: (reason) => {
-      showError('Settings locked', reason);
-    }
+    timerStatus: timerState.status
   });
 
   // Handle back navigation
   const handleBack = () => {
-    if (isSaving) {
-      showError('Please wait', 'Settings are currently being saved');
-      return;
-    }
     router.push('/');
   };
 

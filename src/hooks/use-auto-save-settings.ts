@@ -20,12 +20,6 @@ export interface UseAutoSaveSettingsOptions {
   timerStatus?: TimerStatus;
   /** Debounce delay in milliseconds (default: 500ms) */
   debounceDelay?: number;
-  /** Callback for save success */
-  onSaveSuccess?: (config: TimerConfig) => void;
-  /** Callback for save error */
-  onSaveError?: (error: Error) => void;
-  /** Callback when settings are prevented due to timer state */
-  onSaveBlocked?: (reason: string) => void;
 }
 
 export interface UseAutoSaveSettingsReturn {
@@ -41,8 +35,6 @@ export interface UseAutoSaveSettingsReturn {
   lastSaveError: Error | null;
   /** Whether settings changes are currently blocked */
   isBlocked: boolean;
-  /** Undo last change (if within undo window) */
-  undoLastChange: () => boolean;
   /** Validate current configuration */
   validateConfig: (config: TimerConfig) => string[];
 }
@@ -78,10 +70,7 @@ const DEFAULT_CONFIG: TimerConfig = {
 export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): UseAutoSaveSettingsReturn {
   const {
     timerStatus,
-    debounceDelay = 500,
-    onSaveSuccess,
-    onSaveError,
-    onSaveBlocked
+    debounceDelay = 500
   } = options;
 
   // State management
@@ -90,11 +79,8 @@ export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): U
   const [lastSaveSuccess, setLastSaveSuccess] = useState(true);
   const [lastSaveError, setLastSaveError] = useState<Error | null>(null);
   
-  // Refs for debouncing and undo functionality
+  // Refs for debouncing
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousConfigRef = useRef<TimerConfig | null>(null);
-  const undoAvailableRef = useRef(false);
 
   // Check if settings changes are blocked due to timer state
   const isBlocked = timerStatus === 'running' || timerStatus === 'paused';
@@ -164,38 +150,24 @@ export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): U
       localStorage.setItem('boxing-timer-config', JSON.stringify(configToSave));
       
       setLastSaveSuccess(true);
-      onSaveSuccess?.(configToSave);
-      
-      // Set up undo window (3 seconds)
-      undoAvailableRef.current = true;
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
-      undoTimeoutRef.current = setTimeout(() => {
-        undoAvailableRef.current = false;
-        previousConfigRef.current = null;
-      }, 3000);
 
     } catch (error) {
       const saveError = error instanceof Error ? error : new Error('Unknown save error');
       setLastSaveError(saveError);
       setLastSaveSuccess(false);
-      onSaveError?.(saveError);
+      console.error('Failed to save settings:', saveError);
     } finally {
       setIsSaving(false);
     }
-  }, [validateConfigInternal, onSaveSuccess, onSaveError]);
+  }, [validateConfigInternal]);
 
   // Update configuration with auto-save
   const updateConfig = useCallback((updates: Partial<TimerConfig>) => {
     // Check if changes are blocked due to timer state
     if (isBlocked) {
-      onSaveBlocked?.('Settings cannot be changed while timer is running or paused');
+      console.warn('Settings cannot be changed while timer is running or paused');
       return;
     }
-
-    // Store previous config for undo functionality
-    previousConfigRef.current = { ...config };
 
     // Update local state immediately
     const newConfig = { ...config, ...updates };
@@ -210,32 +182,8 @@ export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): U
     saveTimeoutRef.current = setTimeout(() => {
       saveConfig(newConfig);
     }, debounceDelay);
-  }, [config, isBlocked, debounceDelay, saveConfig, onSaveBlocked]);
+  }, [config, isBlocked, debounceDelay, saveConfig]);
 
-  // Undo last change
-  const undoLastChange = useCallback((): boolean => {
-    if (!undoAvailableRef.current || !previousConfigRef.current) {
-      return false;
-    }
-
-    // Clear any pending save
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    // Restore previous configuration
-    const previousConfig = previousConfigRef.current;
-    setConfig(previousConfig);
-    
-    // Save the restored configuration immediately
-    saveConfig(previousConfig);
-    
-    // Clear undo state
-    undoAvailableRef.current = false;
-    previousConfigRef.current = null;
-    
-    return true;
-  }, [saveConfig]);
 
   // Public validate function
   const validateConfig = useCallback((configToValidate: TimerConfig): string[] => {
@@ -248,9 +196,6 @@ export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): U
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
     };
   }, []);
 
@@ -261,7 +206,6 @@ export function useAutoSaveSettings(options: UseAutoSaveSettingsOptions = {}): U
     lastSaveSuccess,
     lastSaveError,
     isBlocked,
-    undoLastChange,
     validateConfig
   };
 }
