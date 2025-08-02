@@ -108,20 +108,21 @@ export function PresetSelector({
             return (
               <motion.div
                 key={preset.id}
-                whileHover={!disabled ? { scale: 1.02 } : {}}
-                whileTap={!disabled ? { scale: 0.98 } : {}}
+                className="w-full"
               >
                 <Button
                   onClick={() => onPresetSelect(presetKey)}
                   disabled={disabled}
                   variant="ghost"
                   className={cn(
-                    'w-full h-auto p-4',
+                    'w-full min-h-[92px] p-4',
                     'bg-slate-900/50 hover:bg-slate-800/50',
                     'border border-slate-700/50 hover:border-slate-600',
                     'text-slate-200 hover:text-white',
-                    'transition-all duration-200',
+                    'transition-all duration-300 ease-out',
                     'relative overflow-hidden group',
+                    'hover:shadow-lg hover:shadow-slate-900/25',
+                    'active:bg-slate-800/70',
                     isActive && 'ring-2 ring-offset-2 ring-offset-slate-900',
                     isActive && preset.id === 'beginner' && 'ring-green-500',
                     isActive && preset.id === 'intermediate' && 'ring-blue-500',
@@ -129,25 +130,39 @@ export function PresetSelector({
                     disabled && 'cursor-not-allowed opacity-50'
                   )}
                 >
-                  {/* Gradient background on hover */}
+                  {/* Premium gradient background on hover */}
                   <div
                     className={cn(
                       'absolute inset-0 bg-gradient-to-r opacity-0',
-                      'group-hover:opacity-10 transition-opacity duration-300',
+                      'group-hover:opacity-10 group-active:opacity-15',
+                      'transition-opacity duration-300 ease-out',
                       preset.color
+                    )}
+                  />
+                  
+                  {/* Subtle shimmer effect on hover */}
+                  <div
+                    className={cn(
+                      'absolute inset-0 opacity-0',
+                      'group-hover:opacity-100 transition-opacity duration-500',
+                      'bg-gradient-to-r from-transparent via-white/5 to-transparent',
+                      'translate-x-[-100%] group-hover:translate-x-[100%]',
+                      'transition-transform duration-1000 ease-out'
                     )}
                   />
 
                   <div className="relative z-10 flex items-start gap-4 text-left">
-                    {/* Icon with gradient background */}
+                    {/* Icon with gradient background and enhanced visual feedback */}
                     <div
                       className={cn(
                         'w-12 h-12 rounded-xl flex items-center justify-center',
                         'bg-gradient-to-br shadow-lg',
+                        'group-hover:shadow-xl transition-shadow duration-300',
+                        'ring-1 ring-white/10 group-hover:ring-white/20',
                         preset.color
                       )}
                     >
-                      <Icon className="w-6 h-6 text-white" />
+                      <Icon className="w-6 h-6 text-white drop-shadow-sm" />
                     </div>
 
                     {/* Preset details */}
@@ -157,23 +172,27 @@ export function PresetSelector({
                           {preset.name}
                         </h4>
                         
-                        {/* Active indicator */}
-                        <AnimatePresence>
-                          {isActive && (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 180 }}
-                              className={cn(
-                                'w-6 h-6 rounded-full flex items-center justify-center',
-                                'bg-gradient-to-br',
-                                preset.color
-                              )}
-                            >
-                              <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        {/* Active indicator - Fixed size container */}
+                        <div className="w-6 h-6 flex items-center justify-center">
+                          <AnimatePresence mode="wait">
+                            {isActive && (
+                              <motion.div
+                                key={`active-${preset.id}`}
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className={cn(
+                                  'w-6 h-6 rounded-full flex items-center justify-center',
+                                  'bg-gradient-to-br shadow-lg',
+                                  preset.color
+                                )}
+                              >
+                                <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </div>
 
                       {/* Preset stats */}
@@ -210,23 +229,31 @@ export function PresetSelector({
           })}
         </div>
 
-        {/* Current configuration display if custom */}
-        <AnimatePresence>
+        {/* Current configuration display if custom - Only visible when needed */}
+        <AnimatePresence mode="wait">
           {!activePreset && (
             <motion.div
+              key="custom-config"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-slate-700/50"
+              transition={{ 
+                duration: 0.3, 
+                ease: "easeInOut",
+                height: { duration: 0.3 }
+              }}
+              className="overflow-hidden"
             >
-              <div className="text-sm text-slate-400">
-                <p className="font-medium mb-1">Custom Configuration</p>
-                <div className="flex items-center gap-3 text-xs">
-                  <span>{currentConfig.totalRounds} rounds</span>
-                  <span>•</span>
-                  <span>{currentConfig.workDuration}s work</span>
-                  <span>•</span>
-                  <span>{currentConfig.restDuration}s rest</span>
+              <div className="mt-4 pt-4 border-t border-slate-700/50">
+                <div className="text-sm text-slate-400">
+                  <p className="font-medium mb-1">Custom Configuration</p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span>{currentConfig.totalRounds} rounds</span>
+                    <span>•</span>
+                    <span>{currentConfig.workDuration}s work</span>
+                    <span>•</span>
+                    <span>{currentConfig.restDuration}s rest</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
