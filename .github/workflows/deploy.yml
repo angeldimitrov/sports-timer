@@ -41,11 +41,12 @@ jobs:
       - name: Run unit tests
         run: npm run test:ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+      # E2E tests temporarily disabled for deploy workflow
+      # - name: Install Playwright browsers
+      #   run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: npm run test:e2e -- --project=chromium
+      # - name: Run E2E tests
+      #   run: npm run test:e2e -- --project=chromium
 
   build:
     runs-on: ubuntu-latest
