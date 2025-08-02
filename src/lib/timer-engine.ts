@@ -67,7 +67,7 @@ export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
 export type TimerPhase = 'preparation' | 'work' | 'rest';
 
 export interface TimerConfig {
-  /** Work period duration in seconds (60-600 seconds) */
+  /** Work period duration in seconds (10-600 seconds) */
   workDuration: number;
   /** Rest period duration in seconds (15-300 seconds) */
   restDuration: number;

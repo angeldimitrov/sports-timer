@@ -22,15 +22,19 @@ import { cn } from '@/lib/utils';
 // Configuration limits
 const limits = {
   rounds: { min: 1, max: 20 },
-  workDuration: { min: 60, max: 600, step: 15 }, // 1-10 minutes in 15s increments
-  restDuration: { min: 15, max: 300, step: 15 }, // 15s-5 minutes in 15s increments
+  workDuration: { min: 10, max: 600 }, // 10 seconds to 10 minutes - step calculated dynamically
+  restDuration: { min: 10, max: 300 }, // 10 seconds to 5 minutes - step calculated dynamically
   prepDuration: { min: 0, max: 60, step: 5 }, // 0-60 seconds in 5s increments
 };
 
 /**
  * Format seconds to display string
+ * Handles both short durations (under 60s) and longer durations
  */
 function formatDuration(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   if (remainingSeconds === 0) {
@@ -214,11 +218,37 @@ export default function SettingsPage() {
                   key={localConfig.workDuration}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="text-3xl font-bold text-red-400"
+                  className={cn(
+                    "text-3xl font-bold",
+                    localConfig.workDuration < 60 ? "text-orange-400" : "text-red-400"
+                  )}
                 >
                   {formatDuration(localConfig.workDuration)}
                 </motion.span>
               </div>
+              
+              {/* Quick select pills for common short durations */}
+              <div className="flex gap-2 flex-wrap">
+                {[10, 15, 20, 30, 45].map((seconds) => (
+                  <motion.button
+                    key={seconds}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setLocalConfig(prev => ({ ...prev, workDuration: seconds }))}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                      "bg-slate-700/50 border border-slate-600/50",
+                      "hover:bg-slate-600/50 hover:border-slate-500/70",
+                      localConfig.workDuration === seconds
+                        ? "bg-orange-500/20 border-orange-400/50 text-orange-300"
+                        : "text-slate-300"
+                    )}
+                  >
+                    {seconds}s
+                  </motion.button>
+                ))}
+              </div>
+              
               <Slider
                 value={[localConfig.workDuration]}
                 onValueChange={([value]) => 
@@ -226,13 +256,21 @@ export default function SettingsPage() {
                 }
                 min={limits.workDuration.min}
                 max={limits.workDuration.max}
-                step={limits.workDuration.step}
-                className="cursor-pointer"
+                step={localConfig.workDuration < 60 ? 5 : 15}
+                className={cn(
+                  "cursor-pointer",
+                  localConfig.workDuration < 60 && "[&_[role=slider]]:bg-orange-400"
+                )}
               />
               <div className="flex justify-between text-sm text-slate-500">
-                <span>1 minute</span>
+                <span>10 seconds</span>
                 <span>10 minutes</span>
               </div>
+              {localConfig.workDuration < 60 && (
+                <p className="text-sm text-orange-400/70 text-center">
+                  Short interval mode - perfect for HIIT training
+                </p>
+              )}
             </div>
           </motion.div>
 
@@ -253,11 +291,37 @@ export default function SettingsPage() {
                   key={localConfig.restDuration}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="text-3xl font-bold text-green-400"
+                  className={cn(
+                    "text-3xl font-bold",
+                    localConfig.restDuration < 60 ? "text-lime-400" : "text-green-400"
+                  )}
                 >
                   {formatDuration(localConfig.restDuration)}
                 </motion.span>
               </div>
+              
+              {/* Quick select pills for common short rest durations */}
+              <div className="flex gap-2 flex-wrap">
+                {[10, 15, 20, 30, 45].map((seconds) => (
+                  <motion.button
+                    key={seconds}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setLocalConfig(prev => ({ ...prev, restDuration: seconds }))}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                      "bg-slate-700/50 border border-slate-600/50",
+                      "hover:bg-slate-600/50 hover:border-slate-500/70",
+                      localConfig.restDuration === seconds
+                        ? "bg-lime-500/20 border-lime-400/50 text-lime-300"
+                        : "text-slate-300"
+                    )}
+                  >
+                    {seconds}s
+                  </motion.button>
+                ))}
+              </div>
+              
               <Slider
                 value={[localConfig.restDuration]}
                 onValueChange={([value]) => 
@@ -265,13 +329,21 @@ export default function SettingsPage() {
                 }
                 min={limits.restDuration.min}
                 max={limits.restDuration.max}
-                step={limits.restDuration.step}
-                className="cursor-pointer"
+                step={localConfig.restDuration < 60 ? 5 : 15}
+                className={cn(
+                  "cursor-pointer",
+                  localConfig.restDuration < 60 && "[&_[role=slider]]:bg-lime-400"
+                )}
               />
               <div className="flex justify-between text-sm text-slate-500">
-                <span>15 seconds</span>
+                <span>10 seconds</span>
                 <span>5 minutes</span>
               </div>
+              {localConfig.restDuration < 60 && (
+                <p className="text-sm text-lime-400/70 text-center">
+                  Short rest mode - ideal for active recovery
+                </p>
+              )}
             </div>
           </motion.div>
 
