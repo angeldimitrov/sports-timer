@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -8,11 +8,14 @@ import {
   Activity, 
   Coffee, 
   Info,
-  Save,
-  RotateCcw,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
+  Check,
+  AlertTriangle
 } from 'lucide-react';
-import { TimerConfig } from '@/lib/timer-engine';
+import { useTimer } from '@/hooks/use-timer';
+import { useAutoSaveSettings } from '@/hooks/use-auto-save-settings';
+import { useToastHelpers } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -46,87 +49,118 @@ function formatDuration(seconds: number): string {
 /**
  * Settings Page Component
  * 
- * Full-screen settings page with mobile-optimized layout and navigation.
- * Features proper scrolling, back button navigation, and touch-friendly controls.
+ * Auto-save settings page with premium toast notifications and visual feedback.
+ * Features real-time saving, undo functionality, and timer state protection.
  */
 export default function SettingsPage() {
   const router = useRouter();
+  const { showSuccess, showUndo, showError } = useToastHelpers();
   
-  // Local state for editing
-  const [localConfig, setLocalConfig] = useState<TimerConfig>({
-    totalRounds: 5,
-    workDuration: 180, // 3 minutes
-    restDuration: 60,  // 1 minute
-    enableWarning: true,
-    prepDuration: 10,
-  });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [originalConfig, setOriginalConfig] = useState<TimerConfig>(localConfig);
-
-  // Load configuration from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('boxing-timer-config');
-      if (saved) {
-        const config = JSON.parse(saved);
-        setLocalConfig(config);
-        setOriginalConfig(config);
-      }
-    } catch (error) {
-      console.warn('Failed to load saved config:', error);
-    }
-  }, []);
-
-  // Check if configuration has changed
-  useEffect(() => {
-    const changed = 
-      localConfig.totalRounds !== originalConfig.totalRounds ||
-      localConfig.workDuration !== originalConfig.workDuration ||
-      localConfig.restDuration !== originalConfig.restDuration ||
-      localConfig.enableWarning !== originalConfig.enableWarning ||
-      (localConfig.prepDuration || 10) !== (originalConfig.prepDuration || 10);
-    setHasChanges(changed);
-  }, [localConfig, originalConfig]);
-
-  // Handle save
-  const handleSave = () => {
-    try {
-      localStorage.setItem('boxing-timer-config', JSON.stringify(localConfig));
-      setOriginalConfig(localConfig);
-      setHasChanges(false);
+  // Get timer state for blocking protection
+  const { state: timerState } = useTimer();
+  
+  // Auto-save settings hook with callbacks
+  const {
+    config,
+    updateConfig,
+    isSaving,
+    lastSaveSuccess,
+    lastSaveError,
+    isBlocked,
+    undoLastChange
+  } = useAutoSaveSettings({
+    timerStatus: timerState.status,
+    onSaveSuccess: () => {
+      showSuccess('Settings saved', 'Your timer configuration has been updated');
       
-      // Navigate back to timer with config update
-      router.push('/?updated=true');
-    } catch (error) {
-      console.error('Failed to save config:', error);
+      // Show undo toast for 3 seconds
+      showUndo(
+        'Settings updated',
+        () => {
+          if (undoLastChange()) {
+            showSuccess('Changes undone', 'Settings have been restored');
+          }
+        },
+        'Tap undo to revert changes'
+      );
+    },
+    onSaveError: (error) => {
+      showError('Failed to save settings', error.message);
+    },
+    onSaveBlocked: (reason) => {
+      showError('Settings locked', reason);
     }
-  };
-
-  // Handle reset
-  const handleReset = () => {
-    setLocalConfig(originalConfig);
-  };
+  });
 
   // Handle back navigation
   const handleBack = () => {
-    if (hasChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
-        router.push('/');
-      }
-    } else {
-      router.push('/');
+    if (isSaving) {
+      showError('Please wait', 'Settings are currently being saved');
+      return;
     }
+    router.push('/');
   };
 
   // Calculate total workout time
   const totalWorkoutTime = () => {
     const totalSeconds = 
-      (localConfig.prepDuration || 10) +
-      (localConfig.workDuration * localConfig.totalRounds) +
-      (localConfig.restDuration * (localConfig.totalRounds - 1));
+      (config.prepDuration || 10) +
+      (config.workDuration * config.totalRounds) +
+      (config.restDuration * (config.totalRounds - 1));
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Saving indicator component
+  const SavingIndicator = ({ visible }: { visible: boolean }) => {
+    if (!visible) return null;
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        className="flex items-center gap-2 text-blue-400 text-sm"
+      >
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span>Saving...</span>
+      </motion.div>
+    );
+  };
+
+  // Success indicator component
+  const SuccessIndicator = ({ visible }: { visible: boolean }) => {
+    if (!visible) return null;
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        className="flex items-center gap-2 text-green-400 text-sm"
+      >
+        <Check className="w-4 h-4" />
+        <span>Saved</span>
+      </motion.div>
+    );
+  };
+
+  // Blocked indicator component
+  const BlockedIndicator = ({ visible }: { visible: boolean }) => {
+    if (!visible) return null;
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        className="flex items-center gap-2 text-orange-400 text-sm"
+      >
+        <AlertTriangle className="w-4 h-4" />
+        <span>Timer running - settings locked</span>
+      </motion.div>
+    );
   };
 
   return (
@@ -137,7 +171,7 @@ export default function SettingsPage() {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-2xl">
-        {/* Header with back button */}
+        {/* Header with back button and status */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             onClick={handleBack}
@@ -147,16 +181,23 @@ export default function SettingsPage() {
           >
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                 <Timer className="w-6 h-6 text-white" />
               </div>
               Timer Settings
             </h1>
-            <p className="text-slate-400 mt-1">
-              Customize your boxing workout timer configuration
-            </p>
+            <div className="flex items-center gap-4 mt-1">
+              <p className="text-slate-400">
+                Customize your boxing workout timer configuration
+              </p>
+              <div className="flex items-center gap-3">
+                <SavingIndicator visible={isSaving} />
+                <SuccessIndicator visible={lastSaveSuccess && !isSaving && !lastSaveError} />
+                <BlockedIndicator visible={isBlocked} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -176,23 +217,27 @@ export default function SettingsPage() {
                   Number of Rounds
                 </Label>
                 <motion.span
-                  key={localConfig.totalRounds}
+                  key={config.totalRounds}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="text-3xl font-bold text-blue-400"
                 >
-                  {localConfig.totalRounds}
+                  {config.totalRounds}
                 </motion.span>
               </div>
               <Slider
-                value={[localConfig.totalRounds]}
+                value={[config.totalRounds]}
                 onValueChange={([value]) => 
-                  setLocalConfig(prev => ({ ...prev, totalRounds: value }))
+                  updateConfig({ totalRounds: value })
                 }
                 min={limits.rounds.min}
                 max={limits.rounds.max}
                 step={1}
-                className="cursor-pointer"
+                className={cn(
+                  'cursor-pointer',
+                  isBlocked && 'opacity-50 pointer-events-none'
+                )}
+                disabled={isBlocked}
               />
               <div className="flex justify-between text-sm text-slate-500">
                 <span>{limits.rounds.min} round</span>
@@ -215,15 +260,15 @@ export default function SettingsPage() {
                   Work Duration
                 </Label>
                 <motion.span
-                  key={localConfig.workDuration}
+                  key={config.workDuration}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className={cn(
                     "text-3xl font-bold",
-                    localConfig.workDuration < 60 ? "text-orange-400" : "text-red-400"
+                    config.workDuration < 60 ? "text-orange-400" : "text-red-400"
                   )}
                 >
-                  {formatDuration(localConfig.workDuration)}
+                  {formatDuration(config.workDuration)}
                 </motion.span>
               </div>
               
@@ -232,16 +277,18 @@ export default function SettingsPage() {
                 {[10, 15, 20, 30, 45].map((seconds) => (
                   <motion.button
                     key={seconds}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setLocalConfig(prev => ({ ...prev, workDuration: seconds }))}
+                    whileHover={!isBlocked ? { scale: 1.05 } : {}}
+                    whileTap={!isBlocked ? { scale: 0.95 } : {}}
+                    onClick={() => !isBlocked && updateConfig({ workDuration: seconds })}
+                    disabled={isBlocked}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
                       "bg-slate-700/50 border border-slate-600/50",
-                      "hover:bg-slate-600/50 hover:border-slate-500/70",
-                      localConfig.workDuration === seconds
+                      !isBlocked && "hover:bg-slate-600/50 hover:border-slate-500/70",
+                      config.workDuration === seconds
                         ? "bg-orange-500/20 border-orange-400/50 text-orange-300"
-                        : "text-slate-300"
+                        : "text-slate-300",
+                      isBlocked && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {seconds}s
@@ -250,23 +297,25 @@ export default function SettingsPage() {
               </div>
               
               <Slider
-                value={[localConfig.workDuration]}
+                value={[config.workDuration]}
                 onValueChange={([value]) => 
-                  setLocalConfig(prev => ({ ...prev, workDuration: value }))
+                  updateConfig({ workDuration: value })
                 }
                 min={limits.workDuration.min}
                 max={limits.workDuration.max}
-                step={localConfig.workDuration < 60 ? 5 : 15}
+                step={config.workDuration < 60 ? 5 : 15}
                 className={cn(
                   "cursor-pointer",
-                  localConfig.workDuration < 60 && "[&_[role=slider]]:bg-orange-400"
+                  config.workDuration < 60 && "[&_[role=slider]]:bg-orange-400",
+                  isBlocked && "opacity-50 pointer-events-none"
                 )}
+                disabled={isBlocked}
               />
               <div className="flex justify-between text-sm text-slate-500">
                 <span>10 seconds</span>
                 <span>10 minutes</span>
               </div>
-              {localConfig.workDuration < 60 && (
+              {config.workDuration < 60 && (
                 <p className="text-sm text-orange-400/70 text-center">
                   Short interval mode - perfect for HIIT training
                 </p>
@@ -288,15 +337,15 @@ export default function SettingsPage() {
                   Rest Duration
                 </Label>
                 <motion.span
-                  key={localConfig.restDuration}
+                  key={config.restDuration}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className={cn(
                     "text-3xl font-bold",
-                    localConfig.restDuration < 60 ? "text-lime-400" : "text-green-400"
+                    config.restDuration < 60 ? "text-lime-400" : "text-green-400"
                   )}
                 >
-                  {formatDuration(localConfig.restDuration)}
+                  {formatDuration(config.restDuration)}
                 </motion.span>
               </div>
               
@@ -305,16 +354,18 @@ export default function SettingsPage() {
                 {[10, 15, 20, 30, 45].map((seconds) => (
                   <motion.button
                     key={seconds}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setLocalConfig(prev => ({ ...prev, restDuration: seconds }))}
+                    whileHover={!isBlocked ? { scale: 1.05 } : {}}
+                    whileTap={!isBlocked ? { scale: 0.95 } : {}}
+                    onClick={() => !isBlocked && updateConfig({ restDuration: seconds })}
+                    disabled={isBlocked}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
                       "bg-slate-700/50 border border-slate-600/50",
-                      "hover:bg-slate-600/50 hover:border-slate-500/70",
-                      localConfig.restDuration === seconds
+                      !isBlocked && "hover:bg-slate-600/50 hover:border-slate-500/70",
+                      config.restDuration === seconds
                         ? "bg-lime-500/20 border-lime-400/50 text-lime-300"
-                        : "text-slate-300"
+                        : "text-slate-300",
+                      isBlocked && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {seconds}s
@@ -323,23 +374,25 @@ export default function SettingsPage() {
               </div>
               
               <Slider
-                value={[localConfig.restDuration]}
+                value={[config.restDuration]}
                 onValueChange={([value]) => 
-                  setLocalConfig(prev => ({ ...prev, restDuration: value }))
+                  updateConfig({ restDuration: value })
                 }
                 min={limits.restDuration.min}
                 max={limits.restDuration.max}
-                step={localConfig.restDuration < 60 ? 5 : 15}
+                step={config.restDuration < 60 ? 5 : 15}
                 className={cn(
                   "cursor-pointer",
-                  localConfig.restDuration < 60 && "[&_[role=slider]]:bg-lime-400"
+                  config.restDuration < 60 && "[&_[role=slider]]:bg-lime-400",
+                  isBlocked && "opacity-50 pointer-events-none"
                 )}
+                disabled={isBlocked}
               />
               <div className="flex justify-between text-sm text-slate-500">
                 <span>10 seconds</span>
                 <span>5 minutes</span>
               </div>
-              {localConfig.restDuration < 60 && (
+              {config.restDuration < 60 && (
                 <p className="text-sm text-lime-400/70 text-center">
                   Short rest mode - ideal for active recovery
                 </p>
@@ -361,23 +414,27 @@ export default function SettingsPage() {
                   Get Ready Period
                 </Label>
                 <motion.span
-                  key={localConfig.prepDuration || 10}
+                  key={config.prepDuration || 10}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="text-3xl font-bold text-blue-400"
                 >
-                  {formatDuration(localConfig.prepDuration || 10)}
+                  {formatDuration(config.prepDuration || 10)}
                 </motion.span>
               </div>
               <Slider
-                value={[localConfig.prepDuration || 10]}
+                value={[config.prepDuration || 10]}
                 onValueChange={([value]) => 
-                  setLocalConfig(prev => ({ ...prev, prepDuration: value }))
+                  updateConfig({ prepDuration: value })
                 }
                 min={limits.prepDuration.min}
                 max={limits.prepDuration.max}
                 step={limits.prepDuration.step}
-                className="cursor-pointer"
+                className={cn(
+                  'cursor-pointer',
+                  isBlocked && 'opacity-50 pointer-events-none'
+                )}
+                disabled={isBlocked}
               />
               <div className="flex justify-between text-sm text-slate-500">
                 <span>No prep</span>
@@ -411,10 +468,14 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Switch
-                checked={localConfig.enableWarning}
+                checked={config.enableWarning}
                 onCheckedChange={(checked) => 
-                  setLocalConfig(prev => ({ ...prev, enableWarning: checked }))
+                  updateConfig({ enableWarning: checked })
                 }
+                disabled={isBlocked}
+                className={cn(
+                  isBlocked && 'opacity-50'
+                )}
               />
             </div>
           </motion.div>
@@ -442,39 +503,33 @@ export default function SettingsPage() {
           </motion.div>
         </div>
 
-        {/* Action buttons - Fixed at bottom on mobile */}
-        <div className="sticky bottom-0 mt-8 p-4 -mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <div className="flex gap-3">
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              disabled={!hasChanges}
-              className={cn(
-                'flex-1 h-14 text-base',
-                'bg-slate-800/50 border-slate-600',
-                'hover:bg-slate-700/50 hover:border-slate-500',
-                'disabled:opacity-30 text-slate-300 hover:text-white'
+        {/* Auto-save status footer */}
+        {(isSaving || isBlocked || lastSaveError) && (
+          <div className="mt-8 p-4 rounded-2xl border bg-slate-800/30 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-3">
+              {isSaving && (
+                <div className="flex items-center gap-2 text-blue-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm font-medium">Saving settings...</span>
+                </div>
               )}
-            >
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Reset
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className={cn(
-                'flex-1 h-14 text-base font-semibold',
-                'bg-gradient-to-r from-blue-500 to-indigo-600',
-                'hover:from-blue-600 hover:to-indigo-700',
-                'text-white border-0',
-                'disabled:opacity-30'
+              
+              {isBlocked && !isSaving && (
+                <div className="flex items-center gap-2 text-orange-400">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Settings locked while timer is active</span>
+                </div>
               )}
-            >
-              <Save className="w-5 h-5 mr-2" />
-              Save Changes
-            </Button>
+              
+              {lastSaveError && !isSaving && (
+                <div className="flex items-center gap-2 text-red-400">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Failed to save: {lastSaveError.message}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
