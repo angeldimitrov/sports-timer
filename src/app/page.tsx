@@ -74,19 +74,20 @@ export default function Home() {
   const timer = useTimer({
     preset: 'intermediate', // Default to intermediate preset
     onEvent: useCallback((event: TimerEvent) => {
-      // Handle timer events for audio integration with correct boxing timer logic
-      log.debug('Timer event:', event.type, event.payload, event.state?.phase);
-      
-      // Safely handle audio playback with error handling
-      const safePlayAudio = async (audioType: string) => {
-        try {
-          await audio.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
-        } catch (error) {
-          log.warn(`Failed to play ${audioType} audio:`, error);
-        }
-      };
-      
-      switch (event.type) {
+      try {
+        // Handle timer events for audio integration with correct boxing timer logic
+        log.debug('Timer event:', event.type, event.payload, event.state?.phase);
+        
+        // Safely handle audio playback with error handling
+        const safePlayAudio = async (audioType: string) => {
+          try {
+            await audio.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
+          } catch (error) {
+            log.warn(`Failed to play ${audioType} audio:`, error);
+          }
+        };
+        
+        switch (event.type) {
         case 'preparationStart':
           // Play "GET READY" when preparation phase starts
           log.debug('Playing: GET READY');
@@ -138,6 +139,9 @@ export default function Home() {
             safePlayAudio('greatJob'); // "Great job!"
           }, 2500);
           break;
+      }
+      } catch (error) {
+        log.error('Timer event handler error:', error);
       }
     }, [audio])
   });
@@ -229,19 +233,21 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('updated') === 'true') {
-        // Reload configuration from localStorage
-        try {
-          const saved = localStorage.getItem('boxing-timer-config');
-          if (saved) {
-            const config = JSON.parse(saved);
-            timer.updateConfig(config);
-          }
-        } catch (error) {
-          console.warn('Failed to load updated config:', error);
-        }
+        // Clear the URL parameter immediately to prevent infinite loop
+        router.replace('/', { scroll: false });
         
-        // Clear the URL parameter
-        router.replace('/');
+        // Reload configuration from localStorage after a short delay
+        setTimeout(() => {
+          try {
+            const saved = localStorage.getItem('boxing-timer-config');
+            if (saved) {
+              const config = JSON.parse(saved);
+              timer.updateConfig(config);
+            }
+          } catch (error) {
+            console.warn('Failed to load updated config:', error);
+          }
+        }, 100);
       }
     }
   }, [timer, router]);
