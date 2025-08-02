@@ -133,10 +133,10 @@ export default function SettingsPage() {
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overflow-x-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-transparent to-transparent" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-red-500/5 rounded-full blur-3xl" />
 
-      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-full sm:max-w-xl lg:max-w-2xl">
+      <div className="relative z-10 w-full max-w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 sm:max-w-xl lg:max-w-2xl">
         {/* Header with back button */}
         <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Button
