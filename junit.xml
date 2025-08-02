@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="41" failures="0" errors="0" time="1.299">
+  <testsuite name="TimerEngine" errors="0" failures="0" skipped="0" timestamp="2025-08-02T06:13:12" time="0.724" tests="18">
+    <testcase classname="TimerEngine Timer Precision Test should maintain ±100ms accuracy during timing operations" name="TimerEngine Timer Precision Test should maintain ±100ms accuracy during timing operations" time="0.533">
+    </testcase>
+    <testcase classname="TimerEngine Timer Precision Test should handle timing precision under load simulation" name="TimerEngine Timer Precision Test should handle timing precision under load simulation" time="0.002">
+    </testcase>
+    <testcase classname="TimerEngine State Management Test should properly manage state transitions: start/pause/resume/stop/reset" name="TimerEngine State Management Test should properly manage state transitions: start/pause/resume/stop/reset" time="0.002">
+    </testcase>
+    <testcase classname="TimerEngine State Management Test should handle configuration updates correctly" name="TimerEngine State Management Test should handle configuration updates correctly" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Phase Progression Test should progress through phases: preparation → work → rest → work → complete" name="TimerEngine Phase Progression Test should progress through phases: preparation → work → rest → work → complete" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Phase Progression Test should emit warning events at correct timing" name="TimerEngine Phase Progression Test should emit warning events at correct timing" time="0">
+    </testcase>
+    <testcase classname="TimerEngine Round Management Test should manage multi-round progression correctly" name="TimerEngine Round Management Test should manage multi-round progression correctly" time="0.003">
+    </testcase>
+    <testcase classname="TimerEngine Round Management Test should calculate workout progress accurately throughout session" name="TimerEngine Round Management Test should calculate workout progress accurately throughout session" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Round Management Test should handle single round workout correctly" name="TimerEngine Round Management Test should handle single round workout correctly" time="0.002">
+    </testcase>
+    <testcase classname="TimerEngine Boxing Timer Presets should create correct preset configurations" name="TimerEngine Boxing Timer Presets should create correct preset configurations" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Boxing Timer Presets should create custom timer from config object" name="TimerEngine Boxing Timer Presets should create custom timer from config object" time="0">
+    </testcase>
+    <testcase classname="TimerEngine Error Handling and Edge Cases should handle worker errors gracefully" name="TimerEngine Error Handling and Edge Cases should handle worker errors gracefully" time="0.002">
+    </testcase>
+    <testcase classname="TimerEngine Error Handling and Edge Cases should handle pause when not running" name="TimerEngine Error Handling and Edge Cases should handle pause when not running" time="0">
+    </testcase>
+    <testcase classname="TimerEngine Error Handling and Edge Cases should handle resume when not paused" name="TimerEngine Error Handling and Edge Cases should handle resume when not paused" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Error Handling and Edge Cases should handle multiple start calls" name="TimerEngine Error Handling and Edge Cases should handle multiple start calls" time="0.001">
+    </testcase>
+    <testcase classname="TimerEngine Event System should support multiple event listeners" name="TimerEngine Event System should support multiple event listeners" time="0">
+    </testcase>
+    <testcase classname="TimerEngine Event System should handle event listener errors gracefully" name="TimerEngine Event System should handle event listener errors gracefully" time="0.022">
+    </testcase>
+    <testcase classname="TimerEngine Resource Cleanup should clean up resources on destroy" name="TimerEngine Resource Cleanup should clean up resources on destroy" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="AudioManager" errors="0" failures="0" skipped="0" timestamp="2025-08-02T06:13:13" time="0.315" tests="23">
+    <testcase classname="AudioManager Audio Playback Reliability Test should successfully initialize Web Audio API as primary system" name="AudioManager Audio Playback Reliability Test should successfully initialize Web Audio API as primary system" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should fallback to HTML5 Audio when Web Audio API fails" name="AudioManager Audio Playback Reliability Test should fallback to HTML5 Audio when Web Audio API fails" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should use synthetic audio when all file loading fails" name="AudioManager Audio Playback Reliability Test should use synthetic audio when all file loading fails" time="0.025">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should handle audio playback with Web Audio API buffers" name="AudioManager Audio Playback Reliability Test should handle audio playback with Web Audio API buffers" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should handle HTML5 Audio fallback playback" name="AudioManager Audio Playback Reliability Test should handle HTML5 Audio fallback playback" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should generate synthetic tones for all audio types" name="AudioManager Audio Playback Reliability Test should generate synthetic tones for all audio types" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should handle audio loading timeouts gracefully" name="AudioManager Audio Playback Reliability Test should handle audio loading timeouts gracefully" time="0.012">
+    </testcase>
+    <testcase classname="AudioManager Audio Playback Reliability Test should provide specialized combo methods for boxing timing" name="AudioManager Audio Playback Reliability Test should provide specialized combo methods for boxing timing" time="0.012">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should maintain volume settings but always play at 100%" name="AudioManager Volume Control System Test should maintain volume settings but always play at 100%" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should handle mute state but never actually mute audio" name="AudioManager Volume Control System Test should handle mute state but never actually mute audio" time="0.012">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should apply volume settings to HTML5 Audio elements" name="AudioManager Volume Control System Test should apply volume settings to HTML5 Audio elements" time="0.012">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should apply gain settings to Web Audio API" name="AudioManager Volume Control System Test should apply gain settings to Web Audio API" time="0.011">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should provide accurate audio system state information" name="AudioManager Volume Control System Test should provide accurate audio system state information" time="0.013">
+    </testcase>
+    <testcase classname="AudioManager Volume Control System Test should validate volume range constraints" name="AudioManager Volume Control System Test should validate volume range constraints" time="0">
+    </testcase>
+    <testcase classname="AudioManager Initialization Error Handling should handle complete initialization failure gracefully" name="AudioManager Initialization Error Handling should handle complete initialization failure gracefully" time="0.001">
+    </testcase>
+    <testcase classname="AudioManager Initialization Error Handling should initialize with partial audio file loading success" name="AudioManager Initialization Error Handling should initialize with partial audio file loading success" time="0.011">
+    </testcase>
+    <testcase classname="AudioManager Resource Management should properly dispose of all resources" name="AudioManager Resource Management should properly dispose of all resources" time="0.01">
+    </testcase>
+    <testcase classname="AudioManager Resource Management should handle disposal when not initialized" name="AudioManager Resource Management should handle disposal when not initialized" time="0.001">
+    </testcase>
+    <testcase classname="AudioManager Singleton Pattern should provide global singleton instance" name="AudioManager Singleton Pattern should provide global singleton instance" time="0">
+    </testcase>
+    <testcase classname="AudioManager Edge Cases and Error Recovery should handle play requests for unknown audio types" name="AudioManager Edge Cases and Error Recovery should handle play requests for unknown audio types" time="0.011">
+    </testcase>
+    <testcase classname="AudioManager Edge Cases and Error Recovery should handle Web Audio API context suspension" name="AudioManager Edge Cases and Error Recovery should handle Web Audio API context suspension" time="0.011">
+    </testcase>
+    <testcase classname="AudioManager Edge Cases and Error Recovery should handle HTML5 Audio autoplay restrictions" name="AudioManager Edge Cases and Error Recovery should handle HTML5 Audio autoplay restrictions" time="0.011">
+    </testcase>
+    <testcase classname="AudioManager Edge Cases and Error Recovery should handle on-demand loading for unready audio files" name="AudioManager Edge Cases and Error Recovery should handle on-demand loading for unready audio files" time="0.023">
+    </testcase>
+  </testsuite>
+</testsuites>

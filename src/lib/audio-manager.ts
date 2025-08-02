@@ -566,7 +566,21 @@ export class AudioManager {
 
     const audioFile = this.audioFiles.get(type);
     if (!audioFile) {
-      log.warn(`Audio type ${type} not found`);
+      log.warn(`Audio type ${type} not found, trying synthetic audio`);
+      
+      // Try synthetic audio if no audio file is available
+      if (this.config.enableSyntheticAudio && this.audioContext && this.gainNode) {
+        log.debug(`Using synthetic audio for missing ${type}`);
+        this.generateSyntheticTone(type, when);
+        
+        if (!this.state.usingSyntheticAudio) {
+          this.state.usingSyntheticAudio = true;
+          log.info('Switched to synthetic audio generation - audio files not available');
+        }
+        return;
+      }
+      
+      log.warn(`No audio source available for ${type} and synthetic audio not enabled/available`);
       return;
     }
 
