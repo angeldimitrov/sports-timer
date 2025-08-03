@@ -69,7 +69,7 @@ describe('PresetSelector Integration Tests', () => {
       expect(screen.getByText('Advanced')).toBeInTheDocument();
     });
 
-    it('should show active preset with visual indicators when config matches', () => {
+    it('should show active preset with visual indicators when explicitly selected', () => {
       // Create config that matches intermediate preset
       const intermediateConfig: TimerConfig = {
         totalRounds: 5,
@@ -83,6 +83,7 @@ describe('PresetSelector Integration Tests', () => {
       render(
         <PresetSelector
           currentConfig={intermediateConfig}
+          selectedPreset="intermediate"
           onPresetSelect={mockOnPresetSelect}
         />
       );
@@ -117,8 +118,8 @@ describe('PresetSelector Integration Tests', () => {
     });
   });
 
-  describe('Custom Configuration Display', () => {
-    it('should show custom configuration display when no preset matches', () => {
+  describe('Custom Preset Display', () => {
+    it('should show create custom preset button when no custom preset exists', () => {
       // Create a config that doesn't match any preset
       const customConfig: TimerConfig = {
         totalRounds: 7,
@@ -136,13 +137,16 @@ describe('PresetSelector Integration Tests', () => {
         />
       );
 
-      expect(screen.getByText('Custom Configuration')).toBeInTheDocument();
-      expect(screen.getByText('7 rounds')).toBeInTheDocument();
-      expect(screen.getByText('150s work')).toBeInTheDocument();
-      expect(screen.getByText('45s rest')).toBeInTheDocument();
+      // Should show standard presets
+      expect(screen.getByText('Beginner')).toBeInTheDocument();
+      expect(screen.getByText('Intermediate')).toBeInTheDocument();
+      expect(screen.getByText('Advanced')).toBeInTheDocument();
+      
+      // Should show create custom preset option
+      expect(screen.getByText('Create Custom')).toBeInTheDocument();
     });
 
-    it('should not show custom configuration when a preset matches', () => {
+    it('should render standard presets when a preset matches', () => {
       // Create config that matches beginner preset
       const beginnerConfig: TimerConfig = {
         totalRounds: 3,
@@ -156,11 +160,14 @@ describe('PresetSelector Integration Tests', () => {
       render(
         <PresetSelector
           currentConfig={beginnerConfig}
+          selectedPreset="beginner"
           onPresetSelect={mockOnPresetSelect}
         />
       );
 
-      expect(screen.queryByText('Custom Configuration')).not.toBeInTheDocument();
+      expect(screen.getByText('Beginner')).toBeInTheDocument();
+      expect(screen.getByText('Intermediate')).toBeInTheDocument();
+      expect(screen.getByText('Advanced')).toBeInTheDocument();
     });
   });
 
@@ -191,7 +198,7 @@ describe('PresetSelector Integration Tests', () => {
   });
 
   describe('Active State Validation', () => {
-    it('should only show one preset as active at a time', () => {
+    it('should only show one preset as active at a time when explicitly selected', () => {
       // Create config that matches intermediate preset
       const intermediateConfig: TimerConfig = {
         totalRounds: 5,
@@ -205,18 +212,19 @@ describe('PresetSelector Integration Tests', () => {
       render(
         <PresetSelector
           currentConfig={intermediateConfig}
+          selectedPreset="intermediate"
           onPresetSelect={mockOnPresetSelect}
         />
       );
 
-      // Only intermediate should have active styling
+      // Only intermediate should have active styling when explicitly selected
       const intermediateButton = screen.getByRole('button', { name: /intermediate/i });
       const beginnerButton = screen.getByRole('button', { name: /beginner/i });
       const advancedButton = screen.getByRole('button', { name: /advanced/i });
 
       expect(intermediateButton).toHaveClass('ring-blue-500');
-      expect(beginnerButton).not.toHaveClass('ring-green-500');
-      expect(advancedButton).not.toHaveClass('ring-purple-500');
+      expect(beginnerButton).not.toHaveClass('ring-blue-500');
+      expect(advancedButton).not.toHaveClass('ring-blue-500');
     });
   });
 
