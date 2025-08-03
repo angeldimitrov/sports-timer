@@ -210,22 +210,28 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const preset = urlParams.get('preset') as 'beginner' | 'intermediate' | 'advanced';
+      const preset = urlParams.get('preset') as 'beginner' | 'intermediate' | 'advanced' | 'custom';
       
-      if (preset && ['beginner', 'intermediate', 'advanced'].includes(preset)) {
+      if (preset && ['beginner', 'intermediate', 'advanced', 'custom'].includes(preset)) {
         timer.loadPreset(preset);
       }
     }
   }, [timer]);
 
   // Handle preset selection
-  const handlePresetSelect = (preset: 'beginner' | 'intermediate' | 'advanced') => {
+  const handlePresetSelect = (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => {
     timer.loadPreset(preset);
   };
 
-  // Handle settings page navigation
+  // Handle custom preset edit
+  const handleCustomPresetEdit = () => {
+    // Navigate to settings page in edit mode
+    router.push('/settings?edit=true');
+  };
+
+  // Handle settings page navigation (create new custom preset)
   const handleSettingsClick = () => {
-    router.push('/settings');
+    router.push('/settings'); // No edit param = create mode
   };
 
   // Check if returning from settings with updates
@@ -312,6 +318,7 @@ export default function Home() {
             <PresetSelector
               currentConfig={timer.config}
               onPresetSelect={handlePresetSelect}
+              onCustomPresetEdit={handleCustomPresetEdit}
               disabled={timer.isRunning}
             />
 
@@ -333,7 +340,7 @@ export default function Home() {
                 )}
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Settings
+                Create Custom Preset
               </Button>
             </motion.div>
           </div>

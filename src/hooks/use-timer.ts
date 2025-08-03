@@ -26,7 +26,7 @@ export interface UseTimerOptions {
   /** Initial timer configuration */
   config?: TimerConfig;
   /** Preset configuration (overrides config if provided) */
-  preset?: 'beginner' | 'intermediate' | 'advanced';
+  preset?: 'beginner' | 'intermediate' | 'advanced' | 'custom';
   /** Auto-start timer on initialization */
   autoStart?: boolean;
   /** Callback for timer events */
@@ -60,7 +60,7 @@ export interface UseTimerReturn {
   /** Update timer configuration */
   updateConfig: (newConfig: Partial<TimerConfig>) => void;
   /** Load preset configuration */
-  loadPreset: (preset: 'beginner' | 'intermediate' | 'advanced') => void;
+  loadPreset: (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => void;
 
   // Computed values
   /** Formatted time remaining (MM:SS) */
@@ -270,7 +270,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
     }
   }, [isReady]);
 
-  const loadPreset = useCallback((presetName: 'beginner' | 'intermediate' | 'advanced') => {
+  const loadPreset = useCallback((presetName: 'beginner' | 'intermediate' | 'advanced' | 'custom') => {
     try {
       // Create temporary timer to get preset config
       const presetTimer = createBoxingTimer(presetName);
@@ -332,7 +332,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
 /**
  * Hook variant with preset configuration
  */
-export function useBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced', options: Omit<UseTimerOptions, 'preset'> = {}): UseTimerReturn {
+export function useBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced' | 'custom', options: Omit<UseTimerOptions, 'preset'> = {}): UseTimerReturn {
   return useTimer({ ...options, preset });
 }
 
