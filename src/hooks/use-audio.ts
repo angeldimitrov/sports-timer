@@ -12,7 +12,7 @@
  * - Loading states and error handling
  */
 
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AudioManager, AudioType, getAudioManager } from '../lib/audio-manager';
 import { getPublicPath } from '../lib/get-base-path';
 import { createModuleLogger } from '../lib/logger';
@@ -77,8 +77,6 @@ export function useAudio(): UseAudioReturn {
   const audioManagerRef = useRef<AudioManager | null>(null);
   const initializePromiseRef = useRef<Promise<void> | null>(null);
   
-  // Stable refs for function calls (removed to simplify)
-  
   const [state, setState] = useState<UseAudioState>({
     isInitialized: false,
     isLoading: false,
@@ -115,10 +113,17 @@ export function useAudio(): UseAudioReturn {
     
     return { volume: 100, isMuted: false };
   }, []);
-  
-  // Refs removed for simplicity
 
-  // Note: saveSettings function removed - now inlined to avoid dependency issues
+  // Save audio settings to localStorage
+  const saveSettings = useCallback((settings: Partial<AudioSettings>) => {
+    try {
+      const current = loadSettings();
+      const updated = { ...current, ...settings };
+      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
+    } catch (error) {
+      log.warn('Failed to save audio settings:', error);
+    }
+  }, [loadSettings]);
 
   // Initialize audio system
   const initialize = useCallback(async (): Promise<void> => {
@@ -184,7 +189,7 @@ export function useAudio(): UseAudioReturn {
     } finally {
       initializePromiseRef.current = null;
     }
-  }, []); // Remove dependencies that cause re-creation
+  }, [state.isInitialized, getManager, loadSettings]);
 
   // Play audio of specified type
   const play = useCallback(async (type: AudioType, when: number = 0): Promise<void> => {
@@ -203,136 +208,56 @@ export function useAudio(): UseAudioReturn {
       log.warn(`Failed to play ${type} audio:`, error);
       // Don't update state repeatedly to avoid infinite loops
     }
-  }, []); // Remove state dependencies that change on every render
+  }, [getManager, initialize, state.isLoading, state.error]);
 
-  // Convenient play methods - use refs to avoid dependency changes
-  const playBell = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('bell', when);
-    }
-    return Promise.resolve();
-  }, []);
-  
-  const playBeep = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('beep', when);
-    }
-    return Promise.resolve();
-  }, []);
-  
-  const playWarning = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('warning', when);
-    }
-    return Promise.resolve();
-  }, []);
+  // Convenient play methods
+  const playBell = useCallback((when?: number) => play('bell', when), [play]);
+  const playBeep = useCallback((when?: number) => play('beep', when), [play]);
+  const playWarning = useCallback((when?: number) => play('warning', when), [play]);
 
   // Timer-specific audio methods
-  const playRoundStart = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('bell', when);
-    }
-    return Promise.resolve();
-  }, []);
-  
-  const playRoundEnd = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('bell', when);
-    }
-    return Promise.resolve();
-  }, []);
-  
+  const playRoundStart = useCallback((when?: number) => playBell(when), [playBell]);
+  const playRoundEnd = useCallback((when?: number) => playBell(when), [playBell]);
   const playWorkoutEnd = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      // Play double bell for workout end
-      manager.play('bell', when);
-      return manager.play('bell', (when || 0) + 0.5);
-    }
-    return Promise.resolve();
-  }, []);
-  
-  const playTenSecondWarning = useCallback((when?: number) => {
-    const manager = getManager();
-    if (manager.isReady()) {
-      return manager.play('warning', when);
-    }
-    return Promise.resolve();
-  }, []);
+    // Play double bell for workout end
+    playBell(when);
+    return playBell((when || 0) + 0.5);
+  }, [playBell]);
+  const playTenSecondWarning = useCallback((when?: number) => playWarning(when), [playWarning]);
 
   // Volume control
   const setVolume = useCallback((volume: number) => {
     const clampedVolume = Math.max(0, Math.min(100, volume));
     setState(prev => ({ ...prev, volume: clampedVolume }));
-    try {
-      const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
-      const current = stored ? JSON.parse(stored) : { volume: 100, isMuted: false };
-      const updated = { ...current, volume: clampedVolume };
-      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
-    } catch (error) {
-      log.warn('Failed to save volume setting:', error);
-    }
+    saveSettings({ volume: clampedVolume });
     // Note: AudioManager doesn't support volume control yet
-  }, []);
+  }, [saveSettings]);
 
   // Mute control
   const setMuted = useCallback((muted: boolean) => {
     setState(prev => ({ ...prev, isMuted: muted }));
-    try {
-      const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
-      const current = stored ? JSON.parse(stored) : { volume: 100, isMuted: false };
-      const updated = { ...current, isMuted: muted };
-      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
-    } catch (error) {
-      log.warn('Failed to save mute setting:', error);
-    }
+    saveSettings({ isMuted: muted });
     // Note: AudioManager doesn't support mute control yet
-  }, []);
+  }, [saveSettings]);
 
   // Toggle mute
   const toggleMute = useCallback(() => {
     setState(prev => {
       const newMuted = !prev.isMuted;
-      try {
-        const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
-        const current = stored ? JSON.parse(stored) : { volume: 100, isMuted: false };
-        const updated = { ...current, isMuted: newMuted };
-        localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
-      } catch (error) {
-        log.warn('Failed to save mute setting:', error);
-      }
+      saveSettings({ isMuted: newMuted });
       return { ...prev, isMuted: newMuted };
     });
     // Note: AudioManager doesn't support mute control yet
-  }, []);
+  }, [saveSettings]);
 
   // Check if audio is ready
   const isReady = useCallback((): boolean => {
     return getManager().isReady();
-  }, []);
+  }, [getManager]);
 
   // Initialize on mount and load settings
   useEffect(() => {
-    // Inline loadSettings to avoid dependency
-    let settings = { volume: 100, isMuted: false };
-    try {
-      const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as AudioSettings;
-        settings = {
-          volume: Math.max(0, Math.min(100, parsed.volume || 100)),
-          isMuted: Boolean(parsed.isMuted),
-        };
-      }
-    } catch (error) {
-      log.warn('Failed to load audio settings:', error);
-    }
-    
+    const settings = loadSettings();
     const manager = getManager();
     const managerState = manager.getState();
     
@@ -342,7 +267,7 @@ export function useAudio(): UseAudioReturn {
       isMuted: settings.isMuted,
       hasWebAudioSupport: managerState.hasWebAudioSupport,
     }));
-  }, []); // Remove dependencies to run only on mount
+  }, [getManager, loadSettings]);
 
   // Clear error after some time
   useEffect(() => {
@@ -365,7 +290,7 @@ export function useAudio(): UseAudioReturn {
     };
   }, []);
 
-  return useMemo(() => ({
+  return {
     // State
     isInitialized: state.isInitialized,
     isLoading: state.isLoading,
@@ -388,14 +313,5 @@ export function useAudio(): UseAudioReturn {
     setMuted,
     toggleMute,
     isReady,
-  }), [
-    // Only include primitive state values to prevent object recreation
-    state.isInitialized,
-    state.isLoading,
-    state.error,
-    state.volume,
-    state.isMuted,
-    state.hasWebAudioSupport,
-    // Functions are stable with empty dependency arrays
-  ]);
+  };
 }

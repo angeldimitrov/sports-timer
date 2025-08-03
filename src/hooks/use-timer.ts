@@ -148,12 +148,6 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
   // Refs for stable references
   const timerRef = useRef<TimerEngine | null>(null);
   const eventHandlerRef = useRef<TimerEventHandler | null>(null);
-  const onEventRef = useRef<TimerEventHandler | null>(null);
-
-  // Update onEvent ref when onEvent prop changes
-  useEffect(() => {
-    onEventRef.current = onEvent || null;
-  }, [onEvent]);
 
   /**
    * Initialize timer engine
@@ -174,9 +168,9 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
         // Force new object reference to ensure React re-renders
         setState({ ...event.state });
 
-        // Forward event to external handler using ref to avoid dependency
-        if (onEventRef.current) {
-          onEventRef.current(event);
+        // Forward event to external handler
+        if (onEvent) {
+          onEvent(event);
         }
 
         // Handle specific events
@@ -204,7 +198,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       setIsReady(false);
       return null;
     }
-  }, []); // Remove onEvent dependency to prevent re-initialization
+  }, [onEvent]);
 
   /**
    * Initialize timer on mount
