@@ -91,32 +91,78 @@ export function PresetSelector({
   disabled = false,
   className 
 }: PresetSelectorProps) {
-  // Check if a preset matches current config
-  const isPresetActive = (preset: typeof presets[keyof typeof presets]) => {
-    return (
-      currentConfig.totalRounds === preset.rounds &&
-      currentConfig.workDuration === preset.workDuration &&
-      currentConfig.restDuration === preset.restDuration
-    );
-  };
-
-  // Get currently active preset
-  const activePreset = Object.values(presets).find(preset => isPresetActive(preset));
-  
   // Get custom preset info - avoid hydration mismatch by checking client-side only
-  const [customPresetInfo, setCustomPresetInfo] = useState<any>(null);
+  const [customPresetInfo, setCustomPresetInfo] = useState<{
+    name: string;
+    rounds: number;
+    workDuration: number;
+    restDuration: number;
+    totalTime: string;
+  } | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
-    // Only run on client side to avoid hydration mismatch
+    // Mark as client-side and load custom preset info
+    setIsClient(true);
     setCustomPresetInfo(getCustomPresetDisplayInfo());
   }, []);
+
+  // SINGLE SOURCE OF TRUTH: Determine which preset type is active
+  const getActivePresetType = () => {
+    // During SSR or before client hydration, no preset is active
+    if (!isClient) {
+      return { type: 'none', preset: null };
+    }
+
+
+    // Check if custom preset exists and matches current config
+    if (customPresetInfo) {
+      const customMatches = (
+        currentConfig.totalRounds === customPresetInfo.rounds &&
+        currentConfig.workDuration === customPresetInfo.workDuration &&
+        currentConfig.restDuration === customPresetInfo.restDuration
+      );
+      
+      if (customMatches) {
+        return { type: 'custom', preset: customPresetInfo };
+      }
+    }
+
+    // Check standard presets only if custom is not active
+    for (const preset of Object.values(presets)) {
+      const standardMatches = (
+        currentConfig.totalRounds === preset.rounds &&
+        currentConfig.workDuration === preset.workDuration &&
+        currentConfig.restDuration === preset.restDuration
+      );
+      
+      if (standardMatches) {
+        return { type: 'standard', preset: preset };
+      }
+    }
+
+    return { type: 'none', preset: null };
+  };
+
+  const activePresetState = getActivePresetType();
   
-  // Check if custom preset is active
-  const isCustomPresetActive = customPresetInfo ? (
-    currentConfig.totalRounds === customPresetInfo.rounds &&
-    currentConfig.workDuration === customPresetInfo.workDuration &&
-    currentConfig.restDuration === customPresetInfo.restDuration
-  ) : false;
+  // CRITICAL FIX: Force mutual exclusivity between custom and standard presets
+  const isCustomPresetActive = activePresetState.type === 'custom';
+  
+  const isPresetActive = (preset: typeof presets[keyof typeof presets]) => {
+    // ABSOLUTE RULE: If custom preset is active, NO standard preset can be active
+    if (isCustomPresetActive) {
+      return false;
+    }
+    
+    // Only allow standard preset activation if NO custom preset is active
+    const isThisStandardPreset = (
+      activePresetState.type === 'standard' && 
+      activePresetState.preset?.id === preset.id
+    );
+    
+    return isThisStandardPreset;
+  };
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -256,113 +302,136 @@ export function PresetSelector({
             className="w-full"
           >
             {customPresetInfo ? (
-              /* Existing custom preset */
-              <Button
-                onClick={() => onPresetSelect('custom')}
-                disabled={disabled}
-                variant="ghost"
-                className={cn(
-                  'w-full min-h-[92px] p-4',
-                  'bg-slate-900/50 hover:bg-slate-800/50',
-                  'border border-slate-700/50 hover:border-slate-600',
-                  'text-slate-200 hover:text-white',
-                  'transition-all duration-300 ease-out',
-                  'relative overflow-hidden group',
-                  'hover:shadow-lg hover:shadow-slate-900/25',
-                  'active:bg-slate-800/70',
-                  isCustomPresetActive && 'ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500',
-                  disabled && 'cursor-not-allowed opacity-50'
-                )}
-              >
-                {/* Premium gradient background on hover */}
-                <div
+              /* Existing custom preset - Fixed layout without nested buttons */
+              <div className="space-y-3">
+                <Button
+                  onClick={() => onPresetSelect('custom')}
+                  disabled={disabled}
+                  variant="ghost"
                   className={cn(
-                    'absolute inset-0 bg-gradient-to-r opacity-0',
-                    'group-hover:opacity-10 group-active:opacity-15',
-                    'transition-opacity duration-300 ease-out',
-                    'from-indigo-500 to-purple-600'
+                    'w-full min-h-[92px] p-4',
+                    'bg-slate-900/50 hover:bg-slate-800/50',
+                    'border border-slate-700/50 hover:border-slate-600',
+                    'text-slate-200 hover:text-white',
+                    'transition-all duration-300 ease-out',
+                    'relative overflow-hidden group',
+                    'hover:shadow-lg hover:shadow-slate-900/25',
+                    'active:bg-slate-800/70',
+                    isCustomPresetActive && 'ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500',
+                    disabled && 'cursor-not-allowed opacity-50'
                   )}
-                />
-                
-                {/* Subtle shimmer effect on hover */}
-                <div
-                  className={cn(
-                    'absolute inset-0 opacity-0',
-                    'group-hover:opacity-100 transition-opacity duration-500',
-                    'bg-gradient-to-r from-transparent via-white/5 to-transparent',
-                    'translate-x-[-100%] group-hover:translate-x-[100%]',
-                    'transition-transform duration-1000 ease-out'
-                  )}
-                />
-
-                <div className="relative z-10 flex items-start gap-4 text-left">
-                  {/* Custom preset icon */}
+                >
+                  {/* Premium gradient background on hover */}
                   <div
                     className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center',
-                      'bg-gradient-to-br shadow-lg',
-                      'group-hover:shadow-xl transition-shadow duration-300',
-                      'ring-1 ring-white/10 group-hover:ring-white/20',
+                      'absolute inset-0 bg-gradient-to-r opacity-0',
+                      'group-hover:opacity-10 group-active:opacity-15',
+                      'transition-opacity duration-300 ease-out',
                       'from-indigo-500 to-purple-600'
                     )}
-                  >
-                    <Target className="w-6 h-6 text-white drop-shadow-sm" />
-                  </div>
+                  />
+                  
+                  {/* Subtle shimmer effect on hover */}
+                  <div
+                    className={cn(
+                      'absolute inset-0 opacity-0',
+                      'group-hover:opacity-100 transition-opacity duration-500',
+                      'bg-gradient-to-r from-transparent via-white/5 to-transparent',
+                      'translate-x-[-100%] group-hover:translate-x-[100%]',
+                      'transition-transform duration-1000 ease-out'
+                    )}
+                  />
 
-                  {/* Custom preset details */}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-white">
-                        {customPresetInfo.name}
-                      </h4>
-                      
-                      <div className="flex items-center gap-2">
-                        {/* Edit button - using div to avoid nested buttons */}
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onCustomPresetEdit?.();
-                          }}
-                          className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded flex items-center justify-center cursor-pointer transition-colors"
-                        >
-                          <Settings className="w-3 h-3" />
+                  <div className="relative z-10 flex items-start gap-4 text-left">
+                    {/* Custom preset icon */}
+                    <div
+                      className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        'bg-gradient-to-br shadow-lg',
+                        'group-hover:shadow-xl transition-shadow duration-300',
+                        'ring-1 ring-white/10 group-hover:ring-white/20',
+                        'from-indigo-500 to-purple-600'
+                      )}
+                    >
+                      <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                    </div>
+
+                    {/* Custom preset details */}
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white">
+                            {customPresetInfo.name}
+                          </h4>
                         </div>
                         
-                        {/* Active indicator */}
-                        <div className="w-6 h-6 flex items-center justify-center">
-                          <AnimatePresence mode="wait">
-                            {isCustomPresetActive && (
-                              <motion.div
-                                key="active-custom"
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.5 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="w-6 h-6 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg"
-                              >
-                                <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                        <div className="flex items-center gap-2">
+                          {/* Active indicator */}
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            <AnimatePresence mode="wait">
+                              {isCustomPresetActive && (
+                                <motion.div
+                                  key="active-custom"
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.5 }}
+                                  transition={{ duration: 0.2, ease: "easeOut" }}
+                                  className="w-6 h-6 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg"
+                                >
+                                  <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Custom preset stats */}
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                      <span>{customPresetInfo.rounds} rounds</span>
-                      <span>•</span>
-                      <span>{customPresetInfo.totalTime}</span>
-                    </div>
+                      {/* Custom preset stats */}
+                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                        <span>{customPresetInfo.rounds} rounds</span>
+                        <span>•</span>
+                        <span>{customPresetInfo.totalTime}</span>
+                      </div>
 
-                    {/* Custom preset indicator */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <div className="w-4 h-4 rounded-sm bg-gradient-to-br from-indigo-500 to-purple-600" />
-                      <span className="text-xs text-indigo-400 font-medium">Your Custom Preset</span>
+                      {/* Custom preset indicator */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <div className="w-4 h-4 rounded-sm bg-gradient-to-br from-indigo-500 to-purple-600" />
+                        <span className="text-xs text-indigo-400 font-medium">Your Custom Preset</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Button>
+                </Button>
+                
+                {/* Mobile-friendly Edit button - Separate from main button to avoid nesting */}
+                <button
+                  onClick={() => onCustomPresetEdit?.()}
+                  disabled={disabled}
+                  className={cn(
+                    // Mobile-first touch target sizing (48px minimum)
+                    'w-full min-h-[48px] flex items-center justify-center gap-2',
+                    // Enhanced visual design for mobile
+                    'px-4 py-3 bg-slate-700/30 hover:bg-slate-600/50 active:bg-slate-600/70',
+                    'border border-slate-600/30 hover:border-slate-500/50 active:border-slate-500',
+                    'rounded-lg cursor-pointer transition-all duration-200',
+                    // Touch feedback and visual states
+                    'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
+                    'hover:shadow-md active:shadow-sm active:scale-[0.98]',
+                    // Text and icon styling
+                    'text-slate-400 hover:text-white active:text-white',
+                    'font-medium text-sm',
+                    // Prevent text selection on mobile
+                    'select-none',
+                    // Disabled state
+                    disabled && 'cursor-not-allowed opacity-50'
+                  )}
+                  // Accessibility improvements
+                  aria-label="Edit custom preset settings"
+                  type="button"
+                >
+                  <Settings className="w-4 h-4 transition-colors" />
+                  <span>Edit Preset</span>
+                </button>
+              </div>
             ) : (
               /* Create Custom Preset option */
               <Button
@@ -424,37 +493,6 @@ export function PresetSelector({
             )}
           </motion.div>
         </div>
-
-        {/* Current configuration display if custom - Only visible when needed */}
-        <AnimatePresence mode="wait">
-          {!activePreset && (
-            <motion.div
-              key="custom-config"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ 
-                duration: 0.3, 
-                ease: "easeInOut",
-                height: { duration: 0.3 }
-              }}
-              className="overflow-hidden"
-            >
-              <div className="mt-4 pt-4 border-t border-slate-700/50">
-                <div className="text-sm text-slate-400">
-                  <p className="font-medium mb-1">Custom Configuration</p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span>{currentConfig.totalRounds} rounds</span>
-                    <span>•</span>
-                    <span>{currentConfig.workDuration}s work</span>
-                    <span>•</span>
-                    <span>{currentConfig.restDuration}s rest</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
