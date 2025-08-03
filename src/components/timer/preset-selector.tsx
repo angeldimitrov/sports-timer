@@ -324,6 +324,33 @@ export function PresetSelector({
                           </h4>
                         </div>
                         
+                        {/* Gear icon for editing */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCustomPresetEdit?.();
+                          }}
+                          disabled={disabled}
+                          className={cn(
+                            // Touch-friendly sizing (44px minimum)
+                            'w-11 h-11 flex items-center justify-center',
+                            // Visual design
+                            'rounded-lg bg-slate-700/30 hover:bg-slate-600/50 active:bg-slate-600/70',
+                            'border border-slate-600/30 hover:border-slate-500/50 active:border-slate-500',
+                            'transition-all duration-200',
+                            // Focus and interaction states
+                            'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
+                            'hover:shadow-md active:shadow-sm active:scale-[0.95]',
+                            // Icon color
+                            'text-slate-400 hover:text-white active:text-white',
+                            // Disabled state
+                            disabled && 'cursor-not-allowed opacity-50'
+                          )}
+                          aria-label="Edit custom preset settings"
+                          type="button"
+                        >
+                          <Settings className="w-5 h-5 transition-colors" />
+                        </button>
                       </div>
 
                       {/* Custom preset stats */}
@@ -336,36 +363,6 @@ export function PresetSelector({
                     </div>
                   </div>
                 </Button>
-                
-                {/* Mobile-friendly Edit button - Separate from main button to avoid nesting */}
-                <button
-                  onClick={() => onCustomPresetEdit?.()}
-                  disabled={disabled}
-                  className={cn(
-                    // Mobile-first touch target sizing (48px minimum)
-                    'w-full min-h-[48px] flex items-center justify-center gap-2',
-                    // Enhanced visual design for mobile
-                    'px-4 py-3 bg-slate-700/30 hover:bg-slate-600/50 active:bg-slate-600/70',
-                    'border border-slate-600/30 hover:border-slate-500/50 active:border-slate-500',
-                    'rounded-lg cursor-pointer transition-all duration-200',
-                    // Touch feedback and visual states
-                    'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
-                    'hover:shadow-md active:shadow-sm active:scale-[0.98]',
-                    // Text and icon styling
-                    'text-slate-400 hover:text-white active:text-white',
-                    'font-medium text-sm',
-                    // Prevent text selection on mobile
-                    'select-none',
-                    // Disabled state
-                    disabled && 'cursor-not-allowed opacity-50'
-                  )}
-                  // Accessibility improvements
-                  aria-label="Edit custom preset settings"
-                  type="button"
-                >
-                  <Settings className="w-4 h-4 transition-colors" />
-                  <span>Edit Preset</span>
-                </button>
               </div>
             ) : (
               /* Custom option */
