@@ -12,7 +12,7 @@
  * - Loading states and error handling
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { AudioManager, AudioType, getAudioManager } from '../lib/audio-manager';
 import { getPublicPath } from '../lib/get-base-path';
 import { createModuleLogger } from '../lib/logger';
@@ -290,7 +290,7 @@ export function useAudio(): UseAudioReturn {
     };
   }, []);
 
-  return {
+  return useMemo(() => ({
     // State
     isInitialized: state.isInitialized,
     isLoading: state.isLoading,
@@ -313,5 +313,25 @@ export function useAudio(): UseAudioReturn {
     setMuted,
     toggleMute,
     isReady,
-  };
+  }), [
+    state.isInitialized,
+    state.isLoading,
+    state.error,
+    state.volume,
+    state.isMuted,
+    state.hasWebAudioSupport,
+    initialize,
+    play,
+    playBell,
+    playBeep,
+    playWarning,
+    playRoundStart,
+    playRoundEnd,
+    playWorkoutEnd,
+    playTenSecondWarning,
+    setVolume,
+    setMuted,
+    toggleMute,
+    isReady,
+  ]);
 }
