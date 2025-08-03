@@ -15,10 +15,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { AudioManager, AudioType, getAudioManager } from '../lib/audio-manager';
 import { getPublicPath } from '../lib/get-base-path';
-import { createModuleLogger } from '../lib/logger';
-
-// Initialize module logger
-const log = createModuleLogger('useAudio');
 
 // Hook state interface
 interface UseAudioState {
@@ -107,8 +103,8 @@ export function useAudio(): UseAudioReturn {
           isMuted: Boolean(settings.isMuted),
         };
       }
-    } catch (error) {
-      log.warn('Failed to load audio settings:', error);
+    } catch {
+      // Ignore errors when loading settings
     }
     
     return { volume: 100, isMuted: false };
@@ -120,8 +116,8 @@ export function useAudio(): UseAudioReturn {
       const current = loadSettings();
       const updated = { ...current, ...settings };
       localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
-    } catch (error) {
-      log.warn('Failed to save audio settings:', error);
+    } catch {
+      // Ignore errors when saving settings
     }
   }, [loadSettings]);
 
@@ -178,7 +174,6 @@ export function useAudio(): UseAudioReturn {
         }));
         
         // Don't throw - allow graceful fallback
-        log.error('Audio initialization error:', error);
       }
     })();
 
@@ -189,7 +184,8 @@ export function useAudio(): UseAudioReturn {
     } finally {
       initializePromiseRef.current = null;
     }
-  }, [state.isInitialized, getManager, loadSettings]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getManager, loadSettings]);
 
   // Play audio of specified type
   const play = useCallback(async (type: AudioType, when: number = 0): Promise<void> => {
@@ -204,11 +200,11 @@ export function useAudio(): UseAudioReturn {
       if (manager.isReady()) {
         await manager.play(type, when);
       }
-    } catch (error) {
-      log.warn(`Failed to play ${type} audio:`, error);
+    } catch {
       // Don't update state repeatedly to avoid infinite loops
     }
-  }, [getManager, initialize, state.isLoading, state.error]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getManager, initialize]);
 
   // Convenient play methods
   const playBell = useCallback((when?: number) => play('bell', when), [play]);

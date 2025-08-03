@@ -28,7 +28,7 @@ class Logger {
     
     this.config = {
       enabled: true,
-      level: isProduction ? 'warn' : 'debug',
+      level: 'warn', // Only show warnings and errors
       showTimestamp: !isProduction,
       showModule: true,
     };

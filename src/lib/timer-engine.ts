@@ -726,9 +726,9 @@ export class TimerEngine {
 }
 
 /**
- * Utility function to create timer with common boxing presets
+ * Utility function to create timer with common boxing presets or custom preset
  */
-export function createBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced' | TimerConfig): TimerEngine {
+export function createBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced' | 'custom' | TimerConfig): TimerEngine {
   let config: TimerConfig;
 
   if (typeof preset === 'string') {
@@ -761,6 +761,36 @@ export function createBoxingTimer(preset: 'beginner' | 'intermediate' | 'advance
           enableWarning: true,
           prepDuration: 5    // 5 seconds get ready (experienced users)
         };
+        break;
+        
+      case 'custom':
+        // Load custom preset from localStorage
+        try {
+          const customPresetData = localStorage.getItem('boxing-timer-custom-preset');
+          if (customPresetData) {
+            const customPreset = JSON.parse(customPresetData);
+            if (customPreset.exists && customPreset.config) {
+              config = customPreset.config;
+              
+              // Update last used timestamp
+              customPreset.lastUsed = new Date().toISOString();
+              localStorage.setItem('boxing-timer-custom-preset', JSON.stringify(customPreset));
+              
+              break;
+            }
+          }
+          throw new Error('Custom preset not found or invalid');
+        } catch (error) {
+          log.error('Failed to load custom preset:', error);
+          // Fallback to intermediate preset
+          config = {
+            workDuration: 180,
+            restDuration: 60,
+            totalRounds: 5,
+            enableWarning: true,
+            prepDuration: 10
+          };
+        }
         break;
         
       default:

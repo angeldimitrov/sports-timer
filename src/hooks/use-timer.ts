@@ -26,7 +26,7 @@ export interface UseTimerOptions {
   /** Initial timer configuration */
   config?: TimerConfig;
   /** Preset configuration (overrides config if provided) */
-  preset?: 'beginner' | 'intermediate' | 'advanced';
+  preset?: 'beginner' | 'intermediate' | 'advanced' | 'custom';
   /** Auto-start timer on initialization */
   autoStart?: boolean;
   /** Callback for timer events */
@@ -60,7 +60,7 @@ export interface UseTimerReturn {
   /** Update timer configuration */
   updateConfig: (newConfig: Partial<TimerConfig>) => void;
   /** Load preset configuration */
-  loadPreset: (preset: 'beginner' | 'intermediate' | 'advanced') => void;
+  loadPreset: (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => void;
 
   // Computed values
   /** Formatted time remaining (MM:SS) */
@@ -122,6 +122,10 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
     onEvent
   } = options;
 
+  // Store onEvent in ref to avoid recreating initializeTimer
+  const onEventRef = useRef(onEvent);
+  onEventRef.current = onEvent;
+
   // State management
   const [state, setState] = useState<TimerState>({
     status: 'idle',
@@ -152,53 +156,58 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
   /**
    * Initialize timer engine
    */
-  const initializeTimer = useCallback((timerConfig: TimerConfig) => {
-    try {
-      // Clean up existing timer
-      if (timerRef.current) {
-        timerRef.current.destroy();
+  const initializeTimerRef = useRef<((timerConfig: TimerConfig) => TimerEngine | null) | null>(null);
+  
+  // Create stable initializeTimer function that doesn't change
+  if (!initializeTimerRef.current) {
+    initializeTimerRef.current = (timerConfig: TimerConfig) => {
+      try {
+        // Clean up existing timer
+        if (timerRef.current) {
+          timerRef.current.destroy();
+        }
+
+        // Create new timer engine
+        const timer = new TimerEngine(timerConfig);
+        timerRef.current = timer;
+
+        // Set up event handler
+        const eventHandler: TimerEventHandler = (event: TimerEvent) => {
+          // Force new object reference to ensure React re-renders
+          setState({ ...event.state });
+
+          // Forward event to external handler
+          if (onEventRef.current) {
+            onEventRef.current(event);
+          }
+
+          // Handle specific events
+          switch (event.type) {
+            case 'error':
+              setError(new Error(event.payload?.message || 'Timer error'));
+              break;
+          }
+        };
+
+        eventHandlerRef.current = eventHandler;
+        timer.addEventListener(eventHandler);
+
+        // Update local config state
+        setConfig(timer.getConfig());
+        setState(timer.getState());
+        setError(null);
+        setIsReady(true);
+
+        return timer;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to initialize timer'));
+        setIsReady(false);
+        return null;
       }
-
-      // Create new timer engine
-      const timer = new TimerEngine(timerConfig);
-      timerRef.current = timer;
-
-      // Set up event handler
-      const eventHandler: TimerEventHandler = (event: TimerEvent) => {
-        // Force new object reference to ensure React re-renders
-        setState({ ...event.state });
-
-        // Forward event to external handler
-        if (onEvent) {
-          onEvent(event);
-        }
-
-        // Handle specific events
-        switch (event.type) {
-          case 'error':
-            console.error('Timer error:', event.payload);
-            setError(new Error(event.payload?.message || 'Timer error'));
-            break;
-        }
-      };
-
-      eventHandlerRef.current = eventHandler;
-      timer.addEventListener(eventHandler);
-
-      // Update local config state
-      setConfig(timer.getConfig());
-      setState(timer.getState());
-      setError(null);
-      setIsReady(true);
-
-      return timer;
-    } catch (err) {
-      console.error('Failed to initialize timer:', err);
-      setError(err instanceof Error ? err : new Error('Failed to initialize timer'));
-      setIsReady(false);
-      return null;
-    }
-  }, [onEvent]);
+    };
+  }
+  
+  const initializeTimer = initializeTimerRef.current;
 
   /**
    * Initialize timer on mount
@@ -270,7 +279,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
     }
   }, [isReady]);
 
-  const loadPreset = useCallback((presetName: 'beginner' | 'intermediate' | 'advanced') => {
+  const loadPreset = useCallback((presetName: 'beginner' | 'intermediate' | 'advanced' | 'custom') => {
     try {
       // Create temporary timer to get preset config
       const presetTimer = createBoxingTimer(presetName);
@@ -278,16 +287,15 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       presetTimer.destroy();
 
       // Reinitialize with preset config
-      const timer = initializeTimer(presetConfig);
+      const timer = initializeTimerRef.current?.(presetConfig);
       
       if (!timer) {
         throw new Error('Failed to initialize timer with preset');
       }
     } catch (err) {
-      console.error('Failed to load preset:', err);
       setError(err instanceof Error ? err : new Error('Failed to load preset'));
     }
-  }, [initializeTimer]);
+  }, []);
 
   // Computed values
   const formattedTimeRemaining = formatTime(state.timeRemaining);
@@ -332,7 +340,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
 /**
  * Hook variant with preset configuration
  */
-export function useBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced', options: Omit<UseTimerOptions, 'preset'> = {}): UseTimerReturn {
+export function useBoxingTimer(preset: 'beginner' | 'intermediate' | 'advanced' | 'custom', options: Omit<UseTimerOptions, 'preset'> = {}): UseTimerReturn {
   return useTimer({ ...options, preset });
 }
 
