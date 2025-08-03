@@ -210,22 +210,45 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const preset = urlParams.get('preset') as 'beginner' | 'intermediate' | 'advanced';
+      const preset = urlParams.get('preset') as 'beginner' | 'intermediate' | 'advanced' | 'custom';
       
-      if (preset && ['beginner', 'intermediate', 'advanced'].includes(preset)) {
+      if (preset && ['beginner', 'intermediate', 'advanced', 'custom'].includes(preset)) {
         timer.loadPreset(preset);
       }
     }
   }, [timer]);
 
   // Handle preset selection
-  const handlePresetSelect = (preset: 'beginner' | 'intermediate' | 'advanced') => {
+  const handlePresetSelect = (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => {
     timer.loadPreset(preset);
   };
 
   // Handle settings page navigation
   const handleSettingsClick = () => {
     router.push('/settings');
+  };
+
+  // Handle custom preset edit
+  const handleCustomPresetEdit = () => {
+    // Check if custom preset exists to determine if we're editing or creating
+    const customPreset = typeof window !== 'undefined' ? 
+      localStorage.getItem('boxing-timer-custom-preset') : null;
+    
+    if (customPreset) {
+      try {
+        const parsed = JSON.parse(customPreset);
+        if (parsed.exists) {
+          // Edit existing custom preset
+          router.push('/settings?mode=custom-preset&action=edit');
+          return;
+        }
+      } catch (error) {
+        console.warn('Failed to parse custom preset:', error);
+      }
+    }
+    
+    // Create new custom preset
+    router.push('/settings?mode=custom-preset');
   };
 
   // Check if returning from settings with updates
@@ -312,6 +335,7 @@ export default function Home() {
             <PresetSelector
               currentConfig={timer.config}
               onPresetSelect={handlePresetSelect}
+              onCustomPresetEdit={handleCustomPresetEdit}
               disabled={timer.isRunning}
             />
 

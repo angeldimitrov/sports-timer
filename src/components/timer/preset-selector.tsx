@@ -14,8 +14,9 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dumbbell, Users, Target, Check } from 'lucide-react';
+import { Dumbbell, Users, Target, Check, Settings, Plus } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
+import { getCustomPresetDisplayInfo } from '@/lib/custom-preset';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +24,9 @@ interface PresetSelectorProps {
   /** Current timer configuration */
   currentConfig: TimerConfig;
   /** Callback when preset is selected */
-  onPresetSelect: (preset: 'beginner' | 'intermediate' | 'advanced') => void;
+  onPresetSelect: (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => void;
+  /** Callback when custom preset edit is requested */
+  onCustomPresetEdit?: () => void;
   /** Whether selection is disabled */
   disabled?: boolean;
   /** Additional CSS classes */
@@ -81,6 +84,7 @@ const presets = {
 export function PresetSelector({ 
   currentConfig, 
   onPresetSelect, 
+  onCustomPresetEdit,
   disabled = false,
   className 
 }: PresetSelectorProps) {
@@ -95,11 +99,22 @@ export function PresetSelector({
 
   // Get currently active preset
   const activePreset = Object.values(presets).find(preset => isPresetActive(preset));
+  
+  // Get custom preset info
+  const customPresetInfo = getCustomPresetDisplayInfo();
+  
+  // Check if custom preset is active
+  const isCustomPresetActive = customPresetInfo ? (
+    currentConfig.totalRounds === customPresetInfo.rounds &&
+    currentConfig.workDuration === customPresetInfo.workDuration &&
+    currentConfig.restDuration === customPresetInfo.restDuration
+  ) : false;
 
   return (
     <div className={cn('space-y-4', className)}>
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
         <div className="space-y-3">
+          {/* Standard presets */}
           {Object.entries(presets).map(([key, preset]) => {
             const Icon = preset.icon;
             const isActive = isPresetActive(preset);
@@ -227,11 +242,187 @@ export function PresetSelector({
               </motion.div>
             );
           })}
+
+          {/* Custom preset or Create Custom Preset option */}
+          <motion.div
+            key="custom-preset"
+            className="w-full"
+          >
+            {customPresetInfo ? (
+              /* Existing custom preset */
+              <Button
+                onClick={() => onPresetSelect('custom')}
+                disabled={disabled}
+                variant="ghost"
+                className={cn(
+                  'w-full min-h-[92px] p-4',
+                  'bg-slate-900/50 hover:bg-slate-800/50',
+                  'border border-slate-700/50 hover:border-slate-600',
+                  'text-slate-200 hover:text-white',
+                  'transition-all duration-300 ease-out',
+                  'relative overflow-hidden group',
+                  'hover:shadow-lg hover:shadow-slate-900/25',
+                  'active:bg-slate-800/70',
+                  isCustomPresetActive && 'ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500',
+                  disabled && 'cursor-not-allowed opacity-50'
+                )}
+              >
+                {/* Premium gradient background on hover */}
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-r opacity-0',
+                    'group-hover:opacity-10 group-active:opacity-15',
+                    'transition-opacity duration-300 ease-out',
+                    'from-indigo-500 to-purple-600'
+                  )}
+                />
+                
+                {/* Subtle shimmer effect on hover */}
+                <div
+                  className={cn(
+                    'absolute inset-0 opacity-0',
+                    'group-hover:opacity-100 transition-opacity duration-500',
+                    'bg-gradient-to-r from-transparent via-white/5 to-transparent',
+                    'translate-x-[-100%] group-hover:translate-x-[100%]',
+                    'transition-transform duration-1000 ease-out'
+                  )}
+                />
+
+                <div className="relative z-10 flex items-start gap-4 text-left">
+                  {/* Custom preset icon */}
+                  <div
+                    className={cn(
+                      'w-12 h-12 rounded-xl flex items-center justify-center',
+                      'bg-gradient-to-br shadow-lg',
+                      'group-hover:shadow-xl transition-shadow duration-300',
+                      'ring-1 ring-white/10 group-hover:ring-white/20',
+                      'from-indigo-500 to-purple-600'
+                    )}
+                  >
+                    <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+
+                  {/* Custom preset details */}
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-white">
+                        {customPresetInfo.name}
+                      </h4>
+                      
+                      <div className="flex items-center gap-2">
+                        {/* Edit button */}
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCustomPresetEdit?.();
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+                        >
+                          <Settings className="w-3 h-3" />
+                        </Button>
+                        
+                        {/* Active indicator */}
+                        <div className="w-6 h-6 flex items-center justify-center">
+                          <AnimatePresence mode="wait">
+                            {isCustomPresetActive && (
+                              <motion.div
+                                key="active-custom"
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="w-6 h-6 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg"
+                              >
+                                <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Custom preset stats */}
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <span>{customPresetInfo.rounds} rounds</span>
+                      <span>•</span>
+                      <span>{customPresetInfo.totalTime}</span>
+                    </div>
+
+                    {/* Custom preset indicator */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <div className="w-4 h-4 rounded-sm bg-gradient-to-br from-indigo-500 to-purple-600" />
+                      <span className="text-xs text-indigo-400 font-medium">Your Custom Preset</span>
+                    </div>
+                  </div>
+                </div>
+              </Button>
+            ) : (
+              /* Create Custom Preset option */
+              <Button
+                onClick={() => onCustomPresetEdit?.()}
+                disabled={disabled}
+                variant="ghost"
+                className={cn(
+                  'w-full min-h-[92px] p-4',
+                  'bg-slate-900/50 hover:bg-slate-800/50',
+                  'border border-slate-700/50 hover:border-slate-600',
+                  'border-dashed',
+                  'text-slate-200 hover:text-white',
+                  'transition-all duration-300 ease-out',
+                  'relative overflow-hidden group',
+                  'hover:shadow-lg hover:shadow-slate-900/25',
+                  disabled && 'cursor-not-allowed opacity-50'
+                )}
+              >
+                {/* Premium gradient background on hover */}
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-r opacity-0',
+                    'group-hover:opacity-10 group-active:opacity-15',
+                    'transition-opacity duration-300 ease-out',
+                    'from-indigo-500 to-purple-600'
+                  )}
+                />
+
+                <div className="relative z-10 flex items-start gap-4 text-left">
+                  {/* Create preset icon */}
+                  <div
+                    className={cn(
+                      'w-12 h-12 rounded-xl flex items-center justify-center',
+                      'bg-gradient-to-br shadow-lg',
+                      'group-hover:shadow-xl transition-shadow duration-300',
+                      'ring-1 ring-white/10 group-hover:ring-white/20',
+                      'from-indigo-500 to-purple-600'
+                    )}
+                  >
+                    <Plus className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+
+                  {/* Create preset details */}
+                  <div className="flex-1 space-y-1">
+                    <h4 className="font-semibold text-white">
+                      Create Custom Preset
+                    </h4>
+                    
+                    <p className="text-xs text-slate-500">
+                      Configure your own workout settings
+                    </p>
+                    
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-xs text-indigo-400 font-medium">Tap to customize →</span>
+                    </div>
+                  </div>
+                </div>
+              </Button>
+            )}
+          </motion.div>
         </div>
 
         {/* Current configuration display if custom - Only visible when needed */}
         <AnimatePresence mode="wait">
-          {!activePreset && (
+          {!activePreset && !isCustomPresetActive && (
             <motion.div
               key="custom-config"
               initial={{ opacity: 0, height: 0 }}
