@@ -229,7 +229,13 @@ export default function Home() {
     router.push('/settings?edit=true');
   };
 
-  // Handle settings page navigation (create new custom preset)
+  // Handle custom preset creation
+  const handleCustomPresetCreate = () => {
+    // Navigate to settings page in create mode
+    router.push('/settings'); // No edit param = create mode
+  };
+
+  // Handle settings page navigation (create new custom preset) 
   const handleSettingsClick = () => {
     router.push('/settings'); // No edit param = create mode
   };
@@ -319,6 +325,7 @@ export default function Home() {
               currentConfig={timer.config}
               onPresetSelect={handlePresetSelect}
               onCustomPresetEdit={handleCustomPresetEdit}
+              onCustomPresetCreate={handleCustomPresetCreate}
               disabled={timer.isRunning}
             />
 

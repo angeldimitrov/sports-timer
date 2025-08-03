@@ -27,6 +27,8 @@ interface PresetSelectorProps {
   onPresetSelect: (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => void;
   /** Callback when custom preset edit is requested */
   onCustomPresetEdit?: () => void;
+  /** Callback when custom preset creation is requested */
+  onCustomPresetCreate?: () => void;
   /** Whether selection is disabled */
   disabled?: boolean;
   /** Additional CSS classes */
@@ -85,6 +87,7 @@ export function PresetSelector({
   currentConfig, 
   onPresetSelect, 
   onCustomPresetEdit,
+  onCustomPresetCreate,
   disabled = false,
   className 
 }: PresetSelectorProps) {
@@ -360,7 +363,7 @@ export function PresetSelector({
             ) : (
               /* Create Custom Preset option */
               <Button
-                onClick={() => onCustomPresetEdit?.()}
+                onClick={() => onCustomPresetCreate?.()}
                 disabled={disabled}
                 variant="ghost"
                 className={cn(
