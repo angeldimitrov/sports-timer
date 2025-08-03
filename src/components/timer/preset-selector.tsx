@@ -201,16 +201,18 @@ export function PresetSelector({
 
                   <div className="relative z-10 flex items-start gap-4 text-left">
                     {/* Icon with gradient background and enhanced visual feedback - Left-aligned for better visual hierarchy */}
-                    <div
-                      className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
-                        'bg-gradient-to-br shadow-lg',
-                        'group-hover:shadow-xl transition-shadow duration-300',
-                        'ring-1 ring-white/10 group-hover:ring-white/20',
-                        preset.color
-                      )}
-                    >
-                      <Icon className="w-6 h-6 text-white drop-shadow-sm" />
+                    <div className="flex">
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-xl flex items-center justify-center',
+                          'bg-gradient-to-br shadow-lg',
+                          'group-hover:shadow-xl transition-shadow duration-300',
+                          'ring-1 ring-white/10 group-hover:ring-white/20',
+                          preset.color
+                        )}
+                      >
+                        <Icon className="w-6 h-6 text-white drop-shadow-sm" />
+                      </div>
                     </div>
 
                     {/* Preset details */}
@@ -303,16 +305,18 @@ export function PresetSelector({
 
                   <div className="relative z-10 flex items-start gap-4 text-left">
                     {/* Custom preset icon - Left-aligned for better visual hierarchy */}
-                    <div
-                      className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
-                        'bg-gradient-to-br shadow-lg',
-                        'group-hover:shadow-xl transition-shadow duration-300',
-                        'ring-1 ring-white/10 group-hover:ring-white/20',
-                        'from-indigo-500 to-purple-600'
-                      )}
-                    >
-                      <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                    <div className="flex">
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-xl flex items-center justify-center',
+                          'bg-gradient-to-br shadow-lg',
+                          'group-hover:shadow-xl transition-shadow duration-300',
+                          'ring-1 ring-white/10 group-hover:ring-white/20',
+                          'from-indigo-500 to-purple-600'
+                        )}
+                      >
+                        <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                      </div>
                     </div>
 
                     {/* Custom preset details */}
@@ -402,16 +406,18 @@ export function PresetSelector({
 
                 <div className="relative z-10 flex items-start gap-4 text-left">
                   {/* Create preset icon - Left-aligned for better visual hierarchy */}
-                  <div
-                    className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
-                      'bg-gradient-to-br shadow-lg',
-                      'group-hover:shadow-xl transition-shadow duration-300',
-                      'ring-1 ring-white/10 group-hover:ring-white/20',
-                      'from-indigo-500 to-purple-600'
-                    )}
-                  >
-                    <Plus className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="flex">
+                    <div
+                      className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        'bg-gradient-to-br shadow-lg',
+                        'group-hover:shadow-xl transition-shadow duration-300',
+                        'ring-1 ring-white/10 group-hover:ring-white/20',
+                        'from-indigo-500 to-purple-600'
+                      )}
+                    >
+                      <Plus className="w-6 h-6 text-white drop-shadow-sm" />
+                    </div>
                   </div>
 
                   {/* Create preset details */}
