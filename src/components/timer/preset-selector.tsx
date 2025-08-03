@@ -200,10 +200,10 @@ export function PresetSelector({
                   />
 
                   <div className="relative z-10 flex items-start gap-4 text-left">
-                    {/* Icon with gradient background and enhanced visual feedback */}
+                    {/* Icon with gradient background and enhanced visual feedback - Left-aligned for better visual hierarchy */}
                     <div
                       className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
                         'bg-gradient-to-br shadow-lg',
                         'group-hover:shadow-xl transition-shadow duration-300',
                         'ring-1 ring-white/10 group-hover:ring-white/20',
@@ -302,10 +302,10 @@ export function PresetSelector({
                   />
 
                   <div className="relative z-10 flex items-start gap-4 text-left">
-                    {/* Custom preset icon */}
+                    {/* Custom preset icon - Left-aligned for better visual hierarchy */}
                     <div
                       className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-center',
+                        'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
                         'bg-gradient-to-br shadow-lg',
                         'group-hover:shadow-xl transition-shadow duration-300',
                         'ring-1 ring-white/10 group-hover:ring-white/20',
@@ -401,10 +401,10 @@ export function PresetSelector({
                 />
 
                 <div className="relative z-10 flex items-start gap-4 text-left">
-                  {/* Create preset icon */}
+                  {/* Create preset icon - Left-aligned for better visual hierarchy */}
                   <div
                     className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center',
+                      'w-12 h-12 rounded-xl flex items-center justify-start pl-3',
                       'bg-gradient-to-br shadow-lg',
                       'group-hover:shadow-xl transition-shadow duration-300',
                       'ring-1 ring-white/10 group-hover:ring-white/20',
