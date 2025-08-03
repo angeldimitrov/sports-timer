@@ -301,71 +301,82 @@ export function PresetSelector({
                     )}
                   />
 
-                  <div className="relative z-10 flex items-start text-left">
-                    {/* Custom preset icon - Left-aligned for better visual hierarchy */}
-                    <div
-                      className={cn(
-                        'w-12 h-12 rounded-xl flex items-center justify-center mr-4',
-                        'bg-gradient-to-br shadow-lg',
-                        'group-hover:shadow-xl transition-shadow duration-300',
-                        'ring-1 ring-white/10 group-hover:ring-white/20',
-                        'from-indigo-500 to-purple-600'
-                      )}
-                    >
-                      <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="relative z-10 flex items-start justify-between text-left w-full">
+                    {/* Left side: Icon and content */}
+                    <div className="flex items-start flex-1">
+                      {/* Custom preset icon - Left-aligned for better visual hierarchy */}
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-xl flex items-center justify-center mr-4',
+                          'bg-gradient-to-br shadow-lg',
+                          'group-hover:shadow-xl transition-shadow duration-300',
+                          'ring-1 ring-white/10 group-hover:ring-white/20',
+                          'from-indigo-500 to-purple-600'
+                        )}
+                      >
+                        <Target className="w-6 h-6 text-white drop-shadow-sm" />
+                      </div>
+
+                      {/* Custom preset details */}
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-start">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-white">
+                              {customPresetInfo.name}
+                            </h4>
+                          </div>
+                        </div>
+
+                        {/* Custom preset stats */}
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{customPresetInfo.rounds} rounds</span>
+                          <span>•</span>
+                          <span>{customPresetInfo.totalTime}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Custom preset details */}
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-white">
-                            {customPresetInfo.name}
-                          </h4>
-                        </div>
-                        
-                      </div>
-
-                      {/* Custom preset stats */}
-                      <div className="flex items-center gap-3 text-xs text-slate-500">
-                        <span>{customPresetInfo.rounds} rounds</span>
-                        <span>•</span>
-                        <span>{customPresetInfo.totalTime}</span>
-                      </div>
-
+                    {/* Right side: Gear icon positioned at the far right of the panel */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCustomPresetEdit?.();
+                      }}
+                      className={cn(
+                        // Position at the far right edge of the panel
+                        'flex-shrink-0 self-start ml-3',
+                        // Touch-friendly sizing with premium proportions
+                        'w-10 h-10 flex items-center justify-center',
+                        // Sophisticated visual design with depth
+                        'rounded-xl bg-slate-800/40 hover:bg-slate-700/60 active:bg-slate-700/80',
+                        'border border-slate-600/20 hover:border-slate-500/40 active:border-slate-500/60',
+                        'backdrop-blur-sm',
+                        // Premium interaction animations
+                        'transition-all duration-300 ease-out',
+                        // Enhanced focus and hover states
+                        'focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
+                        'hover:shadow-lg hover:shadow-slate-900/25 active:shadow-sm',
+                        'hover:-translate-y-0.5 active:translate-y-0 hover:scale-105 active:scale-100',
+                        // Premium icon styling with proper visual hierarchy
+                        'text-slate-500 hover:text-indigo-300 active:text-indigo-200 cursor-pointer',
+                        // Enhanced disabled state
+                        disabled && 'cursor-not-allowed opacity-30 pointer-events-none hover:transform-none hover:shadow-none'
+                      )}
+                      role="button"
+                      aria-label="Edit custom preset settings"
+                      tabIndex={disabled ? -1 : 0}
+                      onKeyDown={(e) => {
+                        if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onCustomPresetEdit?.();
+                        }
+                      }}
+                    >
+                      <Settings className="w-4.5 h-4.5 transition-all duration-300 group-hover:rotate-90" />
                     </div>
                   </div>
                 </Button>
-                
-                {/* Mobile-friendly Edit button - Separate from main button to avoid nesting */}
-                <button
-                  onClick={() => onCustomPresetEdit?.()}
-                  disabled={disabled}
-                  className={cn(
-                    // Mobile-first touch target sizing (48px minimum)
-                    'w-full min-h-[48px] flex items-center justify-center gap-2',
-                    // Enhanced visual design for mobile
-                    'px-4 py-3 bg-slate-700/30 hover:bg-slate-600/50 active:bg-slate-600/70',
-                    'border border-slate-600/30 hover:border-slate-500/50 active:border-slate-500',
-                    'rounded-lg cursor-pointer transition-all duration-200',
-                    // Touch feedback and visual states
-                    'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
-                    'hover:shadow-md active:shadow-sm active:scale-[0.98]',
-                    // Text and icon styling
-                    'text-slate-400 hover:text-white active:text-white',
-                    'font-medium text-sm',
-                    // Prevent text selection on mobile
-                    'select-none',
-                    // Disabled state
-                    disabled && 'cursor-not-allowed opacity-50'
-                  )}
-                  // Accessibility improvements
-                  aria-label="Edit custom preset settings"
-                  type="button"
-                >
-                  <Settings className="w-4 h-4 transition-colors" />
-                  <span>Edit Preset</span>
-                </button>
               </div>
             ) : (
               /* Custom option */
