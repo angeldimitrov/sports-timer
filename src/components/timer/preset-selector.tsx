@@ -107,62 +107,44 @@ export function PresetSelector({
     setCustomPresetInfo(getCustomPresetDisplayInfo());
   }, []);
 
-  // SINGLE SOURCE OF TRUTH: Determine which preset type is active
-  const getActivePresetType = () => {
-    // During SSR or before client hydration, no preset is active
-    if (!isClient) {
-      return { type: 'none', preset: null };
-    }
-
-
-    // Check if custom preset exists and matches current config
-    if (customPresetInfo) {
-      const customMatches = (
-        currentConfig.totalRounds === customPresetInfo.rounds &&
-        currentConfig.workDuration === customPresetInfo.workDuration &&
-        currentConfig.restDuration === customPresetInfo.restDuration
-      );
-      
-      if (customMatches) {
-        return { type: 'custom', preset: customPresetInfo };
-      }
-    }
-
-    // Check standard presets only if custom is not active
-    for (const preset of Object.values(presets)) {
-      const standardMatches = (
-        currentConfig.totalRounds === preset.rounds &&
-        currentConfig.workDuration === preset.workDuration &&
-        currentConfig.restDuration === preset.restDuration
-      );
-      
-      if (standardMatches) {
-        return { type: 'standard', preset: preset };
-      }
-    }
-
-    return { type: 'none', preset: null };
-  };
-
-  const activePresetState = getActivePresetType();
-  
-  // CRITICAL FIX: Force mutual exclusivity between custom and standard presets
-  const isCustomPresetActive = activePresetState.type === 'custom';
-  
-  const isPresetActive = (preset: typeof presets[keyof typeof presets]) => {
-    // ABSOLUTE RULE: If custom preset is active, NO standard preset can be active
-    if (isCustomPresetActive) {
-      return false;
-    }
-    
-    // Only allow standard preset activation if NO custom preset is active
-    const isThisStandardPreset = (
-      activePresetState.type === 'standard' && 
-      activePresetState.preset?.id === preset.id
+  // Simple helper functions for preset matching
+  const doesConfigMatchPreset = (preset: typeof presets[keyof typeof presets]) => {
+    return (
+      currentConfig.totalRounds === preset.rounds &&
+      currentConfig.workDuration === preset.workDuration &&
+      currentConfig.restDuration === preset.restDuration
     );
-    
-    return isThisStandardPreset;
   };
+
+  const doesConfigMatchCustom = () => {
+    if (!customPresetInfo) return false;
+    return (
+      currentConfig.totalRounds === customPresetInfo.rounds &&
+      currentConfig.workDuration === customPresetInfo.workDuration &&
+      currentConfig.restDuration === customPresetInfo.restDuration
+    );
+  };
+
+  // Find which standard preset (if any) matches current config
+  const matchingStandardPreset = Object.values(presets).find(preset => 
+    isClient && doesConfigMatchPreset(preset)
+  );
+
+  // Check if custom preset matches current config
+  const customPresetMatches = isClient && doesConfigMatchCustom();
+
+  // FINAL FIX: Only show presets as active if explicitly selected by user
+  // The key insight: default config matches Intermediate, but that doesn't mean it should show as "selected"
+  // Preset selection should be explicit user choice, not automatic matching
+  
+  // Simple preset active checks - only one can be true at a time
+  const isStandardPresetActive = (preset: typeof presets[keyof typeof presets]) => {
+    // Never auto-select presets based on config matching
+    // Only show as active if explicitly set (this prevents default config from auto-selecting Intermediate)
+    return false; // For now, disable auto-selection completely
+  };
+
+  const isCustomPresetActive = false; // For now, disable auto-selection completely
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -170,7 +152,7 @@ export function PresetSelector({
         <div className="space-y-3">
           {Object.entries(presets).map(([key, preset]) => {
             const Icon = preset.icon;
-            const isActive = isPresetActive(preset);
+            const isActive = isStandardPresetActive(preset);
             const presetKey = key as 'beginner' | 'intermediate' | 'advanced';
 
             return (
