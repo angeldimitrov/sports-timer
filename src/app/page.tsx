@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Settings } from 'lucide-react';
 import { useTimer } from '@/hooks/use-timer';
+import { usePresetPersistence } from '@/hooks/use-preset-persistence';
 import { useAudio } from '@/hooks/use-audio';
 import { useWakeLock } from '@/hooks/use-wake-lock';
 import { useMobileGestures } from '@/hooks/use-mobile-gestures';
@@ -12,13 +11,7 @@ import { usePWA } from '@/hooks/use-pwa';
 import { TimerDisplay } from '@/components/timer/timer-display';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
-import { Button } from '@/components/ui/button';
 import { TimerEvent } from '@/lib/timer-engine';
-import { createModuleLogger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
-
-// Initialize module logger
-const log = createModuleLogger('MainPage');
 
 // PWA and mobile components
 import { PWAManager } from '@/components/pwa/pwa-manager';
@@ -27,7 +20,6 @@ import { InstallBadge } from '@/components/pwa/install-prompt';
 // import { UpdateNotification, UpdateBadge } from '@/components/pwa/update-notification'; // Disabled for cleaner UX
 import { 
   MobileTimerEnhancements, 
-  TouchGestureIndicator,
   MobilePerformanceMonitor 
 } from '@/components/timer/mobile-timer-enhancements';
 
@@ -66,7 +58,6 @@ export default function Home() {
     supportsWakeLock?: boolean;
   } | null>(null);
   const [showMobileFeatures, setShowMobileFeatures] = useState(false);
-  const [showGestureIndicators, setShowGestureIndicators] = useState(false);
 
   const audio = useAudio();
   
@@ -74,43 +65,41 @@ export default function Home() {
   const audioRef = useRef(audio);
   audioRef.current = audio;
 
+  // Preset persistence for remembering user selection
+  const presetPersistence = usePresetPersistence();
+
   // Initialize timer and audio systems
   const timer = useTimer({
-    preset: 'intermediate', // Default to intermediate preset
+    preset: presetPersistence.getInitialPreset(), // Use persisted preset or default to beginner
     onEvent: useCallback((event: TimerEvent) => {
       try {
         // Handle timer events for audio integration with correct boxing timer logic
-        log.debug('Timer event:', event.type, event.payload, event.state?.phase);
         
         // Safely handle audio playback with error handling
         const safePlayAudio = async (audioType: string) => {
           try {
             await audioRef.current.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
-          } catch (error) {
-            log.warn(`Failed to play ${audioType} audio:`, error);
+          } catch {
+            // Audio playback failed silently
           }
         };
         
         switch (event.type) {
         case 'preparationStart':
           // Play "GET READY" when preparation phase starts
-          log.debug('Playing: GET READY');
           safePlayAudio('getReady');
           break;
           
         case 'phaseChange':
-          log.debug('Phase change to:', event.payload?.newPhase);
           // Phase transitions with proper boxing timer sounds
           if (event.payload?.newPhase === 'work') {
             // Entering work phase - round is starting
-            log.debug('Playing: ROUND STARTS + BELL');
             safePlayAudio('bell'); // Bell sound
             setTimeout(() => {
               safePlayAudio('roundStart'); // "Round starts" announcement
             }, 500);
           } else if (event.payload?.newPhase === 'rest') {
             // Entering rest phase - round just ended  
-            log.debug('Playing: END OF ROUND + BELL + REST');
             safePlayAudio('bell'); // Bell sound
             setTimeout(() => {
               safePlayAudio('roundEnd'); // "End of the round" announcement
@@ -122,30 +111,26 @@ export default function Home() {
           break;
           
         case 'warning':
-          log.debug('10-second warning in phase:', event.state?.phase);
           // 10-second warning - voice announcement only to avoid artifacts
           if (event.state?.phase === 'work') {
             // 10 seconds left in work phase
-            log.debug('Playing: WORK WARNING');
             safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           } else if (event.state?.phase === 'rest') {
             // 10 seconds left in rest phase - next round coming
-            log.debug('Playing: REST WARNING');
             safePlayAudio('tenSecondWarning'); // "Ten seconds" only
           }
           break;
           
         case 'workoutComplete':
           // Workout finished
-          log.debug('Playing: WORKOUT COMPLETE');
           safePlayAudio('workoutComplete'); // "Workout complete"
           setTimeout(() => {
             safePlayAudio('greatJob'); // "Great job!"
           }, 2500);
           break;
       }
-      } catch (error) {
-        log.error('Timer event handler error:', error);
+      } catch {
+        // Timer event handler error occurred silently
       }
     }, [])
   });
@@ -153,10 +138,10 @@ export default function Home() {
   // PWA state management
   usePWA({
     onInstallSuccess: () => {
-      log.info('Boxing Timer installed successfully!');
+      // Boxing Timer installed successfully
     },
     onUpdateAvailable: () => {
-      log.info('Update available');
+      // Update available
     }
   });
 
@@ -165,7 +150,7 @@ export default function Home() {
     autoLock: true,
     lockCondition: timer.isRunning,
     onLockAcquired: () => {
-      log.info('Screen will stay on during workout');
+      // Screen will stay on during workout
     }
   });
 
@@ -201,30 +186,30 @@ export default function Home() {
       setDeviceInfo(features);
       setShowMobileFeatures(features.isMobile || features.hasTouch || false);
       
-      // Show gesture indicators for first-time mobile users
-      if ((features.isMobile || features.hasTouch) && !localStorage.getItem('gesture-tutorial-seen')) {
-        setShowGestureIndicators(true);
-        localStorage.setItem('gesture-tutorial-seen', 'true');
-      }
     }
   }, []);
 
 
-  // Check URL params for preset
+  // Handle URL params for preset when timer becomes ready
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (timer.isReady && typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const preset = urlParams.get('preset') as 'beginner' | 'intermediate' | 'advanced' | 'custom';
       
       if (preset && ['beginner', 'intermediate', 'advanced', 'custom'].includes(preset)) {
         timer.loadPreset(preset);
+        presetPersistence.setSelectedPreset(preset);
+        // Clear the URL parameter to prevent re-triggering
+        window.history.replaceState({}, '', window.location.pathname);
       }
     }
-  }, [timer]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timer.isReady]); // Only depend on timer readiness
 
   // Handle preset selection
   const handlePresetSelect = (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => {
     timer.loadPreset(preset);
+    presetPersistence.setSelectedPreset(preset);
   };
 
   // Handle custom preset edit
@@ -236,11 +221,6 @@ export default function Home() {
   // Handle custom preset creation
   const handleCustomPresetCreate = () => {
     // Navigate to settings page in create mode
-    router.push('/settings'); // No edit param = create mode
-  };
-
-  // Handle settings page navigation (create new custom preset) 
-  const handleSettingsClick = () => {
     router.push('/settings'); // No edit param = create mode
   };
 
@@ -283,7 +263,6 @@ export default function Home() {
             hapticEnabled={gestures.isEnabled}
             onHapticToggle={gestures.setEnabled}
           />
-          {showGestureIndicators && <TouchGestureIndicator />}
         </>
       )}
       
@@ -327,33 +306,13 @@ export default function Home() {
             {/* Preset Selector */}
             <PresetSelector
               currentConfig={timer.config}
+              selectedPreset={presetPersistence.selectedPreset}
               onPresetSelect={handlePresetSelect}
               onCustomPresetEdit={handleCustomPresetEdit}
               onCustomPresetCreate={handleCustomPresetCreate}
               disabled={timer.isRunning}
+              isInitialized={presetPersistence.isInitialized}
             />
-
-            {/* Settings Button - at the very bottom */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                onClick={handleSettingsClick}
-                variant="outline"
-                className={cn(
-                  'w-full h-12 rounded-xl font-medium',
-                  'glass-dark border-slate-600/50',
-                  'hover:bg-slate-700/50 hover:border-slate-500/70',
-                  'text-slate-200 hover:text-white',
-                  'transition-all duration-300 ease-out shadow-premium-lg',
-                  'ring-1 ring-white/5'
-                )}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Create Custom Preset
-              </Button>
-            </motion.div>
           </div>
         </div>
       </div>

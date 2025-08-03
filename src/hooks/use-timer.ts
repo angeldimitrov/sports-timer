@@ -156,53 +156,58 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
   /**
    * Initialize timer engine
    */
-  const initializeTimer = useCallback((timerConfig: TimerConfig) => {
-    try {
-      // Clean up existing timer
-      if (timerRef.current) {
-        timerRef.current.destroy();
+  const initializeTimerRef = useRef<((timerConfig: TimerConfig) => TimerEngine | null) | null>(null);
+  
+  // Create stable initializeTimer function that doesn't change
+  if (!initializeTimerRef.current) {
+    initializeTimerRef.current = (timerConfig: TimerConfig) => {
+      try {
+        // Clean up existing timer
+        if (timerRef.current) {
+          timerRef.current.destroy();
+        }
+
+        // Create new timer engine
+        const timer = new TimerEngine(timerConfig);
+        timerRef.current = timer;
+
+        // Set up event handler
+        const eventHandler: TimerEventHandler = (event: TimerEvent) => {
+          // Force new object reference to ensure React re-renders
+          setState({ ...event.state });
+
+          // Forward event to external handler
+          if (onEventRef.current) {
+            onEventRef.current(event);
+          }
+
+          // Handle specific events
+          switch (event.type) {
+            case 'error':
+              setError(new Error(event.payload?.message || 'Timer error'));
+              break;
+          }
+        };
+
+        eventHandlerRef.current = eventHandler;
+        timer.addEventListener(eventHandler);
+
+        // Update local config state
+        setConfig(timer.getConfig());
+        setState(timer.getState());
+        setError(null);
+        setIsReady(true);
+
+        return timer;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to initialize timer'));
+        setIsReady(false);
+        return null;
       }
-
-      // Create new timer engine
-      const timer = new TimerEngine(timerConfig);
-      timerRef.current = timer;
-
-      // Set up event handler
-      const eventHandler: TimerEventHandler = (event: TimerEvent) => {
-        // Force new object reference to ensure React re-renders
-        setState({ ...event.state });
-
-        // Forward event to external handler
-        if (onEventRef.current) {
-          onEventRef.current(event);
-        }
-
-        // Handle specific events
-        switch (event.type) {
-          case 'error':
-            console.error('Timer error:', event.payload);
-            setError(new Error(event.payload?.message || 'Timer error'));
-            break;
-        }
-      };
-
-      eventHandlerRef.current = eventHandler;
-      timer.addEventListener(eventHandler);
-
-      // Update local config state
-      setConfig(timer.getConfig());
-      setState(timer.getState());
-      setError(null);
-      setIsReady(true);
-
-      return timer;
-    } catch (err) {
-      console.error('Failed to initialize timer:', err);
-      setError(err instanceof Error ? err : new Error('Failed to initialize timer'));
-      setIsReady(false);
-      return null;
-    }
-  }, []);
+    };
+  }
+  
+  const initializeTimer = initializeTimerRef.current;
 
   /**
    * Initialize timer on mount
@@ -282,13 +287,12 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       presetTimer.destroy();
 
       // Reinitialize with preset config
-      const timer = initializeTimer(presetConfig);
+      const timer = initializeTimerRef.current?.(presetConfig);
       
       if (!timer) {
         throw new Error('Failed to initialize timer with preset');
       }
     } catch (err) {
-      console.error('Failed to load preset:', err);
       setError(err instanceof Error ? err : new Error('Failed to load preset'));
     }
   }, []);

@@ -13,8 +13,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dumbbell, Users, Target, Check, Settings, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Dumbbell, Users, Target, Settings, Plus } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { getCustomPresetDisplayInfo } from '@/lib/custom-preset';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,8 @@ import { cn } from '@/lib/utils';
 interface PresetSelectorProps {
   /** Current timer configuration */
   currentConfig: TimerConfig;
+  /** Currently selected preset (null during initialization) */
+  selectedPreset?: 'beginner' | 'intermediate' | 'advanced' | 'custom' | null;
   /** Callback when preset is selected */
   onPresetSelect: (preset: 'beginner' | 'intermediate' | 'advanced' | 'custom') => void;
   /** Callback when custom preset edit is requested */
@@ -33,6 +35,8 @@ interface PresetSelectorProps {
   disabled?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Whether preset data has finished loading */
+  isInitialized?: boolean;
 }
 
 // Preset configurations
@@ -84,12 +88,13 @@ const presets = {
  * - Smooth transitions between selections
  */
 export function PresetSelector({ 
-  currentConfig, 
+  selectedPreset,
   onPresetSelect, 
   onCustomPresetEdit,
   onCustomPresetCreate,
   disabled = false,
-  className 
+  className,
+  isInitialized = true
 }: PresetSelectorProps) {
   // Get custom preset info - avoid hydration mismatch by checking client-side only
   const [customPresetInfo, setCustomPresetInfo] = useState<{
@@ -99,12 +104,12 @@ export function PresetSelector({
     restDuration: number;
     totalTime: string;
   } | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [isCustomPresetLoaded, setIsCustomPresetLoaded] = useState(false);
   
   useEffect(() => {
-    // Mark as client-side and load custom preset info
-    setIsClient(true);
+    // Load custom preset info on client side
     setCustomPresetInfo(getCustomPresetDisplayInfo());
+    setIsCustomPresetLoaded(true);
   }, []);
 
   // REMOVED ALL CONFIG MATCHING LOGIC - NO AUTO-SELECTION ALLOWED
@@ -113,13 +118,31 @@ export function PresetSelector({
   // The key insight: default config matches Intermediate, but that doesn't mean it should show as "selected"
   // Preset selection should be explicit user choice, not automatic matching
   
-  // ULTIMATE FIX: Completely disable ALL automatic preset selection
+  // Check if a preset is currently selected by the user
   const isStandardPresetActive = (preset: typeof presets[keyof typeof presets]) => {
-    console.log(`[DEBUG] Checking preset ${preset.id}: FORCED FALSE`);
-    return false; // Absolutely no auto-selection allowed
+    return selectedPreset === preset.id;
   };
 
-  const isCustomPresetActive = false; // Absolutely no auto-selection allowed
+  const isCustomPresetActive = selectedPreset === 'custom';
+
+  // Don't render until both preset persistence and custom preset info are loaded
+  if (!isInitialized || !isCustomPresetLoaded) {
+    return (
+      <div className={cn('space-y-4', className)}>
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+          <div className="space-y-3">
+            {/* Loading placeholders to prevent layout shift */}
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="w-full min-h-[92px] p-4 bg-slate-900/30 border border-slate-700/30 rounded-lg animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -197,27 +220,6 @@ export function PresetSelector({
                           {preset.name}
                         </h4>
                         
-                        {/* Active indicator - Fixed size container */}
-                        <div className="w-6 h-6 flex items-center justify-center">
-                          <AnimatePresence mode="wait">
-                            {isActive && (
-                              <motion.div
-                                key={`active-${preset.id}`}
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.5 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                className={cn(
-                                  'w-6 h-6 rounded-full flex items-center justify-center',
-                                  'bg-gradient-to-br shadow-lg',
-                                  preset.color
-                                )}
-                              >
-                                <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
                       </div>
 
                       {/* Preset stats */}
@@ -322,25 +324,6 @@ export function PresetSelector({
                           </h4>
                         </div>
                         
-                        <div className="flex items-center gap-2">
-                          {/* Active indicator */}
-                          <div className="w-6 h-6 flex items-center justify-center">
-                            <AnimatePresence mode="wait">
-                              {isCustomPresetActive && (
-                                <motion.div
-                                  key="active-custom"
-                                  initial={{ opacity: 0, scale: 0.5 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.5 }}
-                                  transition={{ duration: 0.2, ease: "easeOut" }}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg"
-                                >
-                                  <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        </div>
                       </div>
 
                       {/* Custom preset stats */}
