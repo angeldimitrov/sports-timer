@@ -40,8 +40,7 @@ export async function GET() {
  */
 
 const BASE_PATH = '${basePath}';
-const CACHE_VERSION = '${Date.now()}'; // Force cache invalidation on each deployment
-const CACHE_NAME = 'boxing-timer-v4-' + CACHE_VERSION;
+const CACHE_NAME = 'boxing-timer-v3-basepath';
 const OFFLINE_URL = BASE_PATH + '/offline.html';
 
 // Helper function to create URLs with base path
@@ -619,9 +618,7 @@ console.log('[SW] Service Worker loaded with mobile optimizations and base path:
   return new NextResponse(serviceWorkerCode, {
     headers: {
       'Content-Type': 'application/javascript',
-      'Cache-Control': 'no-cache, no-store, must-revalidate', // Force fresh SW on every request
-      'Pragma': 'no-cache',
-      'Expires': '0',
+      'Cache-Control': 'public, max-age=0, must-revalidate', // Don't cache during development
     },
   });
 }

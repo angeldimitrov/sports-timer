@@ -52,7 +52,6 @@ export async function GET() {
     name: "Boxing Timer MVP",
     short_name: "BoxingTimer",
     description: "A reliable, easy-to-use web application for precise boxing workout timing",
-    version: `1.0.${Date.now()}`, // Version with timestamp to force updates
     start_url: getAbsoluteUrl("/"),
     display: "standalone",
     background_color: "#0f172a",
@@ -203,9 +202,7 @@ export async function GET() {
   return NextResponse.json(manifest, {
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache, no-store, must-revalidate', // Force fresh manifest on updates
-      'Pragma': 'no-cache',
-      'Expires': '0',
+      'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
     },
   });
 }
