@@ -130,15 +130,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overflow-x-hidden">
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
       {/* Background elements */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-transparent to-transparent" />
-      <div className="absolute top-0 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-red-500/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
 
-      <div className="relative z-10 w-full max-w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 sm:max-w-xl lg:max-w-2xl">
+      <div className="relative z-10 container mx-auto px-4 py-6 max-w-2xl">
         {/* Header with back button */}
-        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-4 mb-8">
           <Button
             onClick={handleBack}
             variant="ghost"
@@ -148,9 +148,9 @@ export default function SettingsPage() {
             <ArrowLeft className="w-6 h-6" />
           </Button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                <Timer className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <Timer className="w-6 h-6 text-white" />
               </div>
               Timer Settings
             </h1>
@@ -161,10 +161,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Settings content */}
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+        <div className="space-y-8">
           {/* Rounds setting */}
           <motion.div 
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+            className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -203,7 +203,7 @@ export default function SettingsPage() {
 
           {/* Work duration setting */}
           <motion.div 
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+            className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -276,7 +276,7 @@ export default function SettingsPage() {
 
           {/* Rest duration setting */}
           <motion.div 
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+            className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -349,7 +349,7 @@ export default function SettingsPage() {
 
           {/* Preparation duration setting */}
           <motion.div 
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+            className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -391,7 +391,7 @@ export default function SettingsPage() {
 
           {/* 10-second warning toggle */}
           <motion.div 
-            className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
+            className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -421,7 +421,7 @@ export default function SettingsPage() {
 
           {/* Total workout time display */}
           <motion.div
-            className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6"
+            className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
@@ -443,34 +443,34 @@ export default function SettingsPage() {
         </div>
 
         {/* Action buttons - Fixed at bottom on mobile */}
-        <div className="sticky bottom-0 mt-6 sm:mt-8 p-3 sm:p-4 -mx-3 sm:-mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <div className="flex gap-2 sm:gap-3">
+        <div className="sticky bottom-0 mt-8 p-4 -mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
+          <div className="flex gap-3">
             <Button
               onClick={handleReset}
               variant="outline"
               disabled={!hasChanges}
               className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base',
+                'flex-1 h-14 text-base',
                 'bg-slate-800/50 border-slate-600',
                 'hover:bg-slate-700/50 hover:border-slate-500',
                 'disabled:opacity-30 text-slate-300 hover:text-white'
               )}
             >
-              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <RotateCcw className="w-5 h-5 mr-2" />
               Reset
             </Button>
             <Button
               onClick={handleSave}
               disabled={!hasChanges}
               className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base font-semibold',
+                'flex-1 h-14 text-base font-semibold',
                 'bg-gradient-to-r from-blue-500 to-indigo-600',
                 'hover:from-blue-600 hover:to-indigo-700',
                 'text-white border-0',
                 'disabled:opacity-30'
               )}
             >
-              <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <Save className="w-5 h-5 mr-2" />
               Save Changes
             </Button>
           </div>
