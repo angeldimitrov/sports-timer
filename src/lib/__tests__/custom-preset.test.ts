@@ -52,6 +52,15 @@ describe('Custom Preset Management System', () => {
     (localStorage.getItem as jest.Mock).mockReturnValue(null);
     (localStorage.setItem as jest.Mock).mockImplementation(() => {});
     (localStorage.removeItem as jest.Mock).mockImplementation(() => {});
+
+    // Mock console methods to suppress expected error messages in tests
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore console methods after each test
+    jest.restoreAllMocks();
   });
 
   describe('createCustomPreset', () => {

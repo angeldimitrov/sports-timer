@@ -82,6 +82,10 @@ describe('TimerEngine', () => {
     jest.clearAllMocks();
     receivedEvents = [];
 
+    // Mock console methods to suppress expected error messages in tests
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
     // Create timer instance
     timerEngine = new TimerEngine(testConfig);
     
@@ -98,6 +102,9 @@ describe('TimerEngine', () => {
   });
 
   afterEach(() => {
+    // Restore console methods after each test
+    jest.restoreAllMocks();
+    
     if (timerEngine) {
       timerEngine.destroy();
     }

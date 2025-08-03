@@ -252,3 +252,4 @@ src/
 - after creating a pr on github, monitor if the checks are passing and in case of failure fix it
 - always clear browser cache when testing in a browser
 - always test the app in the browser with playwright mcp before saying feature is done. Check for errors in the console as well
+- do not comment out tests to make production deployment! 
