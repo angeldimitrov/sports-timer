@@ -253,3 +253,4 @@ src/
 - always clear browser cache when testing in a browser
 - always test the app in the browser with playwright mcp before saying feature is done. Check for errors in the console as well
 - do not comment out tests to make production deployment! 
+- always validate ui changes by opening them in the browser. always use playwright mcp

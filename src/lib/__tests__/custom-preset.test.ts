@@ -39,7 +39,7 @@ const validTimerConfig: TimerConfig = {
   warningDuration: 10
 };
 
-const validPresetName = 'My Custom Workout';
+const validPresetName = 'Custom';
 
 // Use the global localStorage mock from jest setup
 

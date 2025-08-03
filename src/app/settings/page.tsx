@@ -100,7 +100,7 @@ function SettingsContent() {
       };
       setLocalConfig(defaultConfig);
       setOriginalConfig(defaultConfig);
-      setPresetName('My Custom Workout');
+      setPresetName('Custom');
       setOriginalName('');
     }
   }, [isEditing]);
@@ -226,7 +226,7 @@ function SettingsContent() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                 {isEditing ? <Timer className="w-4 h-4 sm:w-6 sm:h-6 text-white" /> : <Plus className="w-4 h-4 sm:w-6 sm:h-6 text-white" />}
               </div>
-              {isEditing ? 'Edit Custom Preset' : 'Create Custom Preset'}
+              {isEditing ? 'Edit Custom Preset' : 'Custom'}
             </h1>
             <p className="text-slate-400 mt-1">
               {isEditing ? 'Modify your custom workout preset' : 'Design your perfect boxing workout'}
