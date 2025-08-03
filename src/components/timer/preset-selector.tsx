@@ -324,26 +324,31 @@ export function PresetSelector({
                           </h4>
                         </div>
                         
-                        {/* Gear icon for editing */}
+                        {/* Gear icon for editing - Premium positioned settings button */}
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
                             onCustomPresetEdit?.();
                           }}
                           className={cn(
-                            // Touch-friendly sizing (44px minimum)
-                            'w-11 h-11 flex items-center justify-center',
-                            // Visual design
-                            'rounded-lg bg-slate-700/30 hover:bg-slate-600/50 active:bg-slate-600/70',
-                            'border border-slate-600/30 hover:border-slate-500/50 active:border-slate-500',
-                            'transition-all duration-200',
-                            // Focus and interaction states
-                            'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
-                            'hover:shadow-md active:shadow-sm active:scale-[0.95]',
-                            // Icon color and cursor
-                            'text-slate-400 hover:text-white active:text-white cursor-pointer',
-                            // Disabled state
-                            disabled && 'cursor-not-allowed opacity-50 pointer-events-none'
+                            // Perfect right alignment with content area
+                            'flex-shrink-0 self-start',
+                            // Touch-friendly sizing with premium proportions
+                            'w-10 h-10 flex items-center justify-center',
+                            // Sophisticated visual design with depth
+                            'rounded-xl bg-slate-800/40 hover:bg-slate-700/60 active:bg-slate-700/80',
+                            'border border-slate-600/20 hover:border-slate-500/40 active:border-slate-500/60',
+                            'backdrop-blur-sm',
+                            // Premium interaction animations
+                            'transition-all duration-300 ease-out',
+                            // Enhanced focus and hover states
+                            'focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
+                            'hover:shadow-lg hover:shadow-slate-900/25 active:shadow-sm',
+                            'hover:-translate-y-0.5 active:translate-y-0 hover:scale-105 active:scale-100',
+                            // Premium icon styling with proper visual hierarchy
+                            'text-slate-500 hover:text-indigo-300 active:text-indigo-200 cursor-pointer',
+                            // Enhanced disabled state
+                            disabled && 'cursor-not-allowed opacity-30 pointer-events-none hover:transform-none hover:shadow-none'
                           )}
                           role="button"
                           aria-label="Edit custom preset settings"
@@ -356,7 +361,7 @@ export function PresetSelector({
                             }
                           }}
                         >
-                          <Settings className="w-5 h-5 transition-colors" />
+                          <Settings className="w-4.5 h-4.5 transition-all duration-300 group-hover:rotate-90" />
                         </div>
                       </div>
 
