@@ -107,44 +107,19 @@ export function PresetSelector({
     setCustomPresetInfo(getCustomPresetDisplayInfo());
   }, []);
 
-  // Simple helper functions for preset matching
-  const doesConfigMatchPreset = (preset: typeof presets[keyof typeof presets]) => {
-    return (
-      currentConfig.totalRounds === preset.rounds &&
-      currentConfig.workDuration === preset.workDuration &&
-      currentConfig.restDuration === preset.restDuration
-    );
-  };
-
-  const doesConfigMatchCustom = () => {
-    if (!customPresetInfo) return false;
-    return (
-      currentConfig.totalRounds === customPresetInfo.rounds &&
-      currentConfig.workDuration === customPresetInfo.workDuration &&
-      currentConfig.restDuration === customPresetInfo.restDuration
-    );
-  };
-
-  // Find which standard preset (if any) matches current config
-  const matchingStandardPreset = Object.values(presets).find(preset => 
-    isClient && doesConfigMatchPreset(preset)
-  );
-
-  // Check if custom preset matches current config
-  const customPresetMatches = isClient && doesConfigMatchCustom();
+  // REMOVED ALL CONFIG MATCHING LOGIC - NO AUTO-SELECTION ALLOWED
 
   // FINAL FIX: Only show presets as active if explicitly selected by user
   // The key insight: default config matches Intermediate, but that doesn't mean it should show as "selected"
   // Preset selection should be explicit user choice, not automatic matching
   
-  // Simple preset active checks - only one can be true at a time
+  // ULTIMATE FIX: Completely disable ALL automatic preset selection
   const isStandardPresetActive = (preset: typeof presets[keyof typeof presets]) => {
-    // Never auto-select presets based on config matching
-    // Only show as active if explicitly set (this prevents default config from auto-selecting Intermediate)
-    return false; // For now, disable auto-selection completely
+    console.log(`[DEBUG] Checking preset ${preset.id}: FORCED FALSE`);
+    return false; // Absolutely no auto-selection allowed
   };
 
-  const isCustomPresetActive = false; // For now, disable auto-selection completely
+  const isCustomPresetActive = false; // Absolutely no auto-selection allowed
 
   return (
     <div className={cn('space-y-4', className)}>
