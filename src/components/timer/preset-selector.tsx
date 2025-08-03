@@ -163,7 +163,7 @@ export function PresetSelector({
                   disabled={disabled}
                   variant="ghost"
                   className={cn(
-                    'w-full min-h-[92px] p-4',
+                    'w-full min-h-[92px] p-4 justify-start',
                     'bg-slate-900/50 hover:bg-slate-800/50',
                     'border border-slate-700/50 hover:border-slate-600',
                     'text-slate-200 hover:text-white',
@@ -255,7 +255,7 @@ export function PresetSelector({
             );
           })}
 
-          {/* Custom preset or Create Custom Preset option */}
+          {/* Custom preset or Custom option */}
           <motion.div
             key="custom-preset"
             className="w-full"
@@ -268,7 +268,7 @@ export function PresetSelector({
                   disabled={disabled}
                   variant="ghost"
                   className={cn(
-                    'w-full min-h-[92px] p-4',
+                    'w-full min-h-[92px] p-4 justify-start',
                     'bg-slate-900/50 hover:bg-slate-800/50',
                     'border border-slate-700/50 hover:border-slate-600',
                     'text-slate-200 hover:text-white',
@@ -333,11 +333,6 @@ export function PresetSelector({
                         <span>{customPresetInfo.totalTime}</span>
                       </div>
 
-                      {/* Custom preset indicator */}
-                      <div className="flex items-center gap-2 pt-1">
-                        <div className="w-4 h-4 rounded-sm bg-gradient-to-br from-indigo-500 to-purple-600" />
-                        <span className="text-xs text-indigo-400 font-medium">Your Custom Preset</span>
-                      </div>
                     </div>
                   </div>
                 </Button>
@@ -373,13 +368,13 @@ export function PresetSelector({
                 </button>
               </div>
             ) : (
-              /* Create Custom Preset option */
+              /* Custom option */
               <Button
                 onClick={() => onCustomPresetCreate?.()}
                 disabled={disabled}
                 variant="ghost"
                 className={cn(
-                  'w-full min-h-[92px] p-4',
+                  'w-full min-h-[92px] p-4 justify-start',
                   'bg-slate-900/50 hover:bg-slate-800/50',
                   'border border-slate-700/50 hover:border-slate-600',
                   'border-dashed',
@@ -417,12 +412,9 @@ export function PresetSelector({
                   {/* Create preset details */}
                   <div className="flex-1 space-y-1">
                     <h4 className="font-semibold text-white">
-                      Create Custom Preset
+                      Custom
                     </h4>
                     
-                    <p className="text-xs text-slate-500">
-                      Configure your own workout settings
-                    </p>
                     
                     <div className="flex items-center gap-2 pt-1">
                       <span className="text-xs text-indigo-400 font-medium">Tap to customize →</span>

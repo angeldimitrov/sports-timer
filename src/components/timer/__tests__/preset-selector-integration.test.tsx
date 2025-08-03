@@ -143,7 +143,7 @@ describe('PresetSelector Integration Tests', () => {
       expect(screen.getByText('Advanced')).toBeInTheDocument();
       
       // Should show create custom preset option
-      expect(screen.getByText('Create Custom Preset')).toBeInTheDocument();
+      expect(screen.getByText('Custom')).toBeInTheDocument();
     });
 
     it('should render standard presets when a preset matches', () => {
