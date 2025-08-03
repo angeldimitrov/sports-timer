@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
@@ -69,6 +69,10 @@ export default function Home() {
   const [showGestureIndicators, setShowGestureIndicators] = useState(false);
 
   const audio = useAudio();
+  
+  // Store audio reference to avoid recreating onEvent callback
+  const audioRef = useRef(audio);
+  audioRef.current = audio;
 
   // Initialize timer and audio systems
   const timer = useTimer({
@@ -81,7 +85,7 @@ export default function Home() {
         // Safely handle audio playback with error handling
         const safePlayAudio = async (audioType: string) => {
           try {
-            await audio.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
+            await audioRef.current.play(audioType as 'bell' | 'roundStart' | 'roundEnd' | 'rest' | 'getReady' | 'tenSecondWarning' | 'workoutComplete' | 'greatJob');
           } catch (error) {
             log.warn(`Failed to play ${audioType} audio:`, error);
           }
@@ -143,7 +147,7 @@ export default function Home() {
       } catch (error) {
         log.error('Timer event handler error:', error);
       }
-    }, [audio])
+    }, [])
   });
 
   // PWA state management

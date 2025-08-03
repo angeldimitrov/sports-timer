@@ -122,6 +122,10 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
     onEvent
   } = options;
 
+  // Store onEvent in ref to avoid recreating initializeTimer
+  const onEventRef = useRef(onEvent);
+  onEventRef.current = onEvent;
+
   // State management
   const [state, setState] = useState<TimerState>({
     status: 'idle',
@@ -169,8 +173,8 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
         setState({ ...event.state });
 
         // Forward event to external handler
-        if (onEvent) {
-          onEvent(event);
+        if (onEventRef.current) {
+          onEventRef.current(event);
         }
 
         // Handle specific events
@@ -198,7 +202,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       setIsReady(false);
       return null;
     }
-  }, [onEvent]);
+  }, []);
 
   /**
    * Initialize timer on mount
@@ -287,7 +291,7 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
       console.error('Failed to load preset:', err);
       setError(err instanceof Error ? err : new Error('Failed to load preset'));
     }
-  }, [initializeTimer]);
+  }, []);
 
   // Computed values
   const formattedTimeRemaining = formatTime(state.timeRemaining);

@@ -12,7 +12,7 @@
  * - Responsive layout for all screen sizes
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell, Users, Target, Check, Settings, Plus } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
@@ -103,8 +103,13 @@ export function PresetSelector({
   // Get currently active preset
   const activePreset = Object.values(presets).find(preset => isPresetActive(preset));
   
-  // Get custom preset info
-  const customPresetInfo = getCustomPresetDisplayInfo();
+  // Get custom preset info - avoid hydration mismatch by checking client-side only
+  const [customPresetInfo, setCustomPresetInfo] = useState<any>(null);
+  
+  useEffect(() => {
+    // Only run on client side to avoid hydration mismatch
+    setCustomPresetInfo(getCustomPresetDisplayInfo());
+  }, []);
   
   // Check if custom preset is active
   const isCustomPresetActive = customPresetInfo ? (
@@ -312,18 +317,16 @@ export function PresetSelector({
                       </h4>
                       
                       <div className="flex items-center gap-2">
-                        {/* Edit button */}
-                        <Button
+                        {/* Edit button - using div to avoid nested buttons */}
+                        <div
                           onClick={(e) => {
                             e.stopPropagation();
                             onCustomPresetEdit?.();
                           }}
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded flex items-center justify-center cursor-pointer transition-colors"
                         >
                           <Settings className="w-3 h-3" />
-                        </Button>
+                        </div>
                         
                         {/* Active indicator */}
                         <div className="w-6 h-6 flex items-center justify-center">
