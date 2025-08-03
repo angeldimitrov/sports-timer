@@ -81,8 +81,6 @@ export interface UsePWAReturn {
  */
 export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
   const {
-    autoPromptDelay = 30000, // 30 seconds
-    promptAfterSessions = 3,
     onInstallSuccess,
     onInstallDismissed,
     onUpdateAvailable,
@@ -102,7 +100,6 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
   // Refs for stable references
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
   const serviceWorkerRegistrationRef = useRef<ServiceWorkerRegistration | null>(null);
-  const autoPromptTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Check if app is running in standalone mode
@@ -140,29 +137,6 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
     return sessions;
   }, [getSessionCount]);
 
-  /**
-   * Check if install prompt should be shown
-   */
-  const shouldShowInstallPrompt = useCallback(() => {
-    // Don't show if already installed or can't install
-    if (state.isInstalled || !state.canInstall) {
-      return false;
-    }
-
-    // Check if user has dismissed prompt recently
-    const dismissedTime = localStorage.getItem('pwa-dismissed');
-    if (dismissedTime) {
-      const dismissedDate = new Date(dismissedTime);
-      const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) { // Don't show for 7 days after dismissal
-        return false;
-      }
-    }
-
-    // Check session count
-    const sessions = getSessionCount();
-    return sessions >= promptAfterSessions;
-  }, [state.isInstalled, state.canInstall, getSessionCount, promptAfterSessions]);
 
   /**
    * Show installation prompt
@@ -284,14 +258,9 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
         platform: e.platforms?.[0] || 'unknown'
       }));
 
-      // Set up auto-prompt timer if enabled
-      if (autoPromptDelay > 0 && shouldShowInstallPrompt()) {
-        autoPromptTimerRef.current = setTimeout(() => {
-          if (shouldShowInstallPrompt()) {
-            showInstallPrompt();
-          }
-        }, autoPromptDelay);
-      }
+      // Auto-prompt not allowed - browser requires user gesture for install prompts
+      // The install prompt can only be shown when triggered by user interaction
+      // Store the event for manual prompt triggering via UI buttons
     };
 
     // Add event listener
@@ -299,12 +268,8 @@ export function usePWA(options: UsePWAOptions = {}): UsePWAReturn {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-      
-      if (autoPromptTimerRef.current) {
-        clearTimeout(autoPromptTimerRef.current);
-      }
     };
-  }, [autoPromptDelay, shouldShowInstallPrompt, showInstallPrompt]);
+  }, []); // No dependencies needed - just setting up event listener
 
   /**
    * Handle app installed event
