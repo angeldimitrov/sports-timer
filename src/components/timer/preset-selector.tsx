@@ -325,12 +325,11 @@ export function PresetSelector({
                         </div>
                         
                         {/* Gear icon for editing */}
-                        <button
+                        <div
                           onClick={(e) => {
                             e.stopPropagation();
                             onCustomPresetEdit?.();
                           }}
-                          disabled={disabled}
                           className={cn(
                             // Touch-friendly sizing (44px minimum)
                             'w-11 h-11 flex items-center justify-center',
@@ -341,16 +340,24 @@ export function PresetSelector({
                             // Focus and interaction states
                             'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900',
                             'hover:shadow-md active:shadow-sm active:scale-[0.95]',
-                            // Icon color
-                            'text-slate-400 hover:text-white active:text-white',
+                            // Icon color and cursor
+                            'text-slate-400 hover:text-white active:text-white cursor-pointer',
                             // Disabled state
-                            disabled && 'cursor-not-allowed opacity-50'
+                            disabled && 'cursor-not-allowed opacity-50 pointer-events-none'
                           )}
+                          role="button"
                           aria-label="Edit custom preset settings"
-                          type="button"
+                          tabIndex={disabled ? -1 : 0}
+                          onKeyDown={(e) => {
+                            if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onCustomPresetEdit?.();
+                            }
+                          }}
                         >
                           <Settings className="w-5 h-5 transition-colors" />
-                        </button>
+                        </div>
                       </div>
 
                       {/* Custom preset stats */}
