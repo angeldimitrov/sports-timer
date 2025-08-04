@@ -9,13 +9,11 @@ import {
   Coffee, 
   Info,
   ArrowLeft,
-  Trash2,
   Plus
 } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { 
   getCustomPreset, 
-  deleteCustomPreset,
   getPresetLimits,
   autoSaveCustomPreset
 } from '@/lib/custom-preset';
@@ -114,20 +112,6 @@ function SettingsContent() {
     }
   }, [localConfig, presetName, triggerSave]);
 
-
-  // Handle delete
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this custom preset? This action cannot be undone.')) {
-      try {
-        deleteCustomPreset();
-        router.push('/');
-      } catch (error) {
-        console.error('Delete preset error:', error);
-        setError('Failed to delete custom preset. Please try again.');
-      }
-    }
-  };
-
   // Handle back navigation - no unsaved changes warnings with autosave
   const handleBack = () => {
     router.push('/');
@@ -173,16 +157,6 @@ function SettingsContent() {
               {isEditing ? 'Modify your custom workout preset' : 'Design your perfect boxing workout'}
             </p>
           </div>
-          {isEditing && (
-            <Button
-              onClick={handleDelete}
-              variant="ghost"
-              size="icon"
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-          )}
         </div>
 
         {/* Status messages */}
@@ -517,7 +491,7 @@ function SettingsContent() {
  * Custom Preset Settings Page Component
  * 
  * Transformed settings page for creating and editing custom workout presets.
- * Features automatic saving, preset name input, configuration controls, and delete action.
+ * Features automatic saving, preset name input, and configuration controls.
  */
 export default function SettingsPage() {
   return (
