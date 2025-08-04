@@ -546,23 +546,9 @@ function SettingsContent() {
           </motion.div>
         </div>
 
-        {/* Navigation - Simplified with autosave */}
+        {/* Navigation footer with autosave info */}
         <div className="sticky bottom-0 mt-6 sm:mt-8 p-3 sm:p-4 -mx-3 sm:-mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <div className="flex justify-center">
-            <Button
-              onClick={() => router.push('/?preset=custom')}
-              className={cn(
-                'h-12 sm:h-14 px-8 text-sm sm:text-base font-semibold',
-                'bg-gradient-to-r from-indigo-500 to-purple-600',
-                'hover:from-indigo-600 hover:to-purple-700',
-                'text-white border-0'
-              )}
-            >
-              <Timer className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Use This Preset
-            </Button>
-          </div>
-          <p className="text-center text-xs text-slate-500 mt-2">
+          <p className="text-center text-sm text-slate-400">
             Changes are saved automatically as you type
           </p>
         </div>
@@ -575,7 +561,7 @@ function SettingsContent() {
  * Custom Preset Settings Page Component
  * 
  * Transformed settings page for creating and editing custom workout presets.
- * Features preset name input, configuration controls, and save/delete actions.
+ * Features automatic saving, preset name input, configuration controls, and delete action.
  */
 export default function SettingsPage() {
   return (
