@@ -106,9 +106,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
       return isLocked;
     }
 
-    // Check support directly to avoid dependency loop
-    const supported = 'wakeLock' in navigator && 'request' in (navigator.wakeLock || {});
-    if (!supported) {
+    if (!isSupported) {
       const error = new Error('Wake Lock API not supported');
       setError(error);
       if (onError) onError(error);
@@ -147,7 +145,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
     } finally {
       isRequestingRef.current = false;
     }
-  }, [isLocked, onLockAcquired, onError, handleWakeLockRelease]);
+  }, [isSupported, isLocked, onLockAcquired, onError, handleWakeLockRelease]);
 
   /**
    * Release wake lock

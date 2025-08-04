@@ -12,7 +12,7 @@
  * - Supports preset configurations and custom timer settings
  */
 
-import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   TimerEngine, 
   TimerConfig, 
@@ -173,15 +173,8 @@ export function useTimer(options: UseTimerOptions = {}): UseTimerReturn {
 
         // Set up event handler
         const eventHandler: TimerEventHandler = (event: TimerEvent) => {
-          // Use transition for non-urgent updates (like ticks) to prevent infinite loops
-          if (event.type === 'tick') {
-            startTransition(() => {
-              setState({ ...event.state });
-            });
-          } else {
-            // Important events like start/pause/stop should be synchronous
-            setState({ ...event.state });
-          }
+          // Force new object reference to ensure React re-renders
+          setState({ ...event.state });
 
           // Forward event to external handler
           if (onEventRef.current) {
