@@ -269,16 +269,14 @@ export async function autoSaveCustomPreset(name: string, config: TimerConfig): P
     const existing = getCustomPreset();
     
     if (existing && existing.exists) {
-      // Update existing preset
       updateCustomPreset(name, config);
     } else {
-      // Create new preset
       createCustomPreset(name, config);
     }
   } catch (error) {
-    // Log error silently without disrupting user experience
+    // Silent error handling for better UX - log but don't interrupt workflow
     console.warn('Auto-save failed:', error);
-    // Don't throw the error to avoid breaking the UI flow
+    throw error;
   }
 }
 

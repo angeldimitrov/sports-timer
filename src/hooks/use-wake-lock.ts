@@ -103,7 +103,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
   const requestWakeLock = useCallback(async (): Promise<boolean> => {
     // Prevent concurrent requests
     if (isRequestingRef.current || wakeLockRef.current) {
-      return isLocked;
+      return !!wakeLockRef.current;
     }
 
     if (!isSupported) {
@@ -145,7 +145,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
     } finally {
       isRequestingRef.current = false;
     }
-  }, [isSupported, isLocked, onLockAcquired, onError, handleWakeLockRelease]);
+  }, [isSupported, onLockAcquired, onError, handleWakeLockRelease]);
 
   /**
    * Release wake lock
@@ -177,12 +177,12 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
    * Toggle wake lock state
    */
   const toggleWakeLock = useCallback(async (): Promise<void> => {
-    if (isLocked) {
+    if (wakeLockRef.current) {
       await releaseWakeLock();
     } else {
       await requestWakeLock();
     }
-  }, [isLocked, requestWakeLock, releaseWakeLock]);
+  }, [requestWakeLock, releaseWakeLock]);
 
   /**
    * Handle document visibility changes
@@ -190,9 +190,9 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
    */
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (document.hidden && isLocked) {
+      if (document.hidden && wakeLockRef.current) {
         log.debug('Page hidden, wake lock will be released automatically');
-      } else if (!document.hidden && autoLock && lockCondition && !isLocked) {
+      } else if (!document.hidden && autoLock && lockCondition && !wakeLockRef.current) {
         // Re-acquire wake lock when page becomes visible and conditions are met
         log.debug('Page visible, re-acquiring wake lock');
         await requestWakeLock();
@@ -204,7 +204,7 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isLocked, autoLock, lockCondition, requestWakeLock]);
+  }, [autoLock, lockCondition, requestWakeLock]);
 
   /**
    * Handle automatic wake lock based on condition
@@ -215,17 +215,17 @@ export function useWakeLock(options: UseWakeLockOptions = {}): UseWakeLockReturn
     }
 
     const handleAutoLock = async () => {
-      if (lockCondition && !isLocked) {
+      if (lockCondition && !wakeLockRef.current) {
         log.debug('Auto-acquiring wake lock (condition met)');
         await requestWakeLock();
-      } else if (!lockCondition && isLocked) {
+      } else if (!lockCondition && wakeLockRef.current) {
         log.debug('Auto-releasing wake lock (condition not met)');
         await releaseWakeLock();
       }
     };
 
     handleAutoLock();
-  }, [autoLock, lockCondition, isLocked, requestWakeLock, releaseWakeLock]);
+  }, [autoLock, lockCondition, requestWakeLock, releaseWakeLock]);
 
   /**
    * Initialize support check and cleanup on unmount

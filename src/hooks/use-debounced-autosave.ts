@@ -49,16 +49,20 @@ export function useDebounceAutosave(
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveRequestRef = useRef<boolean>(false);
   const statusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef<boolean>(true);
 
   /**
    * Execute the save operation with proper error handling and status updates
    */
   const executeSave = useCallback(async () => {
     try {
+      if (!mountedRef.current) return;
       setSaveStatus('saving');
       
       // Execute the save function
       await saveFunction();
+      
+      if (!mountedRef.current) return;
       
       if (showFeedback) {
         setSaveStatus('saved');
@@ -70,14 +74,16 @@ export function useDebounceAutosave(
         
         // Clear the "saved" status after 2 seconds
         statusTimeoutRef.current = setTimeout(() => {
-          setSaveStatus('idle');
+          if (mountedRef.current) {
+            setSaveStatus('idle');
+          }
         }, 2000);
       } else {
         setSaveStatus('idle');
       }
       
-    } catch (error) {
-      console.warn('Autosave failed:', error);
+    } catch {
+      if (!mountedRef.current) return;
       
       if (showFeedback) {
         setSaveStatus('error');
@@ -89,7 +95,9 @@ export function useDebounceAutosave(
         
         // Clear error status after 3 seconds
         statusTimeoutRef.current = setTimeout(() => {
-          setSaveStatus('idle');
+          if (mountedRef.current) {
+            setSaveStatus('idle');
+          }
         }, 3000);
       } else {
         setSaveStatus('idle');
@@ -125,12 +133,16 @@ export function useDebounceAutosave(
    * Clear the current save status
    */
   const clearStatus = useCallback(() => {
-    setSaveStatus('idle');
+    if (mountedRef.current) {
+      setSaveStatus('idle');
+    }
   }, []);
 
-  // Cleanup timeouts on unmount
+  // Set mounted flag and cleanup timeouts on unmount
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

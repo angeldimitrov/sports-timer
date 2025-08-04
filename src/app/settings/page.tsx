@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -65,11 +65,16 @@ function SettingsContent() {
     prepDuration: 10,
   });
   const [error, setError] = useState<string>('');
+  const isInitializedRef = useRef(false);
 
   // Auto-save function for the debounced hook
   const handleAutoSave = useCallback(async () => {
-    if (presetName.trim()) {
-      await autoSaveCustomPreset(presetName.trim(), localConfig);
+    try {
+      if (presetName.trim()) {
+        await autoSaveCustomPreset(presetName.trim(), localConfig);
+      }
+    } catch (error) {
+      throw error; // Re-throw for error handling in the hook
     }
   }, [presetName, localConfig]);
 
@@ -102,12 +107,17 @@ function SettingsContent() {
       setLocalConfig(defaultConfig);
       setPresetName('Custom');
     }
+    
+    // Mark as initialized after initial setup
+    setTimeout(() => {
+      isInitializedRef.current = true;
+    }, 100);
   }, [isEditing]);
 
   // Trigger autosave when configuration or name changes
   useEffect(() => {
-    // Don't autosave on initial load or with empty names
-    if (presetName.trim()) {
+    // Don't autosave during initial load or with empty names
+    if (isInitializedRef.current && presetName.trim()) {
       triggerSave();
     }
   }, [localConfig, presetName, triggerSave]);
