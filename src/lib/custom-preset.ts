@@ -257,6 +257,43 @@ export function markCustomPresetUsed(): void {
 }
 
 /**
+ * Auto-save custom preset with silent error handling
+ * 
+ * This function automatically saves changes without throwing errors
+ * to provide a seamless user experience. Errors are logged but don't
+ * interrupt the user workflow.
+ * 
+ * @returns Promise<boolean> - true if save succeeded, false if failed
+ */
+export async function autoSaveCustomPreset(name: string, config: TimerConfig): Promise<boolean> {
+  try {
+    // Check if we're updating an existing preset or creating a new one
+    const existing = getCustomPreset();
+    
+    if (existing && existing.exists) {
+      updateCustomPreset(name, config);
+    } else {
+      createCustomPreset(name, config);
+    }
+    return true;
+  } catch (error) {
+    // Silent error handling for better UX - log but don't interrupt workflow
+    console.warn('Auto-save failed:', error);
+    
+    // Check if it's a quota exceeded error and handle gracefully
+    if (error instanceof Error && (
+      error.name === 'QuotaExceededError' || 
+      error.message.includes('quota') ||
+      error.message.includes('storage')
+    )) {
+      console.warn('localStorage quota exceeded - autosave disabled');
+    }
+    
+    return false;
+  }
+}
+
+/**
  * Delete custom preset
  */
 export function deleteCustomPreset(): void {

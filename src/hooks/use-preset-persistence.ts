@@ -14,7 +14,7 @@ type PresetType = 'beginner' | 'intermediate' | 'advanced' | 'custom';
 const PRESET_STORAGE_KEY = 'boxing-timer-selected-preset';
 const DEFAULT_PRESET: PresetType = 'beginner';
 
-interface UsePresetPersistenceReturn {
+export interface UsePresetPersistenceReturn {
   /** Currently selected preset (null during initialization) */
   selectedPreset: PresetType | null;
   /** Update the selected preset and persist to storage */

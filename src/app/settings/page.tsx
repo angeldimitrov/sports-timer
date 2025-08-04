@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -8,22 +8,17 @@ import {
   Activity, 
   Coffee, 
   Info,
-  Save,
-  RotateCcw,
   ArrowLeft,
-  Trash2,
   Plus
 } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { 
-  createCustomPreset, 
-  updateCustomPreset, 
   getCustomPreset, 
-  deleteCustomPreset,
   getPresetLimits,
-  CustomPresetValidationError,
-  CustomPresetStorageError
+  autoSaveCustomPreset
 } from '@/lib/custom-preset';
+import { useDebounceAutosave } from '@/hooks/use-debounced-autosave';
+import { AutosaveErrorBoundary } from '@/components/error-boundary';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -70,11 +65,32 @@ function SettingsContent() {
     enableWarning: true,
     prepDuration: 10,
   });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [originalConfig, setOriginalConfig] = useState<TimerConfig>(localConfig);
-  const [originalName, setOriginalName] = useState('');
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const isInitializedRef = useRef(false);
+
+  // Auto-save function for the debounced hook
+  const handleAutoSave = useCallback(async () => {
+    if (presetName.trim()) {
+      const success = await autoSaveCustomPreset(presetName.trim(), localConfig);
+      if (!success) {
+        // Silent failure - autoSaveCustomPreset already logged the error
+        // Could add user notification here if needed in future
+        setError('Auto-save failed - your changes may not be persisted');
+        
+        // Clear error after 5 seconds
+        setTimeout(() => setError(''), 5000);
+      } else {
+        // Clear any previous errors on successful save
+        setError('');
+      }
+    }
+  }, [presetName, localConfig]);
+
+  // Set up debounced autosave
+  const { triggerSave } = useDebounceAutosave(handleAutoSave, {
+    delay: 500,
+    showFeedback: false
+  });
 
   // Load custom preset data on mount
   useEffect(() => {
@@ -83,9 +99,7 @@ function SettingsContent() {
       const customPreset = getCustomPreset();
       if (customPreset && customPreset.exists) {
         setPresetName(customPreset.name);
-        setOriginalName(customPreset.name);
         setLocalConfig(customPreset.config);
-        setOriginalConfig(customPreset.config);
       } else {
         setError('No custom preset found to edit');
       }
@@ -99,97 +113,26 @@ function SettingsContent() {
         prepDuration: 10,
       };
       setLocalConfig(defaultConfig);
-      setOriginalConfig(defaultConfig);
       setPresetName('Custom');
-      setOriginalName('');
     }
+    
+    // Mark as initialized after initial setup
+    setTimeout(() => {
+      isInitializedRef.current = true;
+    }, 100);
   }, [isEditing]);
 
-  // Check if configuration or name has changed
+  // Trigger autosave when configuration or name changes
   useEffect(() => {
-    const configChanged = 
-      localConfig.totalRounds !== originalConfig.totalRounds ||
-      localConfig.workDuration !== originalConfig.workDuration ||
-      localConfig.restDuration !== originalConfig.restDuration ||
-      localConfig.enableWarning !== originalConfig.enableWarning ||
-      (localConfig.prepDuration || 10) !== (originalConfig.prepDuration || 10);
-    
-    const nameChanged = presetName.trim() !== originalName;
-    
-    setHasChanges(configChanged || nameChanged);
-  }, [localConfig, originalConfig, presetName, originalName]);
-
-  // Handle save
-  const handleSave = async () => {
-    try {
-      setError('');
-      setSuccess('');
-      
-      if (isEditing) {
-        // Update existing custom preset
-        updateCustomPreset(presetName.trim(), localConfig);
-        setSuccess('Custom preset updated successfully!');
-      } else {
-        // Create new custom preset
-        createCustomPreset(presetName.trim(), localConfig);
-        setSuccess('Custom preset created successfully!');
-      }
-      
-      setOriginalConfig(localConfig);
-      setOriginalName(presetName.trim());
-      setHasChanges(false);
-      
-      // Navigate back to timer after short delay
-      setTimeout(() => {
-        router.push('/?preset=custom');
-      }, 1500);
-      
-    } catch (error) {
-      if (error instanceof CustomPresetValidationError) {
-        setError(error.message);
-      } else if (error instanceof CustomPresetStorageError) {
-        setError(error.message);
-      } else {
-        setError('Failed to save custom preset. Please try again.');
-      }
+    // Don't autosave during initial load or with empty names
+    if (isInitializedRef.current && presetName.trim()) {
+      triggerSave();
     }
-  };
+  }, [localConfig, presetName, triggerSave]);
 
-  // Handle reset
-  const handleReset = () => {
-    setLocalConfig(originalConfig);
-    setPresetName(originalName);
-    setError('');
-    setSuccess('');
-  };
-
-  // Handle delete
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this custom preset? This action cannot be undone.')) {
-      try {
-        deleteCustomPreset();
-        setSuccess('Custom preset deleted successfully!');
-        
-        // Navigate back to timer after short delay
-        setTimeout(() => {
-          router.push('/');
-        }, 1500);
-      } catch (error) {
-        console.error('Delete preset error:', error);
-        setError('Failed to delete custom preset. Please try again.');
-      }
-    }
-  };
-
-  // Handle back navigation
+  // Handle back navigation - no unsaved changes warnings with autosave
   const handleBack = () => {
-    if (hasChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
-        router.push('/');
-      }
-    } else {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   // Calculate total workout time
@@ -232,19 +175,9 @@ function SettingsContent() {
               {isEditing ? 'Modify your custom workout preset' : 'Design your perfect boxing workout'}
             </p>
           </div>
-          {isEditing && (
-            <Button
-              onClick={handleDelete}
-              variant="ghost"
-              size="icon"
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-          )}
         </div>
 
-        {/* Error/Success messages */}
+        {/* Status messages */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -255,18 +188,16 @@ function SettingsContent() {
           </motion.div>
         )}
         
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4"
-          >
-            <p className="text-green-400 text-sm">{success}</p>
-          </motion.div>
-        )}
 
-        {/* Settings content */}
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Settings content - wrapped in error boundary for autosave functionality */}
+        <AutosaveErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('Autosave error boundary triggered:', error);
+            console.error('Error info:', errorInfo);
+            // Could send to error reporting service here
+          }}
+        >
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Preset name input */}
           <motion.div 
             className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
@@ -574,41 +505,9 @@ function SettingsContent() {
               </motion.span>
             </div>
           </motion.div>
-        </div>
-
-        {/* Action buttons - Fixed at bottom on mobile */}
-        <div className="sticky bottom-0 mt-6 sm:mt-8 p-3 sm:p-4 -mx-3 sm:-mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <div className="flex gap-2 sm:gap-3">
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              disabled={!hasChanges}
-              className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base',
-                'bg-slate-800/50 border-slate-600',
-                'hover:bg-slate-700/50 hover:border-slate-500',
-                'disabled:opacity-30 text-slate-300 hover:text-white'
-              )}
-            >
-              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              Reset
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || !presetName.trim()}
-              className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base font-semibold',
-                'bg-gradient-to-r from-indigo-500 to-purple-600',
-                'hover:from-indigo-600 hover:to-purple-700',
-                'text-white border-0',
-                'disabled:opacity-30'
-              )}
-            >
-              <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              {isEditing ? 'Update Preset' : 'Create Preset'}
-            </Button>
           </div>
-        </div>
+        </AutosaveErrorBoundary>
+
       </div>
     </main>
   );
@@ -618,7 +517,7 @@ function SettingsContent() {
  * Custom Preset Settings Page Component
  * 
  * Transformed settings page for creating and editing custom workout presets.
- * Features preset name input, configuration controls, and save/delete actions.
+ * Features automatic saving, preset name input, and configuration controls.
  */
 export default function SettingsPage() {
   return (
