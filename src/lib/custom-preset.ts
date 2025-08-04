@@ -257,6 +257,32 @@ export function markCustomPresetUsed(): void {
 }
 
 /**
+ * Auto-save custom preset with silent error handling
+ * 
+ * This function automatically saves changes without throwing errors
+ * to provide a seamless user experience. Errors are logged but don't
+ * interrupt the user workflow.
+ */
+export async function autoSaveCustomPreset(name: string, config: TimerConfig): Promise<void> {
+  try {
+    // Check if we're updating an existing preset or creating a new one
+    const existing = getCustomPreset();
+    
+    if (existing && existing.exists) {
+      // Update existing preset
+      updateCustomPreset(name, config);
+    } else {
+      // Create new preset
+      createCustomPreset(name, config);
+    }
+  } catch (error) {
+    // Log error silently without disrupting user experience
+    console.warn('Auto-save failed:', error);
+    // Don't throw the error to avoid breaking the UI flow
+  }
+}
+
+/**
  * Delete custom preset
  */
 export function deleteCustomPreset(): void {

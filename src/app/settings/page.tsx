@@ -8,22 +8,20 @@ import {
   Activity, 
   Coffee, 
   Info,
-  Save,
-  RotateCcw,
   ArrowLeft,
   Trash2,
-  Plus
+  Plus,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { 
-  createCustomPreset, 
-  updateCustomPreset, 
   getCustomPreset, 
   deleteCustomPreset,
   getPresetLimits,
-  CustomPresetValidationError,
-  CustomPresetStorageError
+  autoSaveCustomPreset
 } from '@/lib/custom-preset';
+import { useDebounceAutosave } from '@/hooks/use-debounced-autosave';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -70,11 +68,20 @@ function SettingsContent() {
     enableWarning: true,
     prepDuration: 10,
   });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [originalConfig, setOriginalConfig] = useState<TimerConfig>(localConfig);
-  const [originalName, setOriginalName] = useState('');
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+
+  // Auto-save function for the debounced hook
+  const handleAutoSave = async () => {
+    if (presetName.trim()) {
+      await autoSaveCustomPreset(presetName.trim(), localConfig);
+    }
+  };
+
+  // Set up debounced autosave
+  const { saveStatus } = useDebounceAutosave(handleAutoSave, {
+    delay: 500,
+    showFeedback: true
+  });
 
   // Load custom preset data on mount
   useEffect(() => {
@@ -83,9 +90,7 @@ function SettingsContent() {
       const customPreset = getCustomPreset();
       if (customPreset && customPreset.exists) {
         setPresetName(customPreset.name);
-        setOriginalName(customPreset.name);
         setLocalConfig(customPreset.config);
-        setOriginalConfig(customPreset.config);
       } else {
         setError('No custom preset found to edit');
       }
@@ -99,81 +104,26 @@ function SettingsContent() {
         prepDuration: 10,
       };
       setLocalConfig(defaultConfig);
-      setOriginalConfig(defaultConfig);
       setPresetName('Custom');
-      setOriginalName('');
     }
   }, [isEditing]);
 
-  // Check if configuration or name has changed
+  // Trigger autosave when configuration or name changes
   useEffect(() => {
-    const configChanged = 
-      localConfig.totalRounds !== originalConfig.totalRounds ||
-      localConfig.workDuration !== originalConfig.workDuration ||
-      localConfig.restDuration !== originalConfig.restDuration ||
-      localConfig.enableWarning !== originalConfig.enableWarning ||
-      (localConfig.prepDuration || 10) !== (originalConfig.prepDuration || 10);
-    
-    const nameChanged = presetName.trim() !== originalName;
-    
-    setHasChanges(configChanged || nameChanged);
-  }, [localConfig, originalConfig, presetName, originalName]);
-
-  // Handle save
-  const handleSave = async () => {
-    try {
-      setError('');
-      setSuccess('');
-      
-      if (isEditing) {
-        // Update existing custom preset
-        updateCustomPreset(presetName.trim(), localConfig);
-        setSuccess('Custom preset updated successfully!');
-      } else {
-        // Create new custom preset
-        createCustomPreset(presetName.trim(), localConfig);
-        setSuccess('Custom preset created successfully!');
-      }
-      
-      setOriginalConfig(localConfig);
-      setOriginalName(presetName.trim());
-      setHasChanges(false);
-      
-      // Navigate back to timer after short delay
-      setTimeout(() => {
-        router.push('/?preset=custom');
-      }, 1500);
-      
-    } catch (error) {
-      if (error instanceof CustomPresetValidationError) {
-        setError(error.message);
-      } else if (error instanceof CustomPresetStorageError) {
-        setError(error.message);
-      } else {
-        setError('Failed to save custom preset. Please try again.');
-      }
+    // Don't autosave on initial load or with empty names
+    if (presetName.trim()) {
+      handleAutoSave();
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localConfig, presetName]);
 
-  // Handle reset
-  const handleReset = () => {
-    setLocalConfig(originalConfig);
-    setPresetName(originalName);
-    setError('');
-    setSuccess('');
-  };
 
   // Handle delete
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this custom preset? This action cannot be undone.')) {
       try {
         deleteCustomPreset();
-        setSuccess('Custom preset deleted successfully!');
-        
-        // Navigate back to timer after short delay
-        setTimeout(() => {
-          router.push('/');
-        }, 1500);
+        router.push('/');
       } catch (error) {
         console.error('Delete preset error:', error);
         setError('Failed to delete custom preset. Please try again.');
@@ -181,15 +131,9 @@ function SettingsContent() {
     }
   };
 
-  // Handle back navigation
+  // Handle back navigation - no unsaved changes warnings with autosave
   const handleBack = () => {
-    if (hasChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
-        router.push('/');
-      }
-    } else {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   // Calculate total workout time
@@ -244,7 +188,7 @@ function SettingsContent() {
           )}
         </div>
 
-        {/* Error/Success messages */}
+        {/* Status messages */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -255,13 +199,32 @@ function SettingsContent() {
           </motion.div>
         )}
         
-        {success && (
+        {/* Autosave status indicator */}
+        {saveStatus === 'saved' && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-green-500/10 border border-green-500/20 rounded-2xl p-3"
           >
-            <p className="text-green-400 text-sm">{success}</p>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              <p className="text-green-400 text-sm">Changes saved automatically</p>
+            </div>
+          </motion.div>
+        )}
+        
+        {saveStatus === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-3"
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-orange-400" />
+              <p className="text-orange-400 text-sm">Auto-save temporarily unavailable</p>
+            </div>
           </motion.div>
         )}
 
@@ -275,10 +238,18 @@ function SettingsContent() {
             transition={{ delay: 0.0 }}
           >
             <div className="space-y-4">
-              <Label className="text-lg font-medium text-white flex items-center gap-2">
-                <Timer className="w-5 h-5 text-indigo-400" />
-                Preset Name
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-lg font-medium text-white flex items-center gap-2">
+                  <Timer className="w-5 h-5 text-indigo-400" />
+                  Preset Name
+                </Label>
+                {saveStatus === 'saving' && (
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin"></div>
+                    Saving...
+                  </div>
+                )}
+              </div>
               <Input
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
@@ -576,38 +547,25 @@ function SettingsContent() {
           </motion.div>
         </div>
 
-        {/* Action buttons - Fixed at bottom on mobile */}
+        {/* Navigation - Simplified with autosave */}
         <div className="sticky bottom-0 mt-6 sm:mt-8 p-3 sm:p-4 -mx-3 sm:-mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <div className="flex gap-2 sm:gap-3">
+          <div className="flex justify-center">
             <Button
-              onClick={handleReset}
-              variant="outline"
-              disabled={!hasChanges}
+              onClick={() => router.push('/?preset=custom')}
               className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base',
-                'bg-slate-800/50 border-slate-600',
-                'hover:bg-slate-700/50 hover:border-slate-500',
-                'disabled:opacity-30 text-slate-300 hover:text-white'
-              )}
-            >
-              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              Reset
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || !presetName.trim()}
-              className={cn(
-                'flex-1 h-12 sm:h-14 text-sm sm:text-base font-semibold',
+                'h-12 sm:h-14 px-8 text-sm sm:text-base font-semibold',
                 'bg-gradient-to-r from-indigo-500 to-purple-600',
                 'hover:from-indigo-600 hover:to-purple-700',
-                'text-white border-0',
-                'disabled:opacity-30'
+                'text-white border-0'
               )}
             >
-              <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              {isEditing ? 'Update Preset' : 'Create Preset'}
+              <Timer className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Use This Preset
             </Button>
           </div>
+          <p className="text-center text-xs text-slate-500 mt-2">
+            Changes are saved automatically as you type
+          </p>
         </div>
       </div>
     </main>

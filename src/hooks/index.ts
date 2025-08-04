@@ -35,3 +35,17 @@ export {
   type UseMobileGesturesOptions,
   type UseMobileGesturesReturn 
 } from './use-mobile-gestures';
+
+// Utility Hooks
+export { 
+  useDebounceAutosave,
+  useDebounce,
+  type UseDebounceAutosaveOptions,
+  type UseDebounceAutosaveReturn 
+} from './use-debounced-autosave';
+
+// Persistence Hooks
+export { 
+  usePresetPersistence,
+  type UsePresetPersistenceReturn 
+} from './use-preset-persistence';
