@@ -10,9 +10,7 @@ import {
   Info,
   ArrowLeft,
   Trash2,
-  Plus,
-  Check,
-  AlertCircle
+  Plus
 } from 'lucide-react';
 import { TimerConfig } from '@/lib/timer-engine';
 import { 
@@ -78,9 +76,9 @@ function SettingsContent() {
   }, [presetName, localConfig]);
 
   // Set up debounced autosave
-  const { triggerSave, saveStatus } = useDebounceAutosave(handleAutoSave, {
+  const { triggerSave } = useDebounceAutosave(handleAutoSave, {
     delay: 500,
-    showFeedback: true
+    showFeedback: false
   });
 
   // Load custom preset data on mount
@@ -198,34 +196,6 @@ function SettingsContent() {
           </motion.div>
         )}
         
-        {/* Autosave status indicator */}
-        {saveStatus === 'saved' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-green-500/10 border border-green-500/20 rounded-2xl p-3"
-          >
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-400" />
-              <p className="text-green-400 text-sm">Changes saved automatically</p>
-            </div>
-          </motion.div>
-        )}
-        
-        {saveStatus === 'error' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-3"
-          >
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-orange-400" />
-              <p className="text-orange-400 text-sm">Auto-save temporarily unavailable</p>
-            </div>
-          </motion.div>
-        )}
 
         {/* Settings content */}
         <div className="space-y-4 sm:space-y-6 lg:space-y-8">
@@ -237,18 +207,10 @@ function SettingsContent() {
             transition={{ delay: 0.0 }}
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-lg font-medium text-white flex items-center gap-2">
-                  <Timer className="w-5 h-5 text-indigo-400" />
-                  Preset Name
-                </Label>
-                {saveStatus === 'saving' && (
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin"></div>
-                    Saving...
-                  </div>
-                )}
-              </div>
+              <Label className="text-lg font-medium text-white flex items-center gap-2">
+                <Timer className="w-5 h-5 text-indigo-400" />
+                Preset Name
+              </Label>
               <Input
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
@@ -546,12 +508,6 @@ function SettingsContent() {
           </motion.div>
         </div>
 
-        {/* Navigation footer with autosave info */}
-        <div className="sticky bottom-0 mt-6 sm:mt-8 p-3 sm:p-4 -mx-3 sm:-mx-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent backdrop-blur-sm">
-          <p className="text-center text-sm text-slate-400">
-            Changes are saved automatically as you type
-          </p>
-        </div>
       </div>
     </main>
   );
