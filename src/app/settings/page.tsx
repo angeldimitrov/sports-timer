@@ -18,6 +18,7 @@ import {
   autoSaveCustomPreset
 } from '@/lib/custom-preset';
 import { useDebounceAutosave } from '@/hooks/use-debounced-autosave';
+import { AutosaveErrorBoundary } from '@/components/error-boundary';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -69,12 +70,19 @@ function SettingsContent() {
 
   // Auto-save function for the debounced hook
   const handleAutoSave = useCallback(async () => {
-    try {
-      if (presetName.trim()) {
-        await autoSaveCustomPreset(presetName.trim(), localConfig);
+    if (presetName.trim()) {
+      const success = await autoSaveCustomPreset(presetName.trim(), localConfig);
+      if (!success) {
+        // Silent failure - autoSaveCustomPreset already logged the error
+        // Could add user notification here if needed in future
+        setError('Auto-save failed - your changes may not be persisted');
+        
+        // Clear error after 5 seconds
+        setTimeout(() => setError(''), 5000);
+      } else {
+        // Clear any previous errors on successful save
+        setError('');
       }
-    } catch (error) {
-      throw error; // Re-throw for error handling in the hook
     }
   }, [presetName, localConfig]);
 
@@ -181,8 +189,15 @@ function SettingsContent() {
         )}
         
 
-        {/* Settings content */}
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Settings content - wrapped in error boundary for autosave functionality */}
+        <AutosaveErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('Autosave error boundary triggered:', error);
+            console.error('Error info:', errorInfo);
+            // Could send to error reporting service here
+          }}
+        >
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Preset name input */}
           <motion.div 
             className="bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700/50"
@@ -490,7 +505,8 @@ function SettingsContent() {
               </motion.span>
             </div>
           </motion.div>
-        </div>
+          </div>
+        </AutosaveErrorBoundary>
 
       </div>
     </main>

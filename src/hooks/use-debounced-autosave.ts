@@ -82,8 +82,15 @@ export function useDebounceAutosave(
         setSaveStatus('idle');
       }
       
-    } catch {
+    } catch (error) {
       if (!mountedRef.current) return;
+      
+      // Log error with context for debugging
+      console.error('Autosave hook: Save operation failed', {
+        error,
+        timestamp: new Date().toISOString(),
+        component: 'useDebounceAutosave'
+      });
       
       if (showFeedback) {
         setSaveStatus('error');
