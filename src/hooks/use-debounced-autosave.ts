@@ -48,6 +48,7 @@ export function useDebounceAutosave(
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveRequestRef = useRef<boolean>(false);
+  const statusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Execute the save operation with proper error handling and status updates
@@ -62,8 +63,13 @@ export function useDebounceAutosave(
       if (showFeedback) {
         setSaveStatus('saved');
         
+        // Clear any existing status timeout
+        if (statusTimeoutRef.current) {
+          clearTimeout(statusTimeoutRef.current);
+        }
+        
         // Clear the "saved" status after 2 seconds
-        setTimeout(() => {
+        statusTimeoutRef.current = setTimeout(() => {
           setSaveStatus('idle');
         }, 2000);
       } else {
@@ -76,8 +82,13 @@ export function useDebounceAutosave(
       if (showFeedback) {
         setSaveStatus('error');
         
+        // Clear any existing status timeout
+        if (statusTimeoutRef.current) {
+          clearTimeout(statusTimeoutRef.current);
+        }
+        
         // Clear error status after 3 seconds
-        setTimeout(() => {
+        statusTimeoutRef.current = setTimeout(() => {
           setSaveStatus('idle');
         }, 3000);
       } else {
@@ -117,11 +128,14 @@ export function useDebounceAutosave(
     setSaveStatus('idle');
   }, []);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
       }
     };
   }, []);

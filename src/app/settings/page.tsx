@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -71,14 +71,14 @@ function SettingsContent() {
   const [error, setError] = useState<string>('');
 
   // Auto-save function for the debounced hook
-  const handleAutoSave = async () => {
+  const handleAutoSave = useCallback(async () => {
     if (presetName.trim()) {
       await autoSaveCustomPreset(presetName.trim(), localConfig);
     }
-  };
+  }, [presetName, localConfig]);
 
   // Set up debounced autosave
-  const { saveStatus } = useDebounceAutosave(handleAutoSave, {
+  const { triggerSave, saveStatus } = useDebounceAutosave(handleAutoSave, {
     delay: 500,
     showFeedback: true
   });
@@ -112,10 +112,9 @@ function SettingsContent() {
   useEffect(() => {
     // Don't autosave on initial load or with empty names
     if (presetName.trim()) {
-      handleAutoSave();
+      triggerSave();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localConfig, presetName]);
+  }, [localConfig, presetName, triggerSave]);
 
 
   // Handle delete
