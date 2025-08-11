@@ -1,0 +1,22 @@
+---
+description: |
+  If all CI/test checks on the current PR are successful, merge the PR.
+  Then monitor the deployment and report success or failure.
+allowed-tools:
+  - Bash(gh pr status)
+  - Bash(gh pr merge --auto)
+  - Bash(gh pr view --json number)
+  - Bash(custom:check_deployment.sh*)
+---
+
+## Context
+- Current PR status (CI checks): !`gh pr status`
+- PR metadata: !`gh pr view --json number,url`
+  
+You are ChatGPT. Use that context to:
+1. Confirm that **all checks are passing** on the PR.
+2. If any check is *not* passing, explain which checks are still pending or failed, and **abort**.
+3. If all checks are green, run `gh pr merge --auto`.
+4. Then use gh to check if the deploymet was successful
+5. Interpret the script output and reply: either "✅ Deployment successful" or "❌ Deployment failed or timed out."
+
