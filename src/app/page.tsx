@@ -300,7 +300,9 @@ export default function Home() {
           <div className="xl:col-span-1 space-y-4 order-2 xl:order-2">
             {/* Timer Controls */}
             <TimerControls 
-              timer={timer} 
+              timer={timer}
+              selectedPreset={presetPersistence.selectedPreset || 'beginner'}
+              onPresetSelect={handlePresetSelect}
             />
 
             {/* Preset Selector */}
