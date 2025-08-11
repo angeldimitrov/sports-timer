@@ -72,31 +72,31 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
     }
   };
 
-  // Button configurations for different states
+  // Button configurations for different states - more compact colors
   const primaryButtonConfig = {
     start: {
       icon: Play,
       label: 'Start',
-      color: 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700',
-      shadowColor: 'shadow-green-500/25',
+      color: 'bg-green-600 hover:bg-green-700',
+      borderColor: 'border-green-500/30',
     },
     pause: {
       icon: Pause,
       label: 'Pause',
-      color: 'bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700',
-      shadowColor: 'shadow-yellow-500/25',
+      color: 'bg-orange-600 hover:bg-orange-700',
+      borderColor: 'border-orange-500/30',
     },
     resume: {
       icon: Play,
       label: 'Resume',
-      color: 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700',
-      shadowColor: 'shadow-green-500/25',
+      color: 'bg-green-600 hover:bg-green-700',
+      borderColor: 'border-green-500/30',
     },
     reset: {
       icon: RotateCcw,
       label: 'Reset',
-      color: 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700',
-      shadowColor: 'shadow-blue-500/25',
+      color: 'bg-blue-600 hover:bg-blue-700',
+      borderColor: 'border-blue-500/30',
     },
   };
 
@@ -104,89 +104,81 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
   const Icon = config.icon;
 
   return (
-    <div className={cn('space-y-6', className)}>
-      {/* Primary Controls */}
+    <div className={cn('', className)}>
+      {/* Compact Controls - Single Row */}
       <div className={cn(
-        'glass-dark rounded-2xl p-6 shadow-premium-lg',
+        'glass-dark rounded-xl p-3 shadow-premium',
         'ring-1 ring-white/5 border border-slate-600/30'
       )}>
-
-        {/* Main control buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Primary action button - larger and more prominent */}
-          <motion.div className="col-span-2">
+        {/* Single row control buttons */}
+        <div className="flex gap-2">
+          {/* Primary action button - 40% width */}
+          <motion.div className="flex-[2]">
             <Button
               onClick={handlePrimaryClick}
               disabled={!timer.isReady}
               className={cn(
-                'w-full h-16 text-lg font-bold tracking-wide',
-                'text-white border-0 rounded-xl',
+                'w-full h-11 text-sm font-semibold',
+                'text-white rounded-lg',
                 config.color,
-                'shadow-premium-lg hover:shadow-premium-xl',
-                config.shadowColor,
-                'transition-all duration-300 ease-out',
-                'relative overflow-hidden group ring-1 ring-white/10'
+                'shadow-lg hover:shadow-xl',
+                'transition-all duration-200 ease-out',
+                'relative overflow-hidden group',
+                'ring-1 ring-white/10',
+                config.borderColor
               )}
               asChild
             >
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
-                {/* Enhanced button overlay effects */}
-                <div className="absolute inset-0 bg-gradient-to-t from-white/0 via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                {/* Subtle overlay effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                 
                 {/* Button content */}
-                <Icon className="w-6 h-6 mr-2" />
+                <Icon className="w-4 h-4 mr-1.5" />
                 {config.label}
               </motion.button>
             </Button>
           </motion.div>
 
-          {/* Stop button - always visible, disabled when not usable */}
-          <motion.div
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-          >
+          {/* Stop button - 30% width */}
+          <motion.div className="flex-[1.5]">
             <Button
               onClick={() => timer.stop()}
               variant="outline"
               disabled={!(timer.isRunning || timer.isPaused)}
               className={cn(
-                'w-full h-12 rounded-xl',
+                'w-full h-11 rounded-lg text-sm font-medium',
                 'glass border-slate-600/50',
-                'hover:bg-red-900/30 hover:border-red-500/60 hover:shadow-red-500/20',
-                'text-slate-200 hover:text-white font-medium',
-                'transition-all duration-300 ease-out shadow-premium',
-                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-slate-600/50'
+                'hover:bg-red-900/40 hover:border-red-500/50',
+                'text-slate-200 hover:text-white',
+                'transition-all duration-200 ease-out shadow-md',
+                'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-slate-600/50'
               )}
             >
-              <Square className="w-4 h-4 mr-2" />
+              <Square className="w-3.5 h-3.5 mr-1.5" />
               Stop
             </Button>
           </motion.div>
 
-          <motion.div
-            animate={{
-              opacity: timer.isIdle || timer.isCompleted ? 1 : 0.5,
-            }}
-          >
+          {/* Reset button - 30% width */}
+          <motion.div className="flex-[1.5]">
             <Button
               onClick={() => timer.reset()}
               disabled={timer.isIdle || !timer.isReady}
               variant="outline"
               className={cn(
-                'w-full h-12 rounded-xl font-medium',
+                'w-full h-11 rounded-lg text-sm font-medium',
                 'glass border-slate-600/50',
-                'hover:bg-slate-700/50 hover:border-slate-500/70',
+                'hover:bg-blue-900/40 hover:border-blue-500/50',
                 'text-slate-200 hover:text-white',
-                'transition-all duration-300 ease-out shadow-premium',
-                'disabled:opacity-30 disabled:cursor-not-allowed'
+                'transition-all duration-200 ease-out shadow-md',
+                'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-slate-600/50'
               )}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
+              <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
               Reset
             </Button>
           </motion.div>
