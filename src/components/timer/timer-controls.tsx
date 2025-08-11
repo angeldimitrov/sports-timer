@@ -5,10 +5,11 @@
  * Features touch-friendly buttons with visual states and smooth micro-interactions.
  * 
  * Design Principles:
- * - Large touch targets (minimum 48px) for mobile accessibility
+ * - Compact single-row layout for space efficiency
+ * - Touch-friendly targets (48px height) for mobile accessibility
  * - Clear visual feedback with color states and animations
  * - Intuitive icon usage with text labels
- * - Smooth transitions and hover effects
+ * - Fast transitions and hover effects (200ms)
  * - Consistent spacing and alignment
  */
 
@@ -112,13 +113,13 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
       )}>
         {/* Single row control buttons */}
         <div className="flex gap-2">
-          {/* Primary action button - 40% width */}
+          {/* Primary action button - flex-[2] for 40% width */}
           <motion.div className="flex-[2]">
             <Button
               onClick={handlePrimaryClick}
               disabled={!timer.isReady}
               className={cn(
-                'w-full h-11 text-sm font-semibold',
+                'w-full h-12 text-sm font-semibold',  // 48px for accessibility
                 'text-white rounded-lg',
                 config.color,
                 'shadow-lg hover:shadow-xl',
@@ -130,8 +131,8 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
               asChild
             >
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
               >
                 {/* Subtle overlay effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -143,14 +144,14 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
             </Button>
           </motion.div>
 
-          {/* Stop button - 30% width */}
+          {/* Stop button - flex-[1.5] for 30% width */}
           <motion.div className="flex-[1.5]">
             <Button
               onClick={() => timer.stop()}
               variant="outline"
               disabled={!(timer.isRunning || timer.isPaused)}
               className={cn(
-                'w-full h-11 rounded-lg text-sm font-medium',
+                'w-full h-12 rounded-lg text-sm font-medium',  // 48px for accessibility
                 'glass border-slate-600/50',
                 'hover:bg-red-900/40 hover:border-red-500/50',
                 'text-slate-200 hover:text-white',
@@ -163,14 +164,14 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
             </Button>
           </motion.div>
 
-          {/* Reset button - 30% width */}
+          {/* Reset button - flex-[1.5] for 30% width */}
           <motion.div className="flex-[1.5]">
             <Button
               onClick={() => timer.reset()}
               disabled={timer.isIdle || !timer.isReady}
               variant="outline"
               className={cn(
-                'w-full h-11 rounded-lg text-sm font-medium',
+                'w-full h-12 rounded-lg text-sm font-medium',  // 48px for accessibility
                 'glass border-slate-600/50',
                 'hover:bg-blue-900/40 hover:border-blue-500/50',
                 'text-slate-200 hover:text-white',
