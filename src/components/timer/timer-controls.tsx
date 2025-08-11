@@ -13,7 +13,7 @@
  * - Fast transitions and micro-interactions (200ms)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Play, 
@@ -46,8 +46,46 @@ interface TimerControlsProps {
  */
 
 export function TimerControls({ timer, className }: TimerControlsProps) {
+  // Client-side hydration guard to prevent SSR/client mismatch
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Early return for server-side rendering to prevent hydration mismatch
+  if (!isClient || !timer) {
+    return (
+      <div className={cn('', className)}>
+        <div className={cn(
+          'glass-dark rounded-xl p-3 shadow-premium',
+          'ring-1 ring-white/5 border border-slate-600/30'
+        )}>
+          <div className="animate-pulse">
+            <div className="w-full h-14 bg-slate-700/50 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Determine button configuration based on timer state
   const getButtonConfig = () => {
+    // Add error handling for edge cases
+    if (!timer || typeof timer.isRunning !== 'boolean') {
+      console.warn('[TimerControls] Timer object is invalid or not properly initialized');
+      return {
+        layout: 'single' as const,
+        primary: {
+          icon: Play,
+          label: 'Loading...',
+          action: () => console.warn('Timer not ready'),
+          color: 'bg-gray-600',
+          borderColor: 'border-gray-500/30',
+        }
+      };
+    }
+
     if (timer.isRunning) {
       return {
         layout: 'split' as const,
@@ -126,23 +164,31 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
         {config.layout === 'single' ? (
           /* Single full-width button for maximum accessibility */
           <motion.div
-            key={config.primary.label}
+            layoutId="timer-controls-single"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
             <Button
-              onClick={config.primary.action}
-              disabled={!timer.isReady}
+              onClick={() => {
+                try {
+                  config.primary.action?.();
+                } catch (error) {
+                  console.error('[TimerControls] Error executing primary action:', error);
+                }
+              }}
+              disabled={!timer.isReady || !config.primary.action}
               className={cn(
-                'w-full h-14 text-base font-bold',  // Larger for single button (56px)
+                'w-full h-12 text-base font-bold',  // Consistent 48px height
                 'text-white rounded-lg',
                 config.primary.color,
                 'shadow-lg hover:shadow-xl',
                 'transition-all duration-200 ease-out',
                 'relative overflow-hidden group',
                 'ring-1 ring-white/10',
-                config.primary.borderColor
+                config.primary.borderColor,
+                // Add disabled styling
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg'
               )}
               asChild
             >
@@ -161,18 +207,27 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
           </motion.div>
         ) : (
           /* Split layout for RUNNING/PAUSED states */
-          <div className="flex gap-2">
+          <motion.div 
+            className="flex gap-2"
+            layoutId="timer-controls-split"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
             {/* Primary action button - 70% width */}
             <motion.div 
               className="flex-[7]"
-              key={config.primary.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              layoutId="timer-primary-split"
             >
               <Button
-                onClick={config.primary.action}
-                disabled={!timer.isReady}
+                onClick={() => {
+                  try {
+                    config.primary.action?.();
+                  } catch (error) {
+                    console.error('[TimerControls] Error executing primary action:', error);
+                  }
+                }}
+                disabled={!timer.isReady || !config.primary.action}
                 className={cn(
                   'w-full h-12 text-sm font-semibold',  // 48px for accessibility
                   'text-white rounded-lg',
@@ -181,7 +236,8 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
                   'transition-all duration-200 ease-out',
                   'relative overflow-hidden group',
                   'ring-1 ring-white/10',
-                  config.primary.borderColor
+                  config.primary.borderColor,
+                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg'
                 )}
                 asChild
               >
@@ -202,21 +258,26 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
             {/* Secondary action button - 30% width */}
             <motion.div 
               className="flex-[3]"
-              key={config.secondary?.label || 'secondary'}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2, ease: 'easeOut', delay: 0.05 }}
+              layoutId="timer-secondary-split"
             >
               {config.secondary && (
                 <Button
-                  onClick={config.secondary.action}
+                  onClick={() => {
+                    try {
+                      config.secondary?.action?.();
+                    } catch (error) {
+                      console.error('[TimerControls] Error executing secondary action:', error);
+                    }
+                  }}
                   variant="outline"
+                  disabled={!timer.isReady || !config.secondary.action}
                   className={cn(
                     'w-full h-12 rounded-lg text-sm font-medium',  // 48px for accessibility
                     'glass border-slate-600/50',
                     'hover:bg-red-900/40 hover:border-red-500/50',
                     'text-slate-200 hover:text-white',
-                    'transition-all duration-200 ease-out shadow-md'
+                    'transition-all duration-200 ease-out shadow-md',
+                    'disabled:opacity-50 disabled:cursor-not-allowed'
                   )}
                 >
                   <Square className="w-3.5 h-3.5 mr-1.5" />
@@ -224,7 +285,7 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
                 </Button>
               )}
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
