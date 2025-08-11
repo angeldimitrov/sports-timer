@@ -301,8 +301,6 @@ export default function Home() {
             {/* Timer Controls */}
             <TimerControls 
               timer={timer}
-              selectedPreset={presetPersistence.selectedPreset || 'beginner'}
-              onPresetSelect={handlePresetSelect}
             />
 
             {/* Preset Selector */}
