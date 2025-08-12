@@ -135,7 +135,7 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
               onClick={config.primary.action}
               disabled={!timer.isReady}
               className={cn(
-                'w-full h-14 text-base font-bold',  // Larger for single button (56px)
+                'w-full h-14 text-base font-bold',  // Larger 56px height
                 'text-white rounded-lg',
                 config.primary.color,
                 'shadow-lg hover:shadow-xl',
@@ -174,7 +174,7 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
                 onClick={config.primary.action}
                 disabled={!timer.isReady}
                 className={cn(
-                  'w-full h-12 text-sm font-semibold',  // 48px for accessibility
+                  'w-full h-14 text-sm font-semibold',  // Larger 56px height
                   'text-white rounded-lg',
                   config.primary.color,
                   'shadow-lg hover:shadow-xl',
@@ -193,7 +193,7 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   
                   {/* Button content */}
-                  <PrimaryIcon className="w-4 h-4 mr-2" />
+                  <PrimaryIcon className="w-5 h-5 mr-2" />
                   {config.primary.label}
                 </motion.button>
               </Button>
@@ -212,14 +212,14 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
                   onClick={config.secondary.action}
                   variant="outline"
                   className={cn(
-                    'w-full h-12 rounded-lg text-sm font-medium',  // 48px for accessibility
+                    'w-full h-14 rounded-lg text-sm font-medium',  // Larger 56px height
                     'glass border-slate-600/50',
                     'hover:bg-red-900/40 hover:border-red-500/50',
                     'text-slate-200 hover:text-white',
                     'transition-all duration-200 ease-out shadow-md'
                   )}
                 >
-                  <Square className="w-3.5 h-3.5 mr-1.5" />
+                  <Square className="w-4 h-4 mr-2" />
                   {config.secondary.label}
                 </Button>
               )}
