@@ -13,8 +13,8 @@ import { UseTimerReturn } from '@/hooks/use-timer';
 // Mock framer-motion to avoid animation complexities in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, whileHover, whileTap, ...props }: any) => (
+    div: ({ children, ...props }: React.ComponentProps<'div'>) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: React.ComponentProps<'button'> & { whileHover?: unknown; whileTap?: unknown }) => (
       <button {...props}>{children}</button>
     ),
   },
@@ -22,10 +22,10 @@ jest.mock('framer-motion', () => ({
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Play: ({ className, ...props }: any) => <span data-testid="play-icon" className={className} {...props}>Play</span>,
-  Pause: ({ className, ...props }: any) => <span data-testid="pause-icon" className={className} {...props}>Pause</span>,
-  Square: ({ className, ...props }: any) => <span data-testid="square-icon" className={className} {...props}>Square</span>,
-  RotateCcw: ({ className, ...props }: any) => <span data-testid="rotate-icon" className={className} {...props}>Rotate</span>,
+  Play: ({ className, ...props }: React.ComponentProps<'span'>) => <span data-testid="play-icon" className={className} {...props}>Play</span>,
+  Pause: ({ className, ...props }: React.ComponentProps<'span'>) => <span data-testid="pause-icon" className={className} {...props}>Pause</span>,
+  Square: ({ className, ...props }: React.ComponentProps<'span'>) => <span data-testid="square-icon" className={className} {...props}>Square</span>,
+  RotateCcw: ({ className, ...props }: React.ComponentProps<'span'>) => <span data-testid="rotate-icon" className={className} {...props}>Rotate</span>,
 }));
 
 describe('TimerControls Component', () => {
