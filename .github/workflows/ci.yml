@@ -1,9 +1,0 @@
-# This workflow has been consolidated into pr-checks.yml
-# to avoid duplicate test runs and conflicting results.
-# 
-# All test automation is now handled by:
-# - pr-checks.yml: Runs on PRs (linting, type checking, unit tests, build)
-# - deploy.yml: Runs on main branch (tests + deployment)
-
-# Original CI Tests workflow disabled on 2025-08-02
-# Reason: Consolidating test automation into pr-checks.yml for cleaner CI pipeline
