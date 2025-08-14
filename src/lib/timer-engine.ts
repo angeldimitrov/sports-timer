@@ -77,6 +77,8 @@ export interface TimerConfig {
   enableWarning: boolean;
   /** Preparation period duration in seconds (0-60 seconds, default 10) */
   prepDuration?: number;
+  /** Preset name for reference */
+  preset?: string;
 }
 
 export interface TimerState {

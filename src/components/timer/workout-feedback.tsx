@@ -161,7 +161,7 @@ export function WorkoutFeedback({
 }: WorkoutFeedbackProps) {
   const [rating, setRating] = useState(0);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const submitTimeoutRef = useRef<NodeJS.Timeout>();
+  const submitTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Reset state when dialog opens
   useEffect(() => {

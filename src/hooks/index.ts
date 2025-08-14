@@ -53,8 +53,7 @@ export {
 // Feedback Hooks
 export { 
   useWorkoutFeedback,
+  useSimpleFeedback,
   type UseWorkoutFeedbackOptions,
-  type UseWorkoutFeedbackReturn,
-  type WorkoutSession,
-  type FeedbackPreferences
+  type UseWorkoutFeedbackReturn
 } from './use-workout-feedback';
