@@ -49,3 +49,12 @@ export {
   usePresetPersistence,
   type UsePresetPersistenceReturn 
 } from './use-preset-persistence';
+
+// Feedback Hooks
+export { 
+  useWorkoutFeedback,
+  type UseWorkoutFeedbackOptions,
+  type UseWorkoutFeedbackReturn,
+  type WorkoutSession,
+  type FeedbackPreferences
+} from './use-workout-feedback';

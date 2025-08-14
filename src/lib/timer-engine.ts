@@ -99,8 +99,9 @@ export interface TimerState {
 }
 
 export interface TimerEvent {
-  type: 'tick' | 'phaseChange' | 'roundComplete' | 'workoutComplete' | 'warning' | 'error' | 'preparationStart';
+  type: 'tick' | 'phaseChange' | 'roundComplete' | 'workoutComplete' | 'warning' | 'error' | 'preparationStart' | 'start' | 'stop';
   state: TimerState;
+  config?: TimerConfig;
   payload?: {
     newPhase?: TimerPhase;
     round?: number;
@@ -316,6 +317,7 @@ export class TimerEngine {
         this.emitEvent({
           type: 'workoutComplete',
           state: this.state,
+          config: this.config,
           payload: { totalRounds: this.config.totalRounds }
         });
       } else {
@@ -356,6 +358,7 @@ export class TimerEngine {
         this.emitEvent({
           type: 'workoutComplete',
           state: this.state,
+          config: this.config,
           payload: { totalRounds: this.config.totalRounds }
         });
       } else {
@@ -565,6 +568,13 @@ export class TimerEngine {
     const wasIdle = this.state.status === 'idle';
     this.state.status = 'running';
     
+    // Emit start event
+    this.emitEvent({
+      type: 'start',
+      state: this.state,
+      config: this.config
+    });
+    
     // If starting from idle state, ensure timeRemaining is set to full phase duration
     if (wasIdle || this.state.timeRemaining <= 0) {
       // Fresh start - reset timeRemaining to full phase duration
@@ -627,6 +637,13 @@ export class TimerEngine {
     if (this.worker) {
       this.worker.postMessage({ type: 'stop' });
     }
+    
+    // Emit stop event before resetting state
+    this.emitEvent({ 
+      type: 'stop', 
+      state: this.state,
+      config: this.config
+    });
     
     this.state = this.createInitialState();
     this.emitEvent({ type: 'tick', state: this.state });
