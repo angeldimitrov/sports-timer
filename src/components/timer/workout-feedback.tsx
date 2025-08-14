@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -55,6 +55,40 @@ function StarRating({
   disabled?: boolean;
 }) {
   const [hoveredStar, setHoveredStar] = useState(0);
+  const starRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  
+  // Keyboard navigation for stars
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, starIndex: number) => {
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (starIndex > 0) {
+          starRefs.current[starIndex - 1]?.focus();
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (starIndex < 4) {
+          starRefs.current[starIndex + 1]?.focus();
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        onRatingChange(starIndex + 1);
+        break;
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+        e.preventDefault();
+        const num = parseInt(e.key);
+        onRatingChange(num);
+        starRefs.current[num - 1]?.focus();
+        break;
+    }
+  }, [onRatingChange]);
 
   return (
     <div className="flex justify-center gap-2" role="radiogroup" aria-label="Rate your workout">
@@ -65,6 +99,7 @@ function StarRating({
         return (
           <button
             key={star}
+            ref={(el) => { starRefs.current[star - 1] = el; }}
             type="button"
             role="radio"
             aria-checked={isFilled}
@@ -80,6 +115,7 @@ function StarRating({
             onClick={() => !disabled && onRatingChange(star)}
             onMouseEnter={() => !disabled && setHoveredStar(star)}
             onMouseLeave={() => setHoveredStar(0)}
+            onKeyDown={(e) => handleKeyDown(e, star - 1)}
           >
             <Star
               className={cn(
@@ -125,6 +161,7 @@ export function WorkoutFeedback({
 }: WorkoutFeedbackProps) {
   const [rating, setRating] = useState(0);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const submitTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -133,6 +170,19 @@ export function WorkoutFeedback({
       setHasSubmitted(false);
     }
   }, [isOpen]);
+  
+  // Focus management - focus first star when dialog opens
+  useEffect(() => {
+    if (isOpen && !hasSubmitted) {
+      // Small delay to ensure dialog is rendered
+      const focusTimeout = setTimeout(() => {
+        const firstStar = document.querySelector('[role="radiogroup"] button') as HTMLElement;
+        firstStar?.focus();
+      }, 100);
+      
+      return () => clearTimeout(focusTimeout);
+    }
+  }, [isOpen, hasSubmitted]);
 
   // Auto-dismiss after 15 seconds
   useEffect(() => {
@@ -143,16 +193,25 @@ export function WorkoutFeedback({
       return () => clearTimeout(timer);
     }
   }, [isOpen, hasSubmitted, onClose]);
-
+  
   const handleSubmit = useCallback(() => {
     if (rating > 0) {
       setHasSubmitted(true);
       // Show confirmation briefly then close
-      setTimeout(() => {
+      submitTimeoutRef.current = setTimeout(() => {
         onClose();
       }, 1500);
     }
   }, [rating, onClose]);
+  
+  // Cleanup submit timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSkip = useCallback(() => {
     onClose();
@@ -272,7 +331,11 @@ export function WorkoutFeedback({
           ) : (
             // Success State
             <div className="space-y-4 py-4 animate-in fade-in duration-500">
-              <div className="text-center">
+              <div 
+                className="text-center" 
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
                   {getMessage()}
                 </div>

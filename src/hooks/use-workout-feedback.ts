@@ -107,6 +107,11 @@ export function useWorkoutFeedback(
         });
       }
 
+      // Clear any existing timeout to prevent race conditions
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+      }
+
       // Schedule feedback dialog after delay
       showTimeoutRef.current = setTimeout(() => {
         setShowFeedback(true);
