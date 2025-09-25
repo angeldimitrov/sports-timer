@@ -52,6 +52,17 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Enhanced timer colors for WCAG AA compliance
+        timer: {
+          work: "hsl(var(--timer-work))",
+          workForeground: "hsl(var(--timer-work-foreground))",
+          rest: "hsl(var(--timer-rest))",
+          restForeground: "hsl(var(--timer-rest-foreground))",
+          preparation: "hsl(var(--timer-preparation))",
+          preparationForeground: "hsl(var(--timer-preparation-foreground))",
+          paused: "hsl(var(--timer-paused))",
+          pausedForeground: "hsl(var(--timer-paused-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

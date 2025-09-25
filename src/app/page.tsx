@@ -314,8 +314,11 @@ export default function Home() {
           {/* Controls and Settings Sidebar - Compact and efficient */}
           <div className="xl:col-span-1 space-y-4 order-2 xl:order-2">
             {/* Timer Controls */}
-            <TimerControls 
+            <TimerControls
               timer={timer}
+              isMuted={audio.isMuted}
+              onToggleMute={audio.toggleMute}
+              onOpenSettings={() => router.push('/settings')}
             />
 
             {/* Preset Selector */}

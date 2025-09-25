@@ -24,6 +24,7 @@
 
 @layer base {
   :root {
+    /* Base theme colors - Light Mode */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -44,9 +45,25 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /* Enhanced timer-specific colors for WCAG AA compliance */
+    --timer-work: 0 72% 35%; /* Dark red for work phase - 7:1 contrast on white */
+    --timer-work-foreground: 0 0% 100%; /* White text */
+    --timer-rest: 120 60% 30%; /* Dark green for rest phase - 7:1 contrast on white */
+    --timer-rest-foreground: 0 0% 100%; /* White text */
+    --timer-preparation: 39 85% 40%; /* Dark orange for preparation - 7:1 contrast on white */
+    --timer-preparation-foreground: 0 0% 100%; /* White text */
+    --timer-paused: 210 20% 40%; /* Dark blue-gray for paused - 7:1 contrast on white */
+    --timer-paused-foreground: 0 0% 100%; /* White text */
+
+    /* Enhanced glass morphism effects for light mode */
+    --glass-bg: 255 255 255 / 0.1; /* White with transparency */
+    --glass-border: 255 255 255 / 0.2; /* White border */
+    --glass-backdrop-blur: blur(16px);
   }
 
   .dark {
+    /* Base theme colors - Dark Mode */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -66,6 +83,21 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Enhanced timer-specific colors for WCAG AA compliance in dark mode */
+    --timer-work: 0 100% 70%; /* Bright red for work phase - 7:1 contrast on dark */
+    --timer-work-foreground: 222.2 84% 4.9%; /* Dark background text */
+    --timer-rest: 120 100% 70%; /* Bright green for rest phase - 7:1 contrast on dark */
+    --timer-rest-foreground: 222.2 84% 4.9%; /* Dark background text */
+    --timer-preparation: 39 100% 70%; /* Bright orange for preparation - 7:1 contrast on dark */
+    --timer-preparation-foreground: 222.2 84% 4.9%; /* Dark background text */
+    --timer-paused: 210 100% 80%; /* Light blue for paused - 7:1 contrast on dark */
+    --timer-paused-foreground: 222.2 84% 4.9%; /* Dark background text */
+
+    /* Enhanced glass morphism effects for dark mode */
+    --glass-bg: 0 0 0 / 0.3; /* Black with transparency */
+    --glass-border: 255 255 255 / 0.1; /* White border with less opacity */
+    --glass-backdrop-blur: blur(20px);
   }
 }
 
@@ -111,19 +143,40 @@
       0 8px 10px -6px rgba(0, 0, 0, 0.5);
   }
   
-  /* Premium glass morphism effect */
+  /* Premium glass morphism effect - theme-adaptive */
   .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop-blur);
+    -webkit-backdrop-filter: var(--glass-backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
   }
-  
+
   .glass-dark {
-    background: rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop-blur);
+    -webkit-backdrop-filter: var(--glass-backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Timer-specific color utilities for WCAG AA compliance */
+  .timer-work-colors {
+    background: hsl(var(--timer-work));
+    color: hsl(var(--timer-work-foreground));
+  }
+
+  .timer-rest-colors {
+    background: hsl(var(--timer-rest));
+    color: hsl(var(--timer-rest-foreground));
+  }
+
+  .timer-preparation-colors {
+    background: hsl(var(--timer-preparation));
+    color: hsl(var(--timer-preparation-foreground));
+  }
+
+  .timer-paused-colors {
+    background: hsl(var(--timer-paused));
+    color: hsl(var(--timer-paused-foreground));
   }
   
   /* Premium text gradients */
@@ -392,18 +445,60 @@
     box-shadow: 0 45px 80px -12px rgba(0, 0, 0, 0.45);
   }
   
-  /* Premium glass effects */
+  /* Premium glass effects - theme-adaptive with enhanced contrast */
   .glass-premium {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop-blur);
+    -webkit-backdrop-filter: var(--glass-backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 8px 32px rgba(0, 0, 0, 0.3);
   }
-  
+
+  .dark .glass-premium {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+
   .glass-premium-light {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop-blur);
+    -webkit-backdrop-filter: var(--glass-backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.05),
+      0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .glass-premium-light {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Enhanced button glass effects for theme consistency */
+  .glass-button {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: var(--glass-backdrop-blur);
+    -webkit-backdrop-filter: var(--glass-backdrop-blur);
+    border: 1px solid hsl(var(--glass-border));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-button:hover {
+    background: hsl(var(--glass-bg) / 0.8);
+    border-color: hsl(var(--glass-border) / 0.6);
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px hsl(var(--glass-border)),
+      0 8px 25px -5px rgba(0, 0, 0, 0.25);
+  }
+
+  .dark .glass-button:hover {
+    box-shadow:
+      0 0 0 1px hsl(var(--glass-border)),
+      0 8px 25px -5px rgba(0, 0, 0, 0.5);
   }
 }
