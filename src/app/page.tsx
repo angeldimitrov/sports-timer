@@ -8,9 +8,11 @@ import { useAudio } from '@/hooks/use-audio';
 import { useWakeLock } from '@/hooks/use-wake-lock';
 import { useMobileGestures } from '@/hooks/use-mobile-gestures';
 import { usePWA } from '@/hooks/use-pwa';
+import { useWorkoutFeedback } from '@/hooks/use-workout-feedback';
 import { TimerDisplay } from '@/components/timer/timer-display';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { PresetSelector } from '@/components/timer/preset-selector';
+import { WorkoutFeedback } from '@/components/timer/workout-feedback';
 import { TimerEvent } from '@/lib/timer-engine';
 
 // PWA and mobile components
@@ -68,11 +70,24 @@ export default function Home() {
   // Preset persistence for remembering user selection
   const presetPersistence = usePresetPersistence();
 
+  // Workout feedback system for post-training rating
+  const workoutFeedback = useWorkoutFeedback({
+    enabled: true,
+    showDelay: 4000 // 4 seconds after workout completion
+  });
+  
+  // Store feedback ref to avoid recreating onEvent callback
+  const feedbackRef = useRef(workoutFeedback);
+  feedbackRef.current = workoutFeedback;
+
   // Initialize timer and audio systems
   const timer = useTimer({
     preset: presetPersistence.getInitialPreset(), // Use persisted preset or default to beginner
     onEvent: useCallback((event: TimerEvent) => {
       try {
+        // Forward event to feedback system
+        feedbackRef.current.handleTimerEvent(event);
+        
         // Handle timer events for audio integration with correct boxing timer logic
         
         // Safely handle audio playback with error handling
@@ -299,8 +314,11 @@ export default function Home() {
           {/* Controls and Settings Sidebar - Compact and efficient */}
           <div className="xl:col-span-1 space-y-4 order-2 xl:order-2">
             {/* Timer Controls */}
-            <TimerControls 
+            <TimerControls
               timer={timer}
+              isMuted={audio.isMuted}
+              onToggleMute={audio.toggleMute}
+              onOpenSettings={() => router.push('/settings')}
             />
 
             {/* Preset Selector */}
@@ -316,6 +334,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Workout Feedback Modal - Mobile-optimized post-training rating */}
+      <WorkoutFeedback
+        isOpen={workoutFeedback.showFeedback}
+        onClose={workoutFeedback.closeFeedback}
+        workoutInfo={workoutFeedback.workoutInfo || undefined}
+      />
     </main>
   );
 }

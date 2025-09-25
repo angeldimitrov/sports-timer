@@ -15,15 +15,18 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Play, 
-  Pause, 
-  Square, 
+import {
+  Play,
+  Pause,
+  Square,
   RotateCcw,
- 
+  Volume2,
+  VolumeX,
+  Settings
 } from 'lucide-react';
 import { UseTimerReturn } from '@/hooks/use-timer';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 interface TimerControlsProps {
@@ -31,6 +34,12 @@ interface TimerControlsProps {
   timer: UseTimerReturn;
   /** Additional CSS classes */
   className?: string;
+  /** Audio mute state */
+  isMuted?: boolean;
+  /** Audio mute toggle handler */
+  onToggleMute?: () => void;
+  /** Settings dialog open handler */
+  onOpenSettings?: () => void;
 }
 
 /**
@@ -45,7 +54,13 @@ interface TimerControlsProps {
  * - Haptic feedback triggers (via CSS)
  */
 
-export function TimerControls({ timer, className }: TimerControlsProps) {
+export function TimerControls({
+  timer,
+  className,
+  isMuted = false,
+  onToggleMute,
+  onOpenSettings
+}: TimerControlsProps) {
   // Determine button configuration based on timer state
   const getButtonConfig = () => {
     if (timer.isRunning) {
@@ -226,6 +241,75 @@ export function TimerControls({ timer, className }: TimerControlsProps) {
             </motion.div>
           </div>
         )}
+      </div>
+
+      {/* Secondary Controls - Theme, Audio, Settings */}
+      <div className="mt-3">
+        <div className={cn(
+          'glass-dark rounded-xl p-3 shadow-premium',
+          'ring-1 ring-white/5 border border-slate-600/30'
+        )}>
+          <div className="flex items-center justify-between gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle
+              size="sm"
+              className="transition-all duration-200"
+            />
+
+            {/* Audio Control */}
+            {onToggleMute && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={onToggleMute}
+                className={cn(
+                  'w-9 h-9 rounded-lg border-0',
+                  'glass border border-slate-300/20 dark:border-slate-600/30',
+                  'text-slate-700 dark:text-slate-200',
+                  'hover:bg-slate-100/50 dark:hover:bg-slate-800/50',
+                  'transition-all duration-300 ease-out',
+                  'shadow-md hover:shadow-lg active:shadow-sm',
+                  'active:scale-95',
+                  'ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'hover:ring-2 hover:ring-slate-200/50 dark:hover:ring-slate-700/50',
+                  isMuted && 'text-red-500 hover:text-red-400'
+                )}
+                aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+                title={isMuted ? 'Unmute audio' : 'Mute audio'}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+
+            {/* Settings Button */}
+            {onOpenSettings && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={onOpenSettings}
+                className={cn(
+                  'w-9 h-9 rounded-lg border-0',
+                  'glass border border-slate-300/20 dark:border-slate-600/30',
+                  'text-slate-700 dark:text-slate-200',
+                  'hover:bg-slate-100/50 dark:hover:bg-slate-800/50',
+                  'transition-all duration-300 ease-out',
+                  'shadow-md hover:shadow-lg active:shadow-sm',
+                  'active:scale-95',
+                  'ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'hover:ring-2 hover:ring-slate-200/50 dark:hover:ring-slate-700/50'
+                )}
+                aria-label="Open settings"
+                title="Open settings"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

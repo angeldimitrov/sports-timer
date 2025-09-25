@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { HeadLinks } from '@/components/layout/head-links'
 import { getPublicPath } from '@/lib/get-base-path'
+import { ThemeProvider } from '@/components/providers/theme-provider'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -174,8 +175,10 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        {children}
-        
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+
         {/* PWA Install Prompt (will be enhanced by components) */}
         <div id="pwa-install-prompt" style={{ display: 'none' }}></div>
       </body>
